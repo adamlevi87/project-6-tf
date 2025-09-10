@@ -1,9 +1,9 @@
 # modules/acm/outputs.tf
 
-# output "this_certificate_arn" {
-#   description = "ARN of the validated ACM certificate"
-#   value       = aws_acm_certificate.this.arn
-# }
+output "this_certificate_arn" {
+  description = "ARN of the validated ACM certificate"
+  value       = aws_acm_certificate.this.arn
+}
 
 # output "acm_dns_records_to_add" {
 #   description = "Manual DNS records for ACM validation if Route53 fails"

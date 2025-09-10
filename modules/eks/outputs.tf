@@ -22,6 +22,11 @@ output "autoscaling_group_arns" {
   }
 }
 
+output "node_group_security_group_ids" {
+  description = "Map of node group names to their security group IDs"
+  value       = { for ng_name, ng in aws_security_group.nodes : ng_name => ng.id }
+}
+
 # output "cluster_id" {
 #   description = "EKS cluster ID"
 #   value       = aws_eks_cluster.main.id
@@ -45,11 +50,6 @@ output "autoscaling_group_arns" {
 # output "cluster_security_group_id" {
 #   description = "Security group ID attached to the EKS cluster"
 #   value       = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
-# }
-
-# output "node_group_security_group_ids" {
-#   description = "Map of node group names to their security group IDs"
-#   value       = { for ng_name, ng in aws_security_group.nodes : ng_name => ng.id }
 # }
 
 # output "node_group_names" {

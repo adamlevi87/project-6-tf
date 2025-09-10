@@ -1,0 +1,46 @@
+# modules/apps/frontend/variables.tf
+
+variable "oidc_provider_arn" {
+  description = "OIDC provider ARN from the EKS module"
+  type        = string
+}
+
+variable "oidc_provider_url" {
+  type        = string
+  description = "OIDC provider URL (e.g. https://oidc.eks.us-east-1.amazonaws.com/id/EXAMPLEDOCID)"
+}
+
+variable "namespace" {
+  description = "namespace used"
+  type        = string
+}
+
+variable "service_account_name" {
+  description = "service_account_name name"
+  type        = string
+}
+
+variable "node_group_security_groups" {
+  type        = map(string)
+  description = "Map of node group names to their security group IDs"
+}
+
+variable "project_tag" {
+  description = "Project tag for resource naming"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment tag (dev, staging, prod)"
+  type        = string
+}
+
+variable "vpc_id" {
+  description = "VPC ID where RDS will be deployed"
+  type        = string
+}
+
+variable "secret_arn" {
+  description = "ARN of the AWS Secrets Manager secret used by the application"
+  type        = string
+}

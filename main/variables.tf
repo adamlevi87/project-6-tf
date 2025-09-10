@@ -144,4 +144,44 @@ variable "metrics_server_chart_version" {
   type        = string
 }
 
+variable "frontend_service_account_name" {
+  description = "Name of the frontend service account"
+  type        = string
+}
+
+variable "frontend_service_namespace" {
+  description = "Namespace where the frontend service account is deployed"
+  type        = string
+}
+
+
+
+
+
+
+
+
+
+## ArgoCD
+variable "argocd_chart_version" {
+  type        = string
+  description = "ArgoCD Helm chart version"
+}
+
+variable "argocd_namespace" {
+  type        = string
+  description = "Kubernetes namespace for ArgoCD"
+  default     = "argocd"
+}
+
+variable "argocd_allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to access the cluster endpoint"
+  type        = list(string)
+  default     = []
+}
+
+variable "argocd_base_domain_name" {
+  type        = string
+  description = "Base domain name for ArgoCD"
+}
 

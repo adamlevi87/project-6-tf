@@ -88,7 +88,9 @@ cluster_autoscaler_chart_version    = "9.50.1"
 metrics_server_chart_version        = "3.13.0"
 
 
-
+# frontend service details
+frontend_service_namespace    = "frontend"
+frontend_service_account_name = "frontend-sa"
 
 
 
@@ -143,9 +145,6 @@ alb_deletion_protection = false  # Allow easy deletion in dev environment
 # backend_service_namespace    = "backend"
 # backend_service_account_name = "backend-sa"
 
-# frontend service details
-frontend_service_namespace    = "frontend"
-frontend_service_account_name = "frontend-sa"
 
 # Apps (frontend) AWS secret names
 # later be used to pull from using ESO
