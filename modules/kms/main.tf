@@ -63,7 +63,7 @@ resource "aws_iam_role" "kms_key_role" {
   name = "${var.project_tag}-${var.environment}-kms-key-role"
 
   # Allowing KMS to work with IAM policies
-  # Additional per user/Role permissions are needed and handled separately
+  # The extra -  per user/Role permissions are handled separately
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
