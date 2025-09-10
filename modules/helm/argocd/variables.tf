@@ -93,71 +93,15 @@ variable "alb_group_name" {
   default     = "alb_shared_group"  # Optional: override in dev/main.tf if needed
 }
 
-
-
-
-
-
-
-
 variable "argocd_allowed_cidr_blocks" {
   type        = list(string)
   description = "List of CIDR blocks allowed to access the ALB-argoCD"
 }
 
-
-
-variable "node_group_security_groups" {
-  type        = map(string)
-  description = "Map of node group names to their security group IDs"
-}
-
-
-
-
-
-
-
 variable "acm_cert_arn" {
   description = "ARN of the ACM certificate to use for ALB HTTPS listener"
   type        = string
 }
-
-variable "vpc_id" {
-  description = "VPC ID where RDS will be deployed"
-  type        = string
-}
-
-
-
-
-
-variable "oidc_provider_arn" {
-  description = "OIDC provider ARN from the EKS module"
-  type        = string
-}
-
-variable "oidc_provider_url" {
-  type        = string
-  description = "OIDC provider URL (e.g. https://oidc.eks.us-east-1.amazonaws.com/id/EXAMPLEDOCID)"
-}
-
-variable "secret_arn" {
-  description = "ARN of the AWS Secrets Manager secret used by the application"
-  type        = string
-}
-
-
-
-
-
-
-
-# variable "github_oauth_client_id" {
-#   description = "GitHub OAuth App Client ID for ArgoCD authentication"
-#   type        = string
-#   sensitive   = true
-# }
 
 variable "github_admin_team" {
   description = "GitHub team name for admin access to ArgoCD"
@@ -175,3 +119,28 @@ variable "argocd_github_sso_secret_name" {
   description = "Name of the GitHub SSO secret for ArgoCD"
   type        = string
 }
+
+variable "oidc_provider_arn" {
+  description = "OIDC provider ARN from the EKS module"
+  type        = string
+}
+
+variable "oidc_provider_url" {
+  type        = string
+  description = "OIDC provider URL (e.g. https://oidc.eks.us-east-1.amazonaws.com/id/EXAMPLEDOCID)"
+}
+
+variable "vpc_id" {
+  description = "VPC ID where RDS will be deployed"
+  type        = string
+}
+
+variable "node_group_security_groups" {
+  type        = map(string)
+  description = "Map of node group names to their security group IDs"
+}
+
+# variable "secret_arn" {
+#   description = "ARN of the AWS Secrets Manager secret used by the application"
+#   type        = string
+# }
