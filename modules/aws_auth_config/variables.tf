@@ -1,15 +1,5 @@
 # modules/aws_auth_config/variables.tf
 
-variable "aws_provider_version" {
-  description = "AWS provider version"
-  type        = string
-}
-
-variable "kubernetes_provider_version" {
-  description = "Kubernetes provider version"
-  type        = string
-}
-
 variable "map_roles" {
   description = "List of IAM roles to map to Kubernetes RBAC"
   type        = list(any)

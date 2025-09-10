@@ -1,10 +1,5 @@
 # modules/ecr/variables.tf
 
-variable "aws_provider_version" {
-  description = "AWS provider version"
-  type        = string
-}
-
 variable "environment" {
   description = "environment name for tagging resources"
   type        = string

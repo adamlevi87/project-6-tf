@@ -3,8 +3,6 @@
 module "vpc" {
     source = "../modules/vpc"
 
-    aws_provider_version = var.aws_provider_version
-
     project_tag   = var.project_tag
     environment   = var.environment
 
@@ -27,8 +25,6 @@ module "vpc" {
 module "kms" {
   source = "../modules/kms"
 
-  aws_provider_version = var.aws_provider_version
-
   project_tag = var.project_tag
   environment = var.environment
 
@@ -41,8 +37,6 @@ module "kms" {
 
 module "s3" {
   source = "../modules/s3"
-
-  aws_provider_version = var.aws_provider_version
   
   project_tag   = var.project_tag
   environment   = var.environment
@@ -63,8 +57,6 @@ module "s3" {
 module "ecr" {
   source = "../modules/ecr"
 
-  aws_provider_version = var.aws_provider_version
-
   project_tag  = var.project_tag
   environment = var.environment
   
@@ -74,8 +66,6 @@ module "ecr" {
 
 module "route53" {
   source       = "../modules/route53"
-
-  aws_provider_version = var.aws_provider_version
 
   project_tag  = var.project_tag
   environment  = var.environment
@@ -93,8 +83,6 @@ module "route53" {
 module "acm" {
   source           = "../modules/acm"
 
-  aws_provider_version = var.aws_provider_version
-
   project_tag      = var.project_tag
   environment      = var.environment
 
@@ -104,8 +92,6 @@ module "acm" {
 
 module "eks" {
   source = "../modules/eks"
-
-  aws_provider_version = var.aws_provider_version
   
   project_tag = var.project_tag
   environment = var.environment
@@ -133,9 +119,6 @@ module "eks" {
 module "aws_auth_config" {
   source = "../modules/aws_auth_config"
 
-  aws_provider_version        = var.aws_provider_version
-  kubernetes_provider_version = var.kubernetes_provider_version
-
   # needed for the local exec
   aws_region = var.aws_region 
 
@@ -159,10 +142,6 @@ module "aws_auth_config" {
 module "aws_load_balancer_controller" {
   source        = "../modules/helm/aws-load-balancer-controller"
   
-  aws_provider_version        = var.aws_provider_version
-  kubernetes_provider_version = var.kubernetes_provider_version
-  helm_provider_version       = var.helm_provider_version
-
   project_tag        = var.project_tag
   environment        = var.environment
 
@@ -183,10 +162,6 @@ module "aws_load_balancer_controller" {
 
 module "external_dns" {
   source = "../modules/helm/external-dns"
-
-  aws_provider_version        = var.aws_provider_version
-  kubernetes_provider_version = var.kubernetes_provider_version
-  helm_provider_version       = var.helm_provider_version
 
   project_tag        = var.project_tag
   environment        = var.environment
@@ -212,10 +187,6 @@ module "external_dns" {
 module "cluster_autoscaler" {
   source = "../modules/helm/cluster-autoscaler"
 
-  aws_provider_version        = var.aws_provider_version
-  kubernetes_provider_version = var.kubernetes_provider_version
-  helm_provider_version       = var.helm_provider_version
-
   project_tag        = var.project_tag
   environment        = var.environment
 
@@ -234,9 +205,6 @@ module "cluster_autoscaler" {
 
 module "metrics_server" {
   source = "../modules/helm/metrics-server"
-
-  kubernetes_provider_version = var.kubernetes_provider_version
-  helm_provider_version       = var.helm_provider_version
 
   project_tag  = var.project_tag
   environment  = var.environment
@@ -257,9 +225,6 @@ module "metrics_server" {
 
 module "frontend" {
   source       = "../modules/apps/frontend"
-
-  aws_provider_version        = var.aws_provider_version
-  kubernetes_provider_version = var.kubernetes_provider_version
 
   project_tag        = var.project_tag
   environment        = var.environment
@@ -286,8 +251,6 @@ module "frontend" {
 module "secrets_app_envs" {
   source = "../modules/secrets-manager"
 
-  aws_provider_version  = var.aws_provider_version
-
   project_tag = var.project_tag
   environment = var.environment
   
@@ -303,10 +266,6 @@ module "argocd" {
   count = var.argocd_enabled ? 1 : 0
 
   source         = "../modules/helm/argocd"
-
-  aws_provider_version        = var.aws_provider_version
-  kubernetes_provider_version = var.kubernetes_provider_version
-  helm_provider_version       = var.helm_provider_version
 
   project_tag        = var.project_tag
   environment        = var.environment
@@ -372,9 +331,6 @@ module "external_secrets_operator" {
 
   source        = "../modules/helm/external-secrets-operator"
   
-  kubernetes_provider_version = var.kubernetes_provider_version
-  helm_provider_version       = var.helm_provider_version
-
   project_tag        = var.project_tag
   environment        = var.environment
 

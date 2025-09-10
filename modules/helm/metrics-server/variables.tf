@@ -1,15 +1,5 @@
 # modules/helm/metrics-server/variables.tf
 
-variable "kubernetes_provider_version" {
-  description = "Kubernetes provider version"
-  type        = string
-}
-
-variable "helm_provider_version" {
-  description = "Helm provider version"
-  type        = string
-}
-
 variable "project_tag" {
   description = "Project tag for resource naming"
   type        = string
