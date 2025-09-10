@@ -261,6 +261,11 @@ module "secrets_app_envs" {
   #depends_on = [module.secrets_rds_password]
 }
 
+
+# the initial app_of_apps sync has been automated
+# this option requires argoCD to be created only AFTER everything else is ready
+# for example, app repo workflow for build & push 
+# including PR merges from both TF & app repo (digest update)
 module "argocd" {
   # Create the module only if the variable is true
   count = var.argocd_enabled ? 1 : 0
@@ -313,11 +318,6 @@ module "argocd" {
 
   secret_arn = module.secrets_app_envs.app_secrets_arns["${var.argocd_aws_secret_key}"]
 
-  # Deletion protection after a creation
-  lifecycle {
-    ignore_changes = [count]  
-  }
-
   depends_on = [
     module.eks,
     module.aws_load_balancer_controller.webhook_ready,
@@ -356,12 +356,7 @@ module "external_secrets_operator" {
   # Extra values if needed
   set_values = [
   ]
-  
-  # Deletion protection after a creation
-  lifecycle {
-    ignore_changes = [count]  
-  }
-  
+    
   depends_on = [
     module.eks,
     module.aws_auth_config,

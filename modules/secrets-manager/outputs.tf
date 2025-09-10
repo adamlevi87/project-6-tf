@@ -10,12 +10,6 @@ output "app_secrets_names" {
 #   value       = { for name, secret in aws_secretsmanager_secret.app_secrets : name => secret.arn }
 # }
 
-
-
-
-
-
-
 # output "secret_arns" {
 #   description = "Map of secret ARNs by secret name"
 #   value       = { for name, secret in aws_secretsmanager_secret.secrets : name => secret.arn }

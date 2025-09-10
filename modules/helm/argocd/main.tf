@@ -120,6 +120,14 @@ locals {
         }
         revisionHistoryLimit = 3
         syncPolicy = {
+          # the initial app_of_apps sync
+          # this option requires argoCD to be created only AFTER everything else is ready
+          # for example, app repo workflow for build & push 
+          # including PR merges from both TF & app repo (digest update)
+          automated = {
+            prune    = true
+            selfHeal = true
+          }
           retry = {
             limit = 5
             backoff = {

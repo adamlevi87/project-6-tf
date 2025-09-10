@@ -203,7 +203,7 @@ variable "frontend_service_namespace" {
 variable "argocd_enabled" {
   description = "Enable ArgoCD deployment. Set to false for initial infrastructure deployment, true to create ArgoCD."
   type        = bool
-  default     = false
+  default     = true
   validation {
     condition     = can(var.argocd_enabled)
     error_message = "ArgoCD enabled must be a boolean value (true or false)."
