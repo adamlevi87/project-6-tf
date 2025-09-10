@@ -71,30 +71,9 @@ locals {
 
     argocd_private_key= sensitive(base64decode(var.argocd_private_key_b64))
     
+    # an AWS managed secret will be created from this with the name: var.argocd_aws_secret_key
+    # inside it a json, with key:value pairs
     app_secrets_config = sensitive({
-        # (var.frontend_aws_secret_key) = {
-        #     description  = "Frontend env vars"
-        #     secret_value = jsonencode({
-        #         REACT_APP_BACKEND_URL = "https://${var.backend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
-        #     })
-        # }
-
-        # (var.backend_aws_secret_key) = {
-        #     description  = "Backend env vars"
-        #     secret_value = jsonencode({
-        #         DB_HOST                = module.rds.db_instance_address,
-        #         DB_PORT                = var.rds_database_port,
-        #         DB_NAME                = var.rds_database_name,
-        #         DB_USER                = var.rds_database_username,
-        #         DB_PASSWORD            = local.secrets_config_with_passwords["rds-password"].secret_value,
-        #         POSTGRES_TABLE         = var.rds_postgres_table_name,
-        #         NODE_ENV               = "production",
-        #         SQS_QUEUE_URL          = module.sqs.queue_url
-        #         BACKEND_HOST_ADDRESS   = "${var.backend_base_domain_name}.${var.subdomain_name}.${var.domain_name}",
-        #         FRONTEND_HOST_ADDRESS  = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
-        #     })
-        # }
-
         (var.argocd_aws_secret_key) = {
             description  = "ArgoCD's Github credentials"
             secret_value = jsonencode({
@@ -110,7 +89,8 @@ locals {
         }
     })
 
-
+    argocd_service_account_name = "argocd-${var.environment}-service-account"
+    argocd_github_sso_secret_name   = "${var.project_tag}-${var.environment}-argocd-github-sso"
 
     # # Merge generated passwords into the configuration
     # secrets_config_with_passwords  = {
@@ -127,6 +107,6 @@ locals {
 
     
 
-    # argocd_github_sso_secret_name   = "${var.project_tag}-${var.environment}-argocd-github-sso"
+    
     # json_view_base_domain_name      = "${var.json_view_base_domain_name}-${var.environment}"
 }

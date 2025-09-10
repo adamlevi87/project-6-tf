@@ -280,6 +280,9 @@ module "frontend" {
   ]
 }
 
+# This modules creates an AWS managed secrets, names derived off var.*_aws_secret_key
+# The secret holds a json, with key:value pairs
+# This gets consumed afterwards by the external secrets operator module
 module "secrets_app_envs" {
   source = "../modules/secrets-manager"
 
@@ -309,7 +312,7 @@ module "argocd" {
   environment        = var.environment
 
   chart_version         = var.argocd_chart_version
-  service_account_name  = "argocd-${var.environment}-service-account"
+  service_account_name  = local.argocd_service_account_name
   release_name          = "argocd-${var.environment}"
   namespace             = var.argocd_namespace
   
@@ -364,43 +367,51 @@ module "argocd" {
 }
 
 module "external_secrets_operator" {
+  # Create the module only if the variable is true
+  count = var.argocd_enabled ? 1 : 0
+
   source        = "../modules/helm/external-secrets-operator"
   
-  chart_version = "0.9.17"
+  kubernetes_provider_version = var.kubernetes_provider_version
+  helm_provider_version       = var.helm_provider_version
 
+  project_tag        = var.project_tag
+  environment        = var.environment
+
+  #chart_version = "0.9.17"
+  chart_version = var.external_secrets_operator_chart_version
+  service_account_name = "eso-${var.environment}-service-account"
+  release_name       = "external-secrets-${var.environment}"
+  namespace          = var.eks_addons_namespace
+
+  # EKS related variables
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url  = module.eks.cluster_oidc_issuer_url
 
-  service_account_name = "eso-${var.environment}-service-account"
-  release_name       = "external-secrets-${var.environment}"
-  namespace          = "external-secrets"
-  argocd_namespace   = var.argocd_namespace
-  argocd_service_account_name  = "argocd-${var.environment}-service-account"
-  project_tag        = var.project_tag
-  environment        = var.environment
-  aws_region         = var.aws_region
+  # ArgoCD details
+  argocd_namespace                = var.argocd_namespace
+  argocd_service_account_name     = local.argocd_service_account_name
   argocd_service_account_role_arn = module.argocd.service_account_role_arn
-  argocd_secret_name = module.secrets_app_envs.app_secrets_names["${var.argocd_aws_secret_key}"]
-
+  argocd_secret_name              = module.secrets_app_envs.app_secrets_names["${var.argocd_aws_secret_key}"]
   argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
 
+  aws_region         = var.aws_region
+  
+  # Extra values if needed
   set_values = [
-    # {
-    #   name  = "webhook.port"
-    #   value = "10250"
-    # },
-    # {
-    #   name  = "serviceAccount.create"
-    #   value = "true"
-    # }
   ]
   
-  lbc_webhook_ready = module.aws_load_balancer_controller.webhook_ready
+  # Deletion protection after a creation
+  lifecycle {
+    ignore_changes = [count]  
+  }
+  
   depends_on = [
     module.eks,
     module.aws_auth_config,
     module.argocd,
-    module.secrets_app_envs
+    module.secrets_app_envs,
+    module.aws_load_balancer_controller.webhook_ready
   ]
 }
 

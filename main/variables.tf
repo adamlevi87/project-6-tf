@@ -203,6 +203,11 @@ variable "metrics_server_chart_version" {
   type        = string
 }
 
+variable "external_secrets_operator_chart_version" {
+  description = "Version of the External secrets operator Controller Helm chart to deploy"
+  type        = string
+}
+
 variable "frontend_service_account_name" {
   description = "Name of the frontend service account"
   type        = string
