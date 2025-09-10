@@ -48,6 +48,14 @@ locals {
         ]
         namespaceResourceWhitelist = [
           {
+            group = "external-secrets.io"
+            kind  = "SecretStore"
+          },
+          {
+            group = "external-secrets.io"
+            kind  = "ExternalSecret"
+          },
+          {
             group = ""
             kind  = "Secret"
           },

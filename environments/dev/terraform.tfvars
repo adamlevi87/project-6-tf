@@ -95,98 +95,6 @@ external_dns_chart_version          = "1.19.0"
 cluster_autoscaler_chart_version    = "9.50.1"
 metrics_server_chart_version        = "3.13.0"
 
-
-# frontend service details
-frontend_service_namespace    = "frontend"
-frontend_service_account_name = "frontend-sa"
-
-# Github Details
-github_org = "adamlevi87"
-github_application_repo = "project-6-app"
-github_gitops_repo  = "project-6-gitops"
-
-# ArgoCD
-argocd_chart_version                = "8.2.3"
-argocd_namespace                    = "argocd"
-argocd_allowed_cidr_blocks          = ["85.64.231.47/32"]
-argocd_base_domain_name             = "argocd"
-argocd_app_of_apps_path             = "apps"
-argocd_app_of_apps_target_revision  = "main"
-
-ingress_controller_class = "alb"
-
-
-
-
-
-
-
-# # Configuration for secrets
-# secrets_config = {
-#     rds-password = {
-#         description        = "Database password for RDS instance"
-#         generate_password  = true
-#         password_length    = 16
-#         password_special   = true
-#         password_override_special = "!#$%&*()-_=+[]{}|;:,.<>?"
-#     }
-#     # Future secrets go here
-# }
-
-
-
-
-
-# Frontend and Backend base domain names
-frontend_base_domain_name = "frontend-app"
-# backend_base_domain_name = "backend-app"
-
-
-
-
-
-
-
-
-# cloudfront_allowed_cidr_blocks = ["85.64.231.47/32"]
-
-
-
-
-
-
-
-
-# ALB Configuration
-alb_deletion_protection = false  # Allow easy deletion in dev environment
-
-# backend service details
-# backend_service_namespace    = "backend"
-# backend_service_account_name = "backend-sa"
-
-
-# Apps (frontend) AWS secret names
-# later be used to pull from using ESO
-frontend_aws_secret_key = "frontend-envs"
-# backend_aws_secret_key = "backend-envs"
-argocd_aws_secret_key = "argocd-credentials"
-
-
-
-
-github_admin_team = "devops"
-github_readonly_team = "developers"
-# github_admin_team = "Project-5/devops"
-# github_readonly_team = "Project-5/developers"
-
-# Gitops related settings
-update_apps = false
-bootstrap_mode = false
-branch_name_prefix  = "terraform-updates"
-# From which branch to create a new branch and where to merge back to
-# when creating initial yamls in the gitops repo
-gitops_target_branch = "main"
-
 eks_user_access_map = {
   adam_local = {
     username = "adam.local"
@@ -198,37 +106,84 @@ eks_user_access_map = {
   }
 }
 
+# frontend service details
+frontend_service_namespace    = "frontend"
+frontend_service_account_name = "frontend-sa"
+
+# Github Details
+github_org = "adamlevi87"
+github_application_repo = "project-6-app"
+github_gitops_repo  = "project-6-gitops"
+github_admin_team = "devops"
+github_readonly_team = "developers"
+
+# ArgoCD
+  # ArgoCD Creation Control
+  # Set to false for initial infrastructure deployment
+  # Set to true to create ArgoCD after infrastructure is ready
+  argocd_enabled                      = false
+argocd_chart_version                = "8.3.6"
+argocd_namespace                    = "argocd"
+argocd_allowed_cidr_blocks          = ["85.64.231.47/32"]
+argocd_base_domain_name             = "argocd"
+argocd_app_of_apps_path             = "apps"
+argocd_app_of_apps_target_revision  = "main"
+argocd_aws_secret_key               = "argocd-credentials"
+
+# ingress controller class
+ingress_controller_class = "alb"
 
 
 
-argocd_helm_release_base_name       = "argocd"
+
+
+############################# commented area
 
 
 
-# ArgoCD Global Scheduling Configuration
-argocd_global_scheduling = {
-  nodeSelector = {
-    instance-size = "small"
-    workload-type = "system"
-  }
-  # tolerations = [{
-  #   key      = "dedicated"
-  #   operator = "Equal"
-  #   value    = "critical"
-  #   effect   = "NoSchedule"
-  # }]
-  # affinity = {
-  #   podAntiAffinity = "none"
-  #   nodeAffinity = {
-  #     type = "hard"
-  #     matchExpressions = [{
-  #       key      = "nodegroup-type"
-  #       operator = "In"
-  #       values   = ["critical"]
-  #     }]
-  #   }
-  # }
-}
+
+
+
+
+
+# Frontend and Backend base domain names
+frontend_base_domain_name = "frontend-app"
+# backend_base_domain_name = "backend-app"
+
+# cloudfront_allowed_cidr_blocks = ["85.64.231.47/32"]
+
+# ALB Configuration
+#alb_deletion_protection = false  # Allow easy deletion in dev environment
+
+# backend service details
+# backend_service_namespace    = "backend"
+# backend_service_account_name = "backend-sa"
+
+# Apps (frontend) AWS secret names
+# later be used to pull from using ESO
+#frontend_aws_secret_key = "frontend-envs"
+# backend_aws_secret_key = "backend-envs"
+
+
+
+
+# github_admin_team = "Project-5/devops"
+# github_readonly_team = "Project-5/developers"
+
+# Gitops related settings
+update_apps = false
+bootstrap_mode = false
+branch_name_prefix  = "terraform-updates"
+
+# From which branch to create a new branch and where to merge back to
+# when creating initial yamls in the gitops repo
+gitops_target_branch = "main"
+
+
+
+
+
+
 
 # # Kyverno Configuration
 # kyverno_release_name = "kyverno"

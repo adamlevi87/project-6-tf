@@ -65,6 +65,53 @@ locals {
         }
     }
     
+    secret_keys = [ 
+        var.argocd_aws_secret_key       # e.g., "argocd-secrets"
+    ]
+
+    argocd_private_key= sensitive(base64decode(var.argocd_private_key_b64))
+    
+    app_secrets_config = sensitive({
+        # (var.frontend_aws_secret_key) = {
+        #     description  = "Frontend env vars"
+        #     secret_value = jsonencode({
+        #         REACT_APP_BACKEND_URL = "https://${var.backend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
+        #     })
+        # }
+
+        # (var.backend_aws_secret_key) = {
+        #     description  = "Backend env vars"
+        #     secret_value = jsonencode({
+        #         DB_HOST                = module.rds.db_instance_address,
+        #         DB_PORT                = var.rds_database_port,
+        #         DB_NAME                = var.rds_database_name,
+        #         DB_USER                = var.rds_database_username,
+        #         DB_PASSWORD            = local.secrets_config_with_passwords["rds-password"].secret_value,
+        #         POSTGRES_TABLE         = var.rds_postgres_table_name,
+        #         NODE_ENV               = "production",
+        #         SQS_QUEUE_URL          = module.sqs.queue_url
+        #         BACKEND_HOST_ADDRESS   = "${var.backend_base_domain_name}.${var.subdomain_name}.${var.domain_name}",
+        #         FRONTEND_HOST_ADDRESS  = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
+        #     })
+        # }
+
+        (var.argocd_aws_secret_key) = {
+            description  = "ArgoCD's Github credentials"
+            secret_value = jsonencode({
+                githubAppID                 = "${var.argocd_app_id}"
+                githubAppInstallationID     = "${var.argocd_installation_id}"
+                githubAppPrivateKey         = "${local.argocd_private_key}"
+                type                        = "git"
+                REPO_URL_GITOPS             = "https://github.com/${var.github_org}/${var.github_gitops_repo}"
+                REPO_URL_APP                = "https://github.com/${var.github_org}/${var.github_application_repo}"
+                argocdOidcClientId          = "${var.github_oauth_client_id}"
+                argocdOidcClientSecret      = "${var.github_oauth_client_secret}"
+            })
+        }
+    })
+
+
+
     # # Merge generated passwords into the configuration
     # secrets_config_with_passwords  = {
     #   for name, config in var.secrets_config :
@@ -73,54 +120,12 @@ locals {
     #     })
     # }
 
-    # #argocd_private_key = file(var.argocd_github_app_private_key_path)
-    # argocd_private_key= sensitive(base64decode(var.argocd_private_key_b64))
+    
+    
 
-    # secret_keys = [
-    #     var.frontend_aws_secret_key,    # e.g., "frontend-secrets"
-    #     var.backend_aws_secret_key,     # e.g., "backend-secrets" 
-    #     var.argocd_aws_secret_key       # e.g., "argocd-secrets"
-    # ]
+    
 
-    # app_secrets_config = sensitive({
-    #     (var.frontend_aws_secret_key) = {
-    #         description  = "Frontend env vars"
-    #         secret_value = jsonencode({
-    #             REACT_APP_BACKEND_URL = "https://${var.backend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
-    #         })
-    #     }
-
-    #     (var.backend_aws_secret_key) = {
-    #         description  = "Backend env vars"
-    #         secret_value = jsonencode({
-    #             DB_HOST                = module.rds.db_instance_address,
-    #             DB_PORT                = var.rds_database_port,
-    #             DB_NAME                = var.rds_database_name,
-    #             DB_USER                = var.rds_database_username,
-    #             DB_PASSWORD            = local.secrets_config_with_passwords["rds-password"].secret_value,
-    #             POSTGRES_TABLE         = var.rds_postgres_table_name,
-    #             NODE_ENV               = "production",
-    #             SQS_QUEUE_URL          = module.sqs.queue_url
-    #             BACKEND_HOST_ADDRESS   = "${var.backend_base_domain_name}.${var.subdomain_name}.${var.domain_name}",
-    #             FRONTEND_HOST_ADDRESS  = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
-    #         })
-    #     }
-
-    #     (var.argocd_aws_secret_key) = {
-    #         description  = "ArgoCD's Github credentials"
-    #         secret_value = jsonencode({
-    #             githubAppID                 = "${var.argocd_app_id}"
-    #             githubAppInstallationID     = "${var.argocd_installation_id}"
-    #             githubAppPrivateKey         = "${local.argocd_private_key}"
-    #             type                        = "git"
-    #             REPO_URL_GITOPS             = "https://github.com/${var.github_org}/${var.github_gitops_repo}"
-    #             REPO_URL_APP                = "https://github.com/${var.github_org}/${var.github_application_repo}"
-    #             argocdOidcClientId          = "${var.github_oauth_client_id}"
-    #             argocdOidcClientSecret      = "${var.github_oauth_client_secret}"
-    #             #"oidc.github.clientSecret"  = 
-    #         })
-    #     }
-    # })
+    
 
     # argocd_github_sso_secret_name   = "${var.project_tag}-${var.environment}-argocd-github-sso"
     # json_view_base_domain_name      = "${var.json_view_base_domain_name}-${var.environment}"

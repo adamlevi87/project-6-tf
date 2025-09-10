@@ -117,17 +117,56 @@ variable "eks_log_retention_days" {
 }
 
 # ================================
-# Important requirements
+# Important requirements - variables that must exists as a repo Secret
 # ================================
 
 # this is the arn that was created using the requirements folder
-# which we then set as the secret: AWS_ROLE_TO_ASSUME for the TF repo
+# which we then manually set as the secret: AWS_ROLE_TO_ASSUME in the TF github repo
 variable "github_oidc_role_arn" {
   description = "ARN of the GitHub OIDC role used to deploy from GitHub Actions"
   type        = string
   sensitive = true
 }
 
+# ArgoCD github App credentials
+# This is the installed ArgoCD Github Application: Application ID 
+# This is created prior to running TF (manually) and set as a secret in the TF repository
+# This is then used to create an AWS secret which will give ArgoCD access to the Github Repository
+variable "argocd_app_id" {
+  description = "ArgoCD github application ID"
+  type        = string
+  sensitive = true
+}
+
+# This is the installed ArgoCD Github Application: Installation ID 
+# This is created prior to running TF (manually) and set as a secret in the TF repository
+# This is then used to create an AWS secret which will give ArgoCD access to the Github Repository
+variable "argocd_installation_id" {
+  description = "ArgoCD github installation ID"
+  type        = string
+  sensitive = true
+}
+
+# This is the installed ArgoCD Github Application: Private Key base-64 encoded
+# This is created prior to running TF (manually) and set as a secret in the TF repository
+# This is then used to create an AWS secret which will give ArgoCD access to the Github Repository
+variable "argocd_private_key_b64" {
+  type      = string
+  sensitive = true
+  default   = ""
+}
+
+variable "github_oauth_client_id" {
+  description = "GitHub OAuth App Client ID for ArgoCD authentication"
+  type        = string
+  sensitive   = true
+}
+
+variable "github_oauth_client_secret" {
+  description = "GitHub OAuth App Client Secret for ArgoCD authentication"
+  type        = string
+  sensitive   = true
+}
 # ================================
 
 variable "eks_user_access_map" {
@@ -175,6 +214,17 @@ variable "frontend_service_namespace" {
 }
 
 ## ArgoCD
+# ArgoCD Creation Control
+variable "argocd_enabled" {
+  description = "Enable ArgoCD deployment. Set to false for initial infrastructure deployment, true to create ArgoCD."
+  type        = bool
+  default     = false
+  validation {
+    condition     = can(var.argocd_enabled)
+    error_message = "ArgoCD enabled must be a boolean value (true or false)."
+  }
+}
+
 variable "argocd_chart_version" {
   type        = string
   description = "ArgoCD Helm chart version"
@@ -207,6 +257,11 @@ variable "argocd_app_of_apps_target_revision" {
   description = "Branch or Git reference in the GitOps repository that ArgoCD should track."
   type        = string
   default     = "main"
+}
+
+variable "argocd_aws_secret_key" {
+  description = "Key used to name the argocd application's AWS secret (holds argocd's credentials for the gitops repo"
+  type        = string
 }
 
 variable "ingress_controller_class" {
