@@ -108,6 +108,8 @@ variable "github_oidc_role_arn" {
   sensitive = true
 }
 
+# ================================
+
 variable "eks_user_access_map" {
   description = "Map of IAM users to be added to aws-auth with their usernames and groups"
   type = map(object({
@@ -132,8 +134,14 @@ variable "external_dns_chart_version" {
   type        = string
 }
 
+variable "cluster_autoscaler_chart_version" {
+  description = "Version of the Cluster Autoscaler Helm chart to deploy"
+  type        = string
+}
+
 variable "metrics_server_chart_version" {
   description = "Version of the Metrics Server Helm chart to deploy"
   type        = string
 }
+
 

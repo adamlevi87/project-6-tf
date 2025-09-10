@@ -1,5 +1,15 @@
 # modules/vpc-network/main.tf
 
+terraform {
+  # latest versions of each provider for 09/2025
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.12.0"
+    }
+  }
+}
+
 locals {
   # Get primary AZ for stable references
   # Create a Variable of AZ name for primary subnet

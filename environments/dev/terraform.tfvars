@@ -81,9 +81,18 @@ eks_log_retention_days = 7  # 1 week retention for dev environment
 
 # EKS addons
 eks_addons_namespace = "kube-system"
-aws_lb_controller_chart_version = "1.13.3"
-external_dns_chart_version = "1.13.1"
-metrics_server_chart_version = "3.13.0"
+# latest versions of each chart for 09/2025
+aws_lb_controller_chart_version     = "1.13.4"
+external_dns_chart_version          = "1.19.0"
+cluster_autoscaler_chart_version    = "9.50.1"
+metrics_server_chart_version        = "3.13.0"
+
+
+
+
+
+
+
 
 
 

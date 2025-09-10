@@ -1,5 +1,15 @@
 # modules/kms/main.tf
 
+terraform {
+  # latest versions of each provider for 09/2025
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.12.0"
+    }
+  }
+}
+
 # KMS Key for S3 bucket encryption
 resource "aws_kms_key" "s3_key" {
   description             = "KMS key for ${var.project_tag} ${var.environment} S3 bucket encryption"

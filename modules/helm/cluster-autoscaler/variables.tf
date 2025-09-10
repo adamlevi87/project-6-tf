@@ -15,6 +15,11 @@ variable "release_name" {
   description = "The Helm release name"
 }
 
+variable "chart_version" {
+  description = "Version of the AWS Load Balancer Controller Helm chart to deploy"
+  type        = string
+}
+
 variable "namespace" {
   type        = string
   description = "The Kubernetes namespace to install the Helm release into"
