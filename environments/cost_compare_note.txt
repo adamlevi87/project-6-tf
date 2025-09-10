@@ -1,0 +1,37 @@
+# ============================================================================
+# COST COMPARISON SUMMARY
+# ============================================================================
+
+# DEV (Free Tier):
+# - db.t3.micro: FREE (first 12 months)
+# - 20GB gp2: FREE (first 12 months) 
+# - Single AZ: FREE
+# - After free tier: ~$15/month
+
+# STAGING:
+# - db.t3.small: ~$25/month
+# - 50GB gp3: ~$6/month
+# - Single AZ: $0 extra
+# - Performance Insights: ~$7/month
+# - Total: ~$38/month
+
+# PRODUCTION:
+# - db.t3.medium: ~$60/month
+# - 100GB gp3: ~$12/month
+# - Multi-AZ: +100% (~$60 extra for standby)
+# - Performance Insights: ~$7/month
+# - Total: ~$139/month
+
+# ============================================================================
+# OPTIONAL: Environment-specific overrides
+# ============================================================================
+
+# For different instance classes by environment
+# dev.tfvars
+# rds_instance_class = "db.t3.micro"
+
+# staging.tfvars  
+# rds_instance_class = "db.t3.small"
+
+# production.tfvars
+# rds_instance_class = "db.t3.medium"  # or db.r6g.large for memory-intensive workloads
