@@ -137,5 +137,3 @@ variable "metrics_server_chart_version" {
   type        = string
 }
 
-
-

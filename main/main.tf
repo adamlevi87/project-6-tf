@@ -210,11 +210,11 @@ module "metrics_server" {
   environment  = var.environment
 
   chart_version = var.metrics_server_chart_version
-  #service_account_name = "external-dns-${var.environment}-service-account" # add?
+  service_account_name = "metrics-server-${var.environment}-service-account"
   release_name  = "metrics-server-${var.environment}"
   namespace     = var.eks_addons_namespace
 
-  # Resource configuration (optional - defaults are provided)
+  # Resource configuration
   cpu_requests    = "100m"
   memory_requests = "200Mi"
   cpu_limits      = "1000m"

@@ -16,16 +16,19 @@ variable "release_name" {
   default     = "metrics-server"
 }
 
-variable "namespace" {
-  description = "The Kubernetes namespace to install the Helm release into"
-  type        = string
-  default     = "kube-system"
-}
-
 variable "chart_version" {
   description = "The version of the metrics-server Helm chart"
   type        = string
-  default     = "3.13.0"
+}
+
+variable "namespace" {
+  description = "The Kubernetes namespace to install the Helm release into"
+  type        = string
+}
+
+variable "service_account_name" {
+  description = "Name of the Kubernetes service account for metrics-server"
+  type        = string
 }
 
 variable "cpu_requests" {
