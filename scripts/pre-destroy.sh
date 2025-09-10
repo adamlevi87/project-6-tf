@@ -34,9 +34,9 @@ delete_argocd_apps() {
 for NS in "${NAMESPACES[@]}"; do
   echo "🌐 Processing namespace: $NS"
 
-  # Handle ArgoCD applications for backend/frontend namespaces
+  # Handle ArgoCD applications for frontend namespaces
   case "$NS" in
-    "backend"|"frontend")
+    "frontend")
       delete_argocd_apps "$NS"
       ;;
     *)
