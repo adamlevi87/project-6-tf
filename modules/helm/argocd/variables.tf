@@ -140,7 +140,7 @@ variable "node_group_security_groups" {
   description = "Map of node group names to their security group IDs"
 }
 
-# variable "secret_arn" {
-#   description = "ARN of the AWS Secrets Manager secret used by the application"
-#   type        = string
-# }
+variable "secret_arn" {
+  description = "ARN of the AWS Secrets Manager secret used by the application"
+  type        = string
+}

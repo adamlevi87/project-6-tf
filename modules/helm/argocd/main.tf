@@ -274,21 +274,20 @@ resource "aws_security_group_rule" "allow_alb_to_argocd_pods" {
   description              = "Allow ALB to access ArgoCD pods on port 8080 (${each.key} nodes)"
 }
 
+resource "aws_iam_role_policy" "this" {
+  name = "${var.service_account_name}-policy"
+  role = aws_iam_role.this.id
 
-# resource "aws_iam_role_policy" "this" {
-#   name = "${var.service_account_name}-policy"
-#   role = aws_iam_role.this.id
-
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect = "Allow"
-#         Action = [
-#           "secretsmanager:GetSecretValue"
-#         ]
-#         Resource = "${var.secret_arn}"
-#       }
-#     ]
-#   })
-# }
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = "${var.secret_arn}"
+      }
+    ]
+  })
+}
