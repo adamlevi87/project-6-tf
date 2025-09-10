@@ -56,11 +56,6 @@ server:
 global:
   # Ensure ArgoCD knows its domain
   domain: "${domain_name}"
-  # nodeSelector, tolerations and affinity
-  nodeSelector: ${jsonencode(global_scheduling.nodeSelector)}
-  tolerations: ${jsonencode(global_scheduling.tolerations)}
-  affinity: ${jsonencode(global_scheduling.affinity)}
-
 
 dex:
   extraArgs:

@@ -2,7 +2,9 @@
 
 module "vpc" {
     source = "../modules/vpc"
-   
+
+    aws_provider_version = var.aws_provider_version
+
     project_tag   = var.project_tag
     environment   = var.environment
 
@@ -25,6 +27,8 @@ module "vpc" {
 module "kms" {
   source = "../modules/kms"
 
+  aws_provider_version = var.aws_provider_version
+
   project_tag = var.project_tag
   environment = var.environment
 
@@ -35,9 +39,11 @@ module "kms" {
   enable_key_rotation     = true
 }
 
-module "s3_app_data" {
+module "s3" {
   source = "../modules/s3"
 
+  aws_provider_version = var.aws_provider_version
+  
   project_tag   = var.project_tag
   environment   = var.environment
 
@@ -57,6 +63,8 @@ module "s3_app_data" {
 module "ecr" {
   source = "../modules/ecr"
 
+  aws_provider_version = var.aws_provider_version
+
   project_tag  = var.project_tag
   environment = var.environment
   
@@ -66,6 +74,8 @@ module "ecr" {
 
 module "route53" {
   source       = "../modules/route53"
+
+  aws_provider_version = var.aws_provider_version
 
   project_tag  = var.project_tag
   environment  = var.environment
@@ -83,6 +93,8 @@ module "route53" {
 module "acm" {
   source           = "../modules/acm"
 
+  aws_provider_version = var.aws_provider_version
+
   project_tag      = var.project_tag
   environment      = var.environment
 
@@ -93,6 +105,8 @@ module "acm" {
 module "eks" {
   source = "../modules/eks"
 
+  aws_provider_version = var.aws_provider_version
+  
   project_tag = var.project_tag
   environment = var.environment
 
@@ -119,6 +133,9 @@ module "eks" {
 module "aws_auth_config" {
   source = "../modules/aws_auth_config"
 
+  aws_provider_version        = var.aws_provider_version
+  kubernetes_provider_version = var.kubernetes_provider_version
+
   # needed for the local exec
   aws_region = var.aws_region 
 
@@ -142,6 +159,10 @@ module "aws_auth_config" {
 module "aws_load_balancer_controller" {
   source        = "../modules/helm/aws-load-balancer-controller"
   
+  aws_provider_version        = var.aws_provider_version
+  kubernetes_provider_version = var.kubernetes_provider_version
+  helm_provider_version       = var.helm_provider_version
+
   project_tag        = var.project_tag
   environment        = var.environment
 
@@ -162,6 +183,10 @@ module "aws_load_balancer_controller" {
 
 module "external_dns" {
   source = "../modules/helm/external-dns"
+
+  aws_provider_version        = var.aws_provider_version
+  kubernetes_provider_version = var.kubernetes_provider_version
+  helm_provider_version       = var.helm_provider_version
 
   project_tag        = var.project_tag
   environment        = var.environment
@@ -187,6 +212,10 @@ module "external_dns" {
 module "cluster_autoscaler" {
   source = "../modules/helm/cluster-autoscaler"
 
+  aws_provider_version        = var.aws_provider_version
+  kubernetes_provider_version = var.kubernetes_provider_version
+  helm_provider_version       = var.helm_provider_version
+
   project_tag        = var.project_tag
   environment        = var.environment
 
@@ -205,6 +234,9 @@ module "cluster_autoscaler" {
 
 module "metrics_server" {
   source = "../modules/helm/metrics-server"
+
+  kubernetes_provider_version = var.kubernetes_provider_version
+  helm_provider_version       = var.helm_provider_version
 
   project_tag  = var.project_tag
   environment  = var.environment
@@ -226,6 +258,9 @@ module "metrics_server" {
 module "frontend" {
   source       = "../modules/apps/frontend"
 
+  aws_provider_version        = var.aws_provider_version
+  kubernetes_provider_version = var.kubernetes_provider_version
+
   project_tag        = var.project_tag
   environment        = var.environment
 
@@ -239,80 +274,72 @@ module "frontend" {
   oidc_provider_url         = module.eks.cluster_oidc_issuer_url
   node_group_security_groups = module.eks.node_group_security_group_ids
   
-  # no needed?
-  secret_arn = module.secrets_app_envs.app_secrets_arns["${var.frontend_aws_secret_key}"]
-
-  depends_on = [module.eks, module.secrets_app_envs]
+  depends_on = [
+    module.eks, 
+    module.aws_load_balancer_controller.webhook_ready
+  ]
 }
 
-# module "argocd" {
-#   source         = "../modules/helm/argocd"
+module "argocd" {
+  source         = "../modules/helm/argocd"
 
-#   project_tag        = var.project_tag
-#   environment        = var.environment
+  aws_provider_version        = var.aws_provider_version
+  kubernetes_provider_version = var.kubernetes_provider_version
+  helm_provider_version       = var.helm_provider_version
 
-#   chart_version         = var.argocd_chart_version
-#   service_account_name  = "argocd-${var.environment}-service-account"
-#   release_name          = "argocd-${var.environment}"
-#   namespace             = var.argocd_namespace
+  project_tag        = var.project_tag
+  environment        = var.environment
+
+  chart_version         = var.argocd_chart_version
+  service_account_name  = "argocd-${var.environment}-service-account"
+  release_name          = "argocd-${var.environment}"
+  namespace             = var.argocd_namespace
   
-#   # EKS related variables
-#   oidc_provider_arn     = module.eks.oidc_provider_arn
-#   oidc_provider_url     = module.eks.cluster_oidc_issuer_url
+  # EKS related variables
+  oidc_provider_arn     = module.eks.oidc_provider_arn
+  oidc_provider_url     = module.eks.cluster_oidc_issuer_url
 
-#   # ingress / ALB settings
-#   ingress_controller_class  = "alb"
-#   alb_group_name            = "${var.project_tag}-${var.environment}-alb-shared-group"
+  # ingress / ALB settings
+  ingress_controller_class  = var.ingress_controller_class
+  alb_group_name            = "${var.project_tag}-${var.environment}-alb-shared-group"
   
-#   # Networking
-#   vpc_id = module.vpc.vpc_id
+  # Networking
+  vpc_id = module.vpc.vpc_id
+  argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
+
+  # Certificate
+  domain_name                   = "${var.argocd_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
+  acm_cert_arn                  = module.acm.this_certificate_arn
+
+  # Security Groups
+  node_group_security_groups    = module.eks.node_group_security_group_ids
   
-#   argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
-
-#   # Certificate
-#   domain_name                   = "${var.argocd_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
-#   acm_cert_arn                  = module.acm.this_certificate_arn
-
-#   # Security Groups
-#   node_group_security_groups    = module.eks.node_group_security_group_ids
+  # Github Settings
+  github_org                    = var.github_org
+  github_application_repo       = var.github_application_repo
+  github_gitops_repo            = var.github_gitops_repo
+ 
+  # ArgoCD Setup
+  app_of_apps_path              = var.argocd_app_of_apps_path
+  app_of_apps_target_revision   = var.argocd_app_of_apps_target_revision
   
-#   # Github Settings
-#   github_application_repo       = var.github_application_repo
-#   github_gitops_repo            = var.github_gitops_repo
-#   github_org                    = var.github_org
-  
-#   # ArgoCD Setup
-#   app_of_apps_path              = var.argocd_app_of_apps_path
-#   app_of_apps_target_revision   = var.argocd_app_of_apps_target_revision
-  
+  # Github SSO
+  github_admin_team             = var.github_admin_team
+  github_readonly_team          = var.github_readonly_team
+  argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
 
-#   # Github SSO
-#   github_admin_team             = var.github_admin_team
-#   github_readonly_team          = var.github_readonly_team
-#   argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
+  # Security groups for alb creation (via an ingress resource [managed by AWS LBC])
+  frontend_security_group_id    = module.frontend.security_group_id
 
+  # not needed
+  #secret_arn = module.secrets_app_envs.app_secrets_arns["${var.argocd_aws_secret_key}"]
 
-
-
-#   backend_security_group_id     = module.backend.security_group_id
-#   frontend_security_group_id    = module.frontend.security_group_id
-#   secret_arn = module.secrets_app_envs.app_secrets_arns["${var.argocd_aws_secret_key}"]
-
-  
-
-#   # tolerations / affinity
-#   global_scheduling = var.argocd_global_scheduling
-
-
-#   lbc_webhook_ready = module.aws_load_balancer_controller.webhook_ready
-#   depends_on = [
-#     module.eks,
-#     module.acm,
-#     module.backend,
-#     module.frontend,
-#     module.secrets_app_envs
-#   ]
-# }
+  depends_on = [
+    module.eks,
+    module.aws_load_balancer_controller.webhook_ready,
+    module.acm
+  ]
+}
 
 
 

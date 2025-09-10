@@ -100,9 +100,20 @@ metrics_server_chart_version        = "3.13.0"
 frontend_service_namespace    = "frontend"
 frontend_service_account_name = "frontend-sa"
 
+# Github Details
+github_org = "adamlevi87"
+github_application_repo = "project-6-app"
+github_gitops_repo  = "project-6-gitops"
 
+# ArgoCD
+argocd_chart_version                = "8.2.3"
+argocd_namespace                    = "argocd"
+argocd_allowed_cidr_blocks          = ["85.64.231.47/32"]
+argocd_base_domain_name             = "argocd"
+argocd_app_of_apps_path             = "apps"
+argocd_app_of_apps_target_revision  = "main"
 
-
+ingress_controller_class = "alb"
 
 
 
@@ -135,7 +146,7 @@ frontend_base_domain_name = "frontend-app"
 
 
 
-argocd_allowed_cidr_blocks = ["85.64.231.47/32"]
+
 
 # cloudfront_allowed_cidr_blocks = ["85.64.231.47/32"]
 
@@ -161,9 +172,7 @@ frontend_aws_secret_key = "frontend-envs"
 argocd_aws_secret_key = "argocd-credentials"
 
 
-github_org = "adamlevi87"
-github_application_repo = "project-6-app"
-github_gitops_repo  = "project-6-gitops"
+
 
 github_admin_team = "devops"
 github_readonly_team = "developers"
@@ -189,13 +198,13 @@ eks_user_access_map = {
   }
 }
 
-# ArgoCD
-argocd_namespace                    = "argocd"
+
+
+
 argocd_helm_release_base_name       = "argocd"
-argocd_chart_version                = "8.2.3"
-argocd_app_of_apps_path             = "apps"
-argocd_app_of_apps_target_revision  = "main"
-argocd_base_domain_name             = "argocd"
+
+
+
 # ArgoCD Global Scheduling Configuration
 argocd_global_scheduling = {
   nodeSelector = {

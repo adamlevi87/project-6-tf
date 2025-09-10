@@ -18,7 +18,7 @@ terraform {
 }
 
 locals {
-  joined_security_group_ids = "${aws_security_group.argocd.id},${var.frontend_security_group_id},${var.backend_security_group_id}"
+  joined_security_group_ids = "${aws_security_group.alb_argocd.id},${var.frontend_security_group_id}"
   
   argocd_additionalObjects = [
     # 1) setting up the Project
@@ -47,14 +47,6 @@ locals {
           }
         ]
         namespaceResourceWhitelist = [
-          {
-            group = "external-secrets.io"
-            kind  = "SecretStore"
-          },
-          {
-            group = "external-secrets.io"
-            kind  = "ExternalSecret"
-          },
           {
             group = ""
             kind  = "Secret"
@@ -161,21 +153,10 @@ resource "helm_release" "this" {
   namespace  = var.namespace
   create_namespace = false
 
-  # set = [
-  #   {
-  #     name  = "serviceAccount.create"
-  #     value = "false"  # We create it manually above
-  #   },
-  #   {
-  #     name  = "serviceAccount.name"
-  #     value = "${var.service_account_name}"
-  #   }
-  # ]
-
   values = [
     templatefile("${path.module}/values.yaml.tpl", {
       service_account_name        = var.service_account_name
-      environment                = var.environment
+      environment                 = var.environment
       domain_name                 = var.domain_name
       ingress_controller_class    = var.ingress_controller_class
       alb_group_name              = var.alb_group_name
@@ -184,13 +165,11 @@ resource "helm_release" "this" {
       security_group_id           = local.joined_security_group_ids
       acm_cert_arn                = var.acm_cert_arn
       server_secretkey            = random_password.argocd_server_secretkey.result
-      #github_oauth_client_id      = var.github_oauth_client_id
       github_org                  = var.github_org
       github_admin_team           = var.github_admin_team
       github_readonly_team        = var.github_readonly_team
       dollar                      = "$"
       argocd_github_sso_secret_name = var.argocd_github_sso_secret_name
-      global_scheduling            = var.global_scheduling
     }),
     yamlencode({
       extraObjects = local.argocd_additionalObjects
@@ -200,8 +179,7 @@ resource "helm_release" "this" {
   depends_on = [
       kubernetes_namespace.this,
       kubernetes_service_account.this,
-      aws_security_group.argocd,
-      var.lbc_webhook_ready
+      aws_security_group.alb_argocd
   ]
 }
 
@@ -239,31 +217,15 @@ resource "aws_iam_role" "this" {
   })
 }
 
-resource "aws_iam_role_policy" "this" {
-  name = "${var.service_account_name}-policy"
-  role = aws_iam_role.this.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = "${var.secret_arn}"
-      }
-    ]
-  })
-}
-
 # Security Group for ArgoCD
-resource "aws_security_group" "argocd" {
+# SG to be applied onto the ALB (happens when argoCD creates the Shared ALB)
+resource "aws_security_group" "alb_argocd" {
   name        = "${var.project_tag}-${var.environment}-argocd-sg"
   description = "Security group for argocd"
   vpc_id      = var.vpc_id
 
   # Allow ArgoCD access from the outside
+  # 80 will be redirected to 443 (controlled via argocd values file values.yaml.tpl ingress section)
   dynamic "ingress" {
     for_each = [80, 443]
     content {
@@ -285,9 +247,9 @@ resource "aws_security_group" "argocd" {
   }
 
   tags = {
-    Name        = "${var.project_tag}-${var.environment}-argocd-sg"
     Project     = var.project_tag
     Environment = var.environment
+    Name        = "${var.project_tag}-${var.environment}-argocd-sg"
     Purpose     = "argocd-security"
   }
 }
@@ -300,6 +262,25 @@ resource "aws_security_group_rule" "allow_alb_to_argocd_pods" {
   to_port                  = 8080
   protocol                 = "tcp"
   security_group_id        = each.value
-  source_security_group_id = aws_security_group.argocd.id
+  source_security_group_id = aws_security_group.alb_argocd.id
   description              = "Allow ALB to access ArgoCD pods on port 8080 (${each.key} nodes)"
 }
+
+
+# resource "aws_iam_role_policy" "this" {
+#   name = "${var.service_account_name}-policy"
+#   role = aws_iam_role.this.id
+
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "secretsmanager:GetSecretValue"
+#         ]
+#         Resource = "${var.secret_arn}"
+#       }
+#     ]
+#   })
+# }
