@@ -1,5 +1,15 @@
 # modules/apps/frontend/variables.tf
 
+variable "aws_provider_version" {
+  description = "AWS provider version"
+  type        = string
+}
+
+variable "kubernetes_provider_version" {
+  description = "Kubernetes provider version"
+  type        = string
+}
+
 variable "oidc_provider_arn" {
   description = "OIDC provider ARN from the EKS module"
   type        = string

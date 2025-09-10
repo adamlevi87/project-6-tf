@@ -1,11 +1,10 @@
 # modules/ecr/main.tf
 
 terraform {
-  # latest versions of each provider for 09/2025
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.12.0"
+      version = var.aws_provider_version
     }
   }
 }

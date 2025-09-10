@@ -1,4 +1,4 @@
-# modules/vpc-network/outputs.tf
+# modules/vpc/outputs.tf
 
 output "private_subnet_ids" {
   value       = [for subnet in aws_subnet.private : subnet.id]

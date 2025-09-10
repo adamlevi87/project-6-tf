@@ -10,6 +10,14 @@ aws_region = "us-east-1"
 environment = "dev"
 project_tag = "project-6"
 
+## Providers versions
+# Important note: these only control the child modules versions
+# root's providers (main/providers.tf) cannot use variables - those must be set manually
+aws_provider_version        = "~> 6.12.0"
+kubernetes_provider_version = "~> 2.38.0"
+helm_provider_version       = "~> 3.0.2"
+github_provider_version     = "~> 6.6.0"
+
 # ================================
 # VPC Configurations
 # ================================

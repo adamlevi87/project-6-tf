@@ -1,5 +1,10 @@
 # modules/kms/variables.tf
 
+variable "aws_provider_version" {
+  description = "AWS provider version"
+  type        = string
+}
+
 variable "project_tag" {
   description = "Project tag for resource naming"
   type        = string

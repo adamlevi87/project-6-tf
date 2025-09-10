@@ -15,6 +15,26 @@ variable "aws_region" {
   type        = string
 }
 
+variable "aws_provider_version" {
+  description = "AWS provider version"
+  type        = string
+}
+
+variable "kubernetes_provider_version" {
+  description = "Kubernetes provider version"
+  type        = string
+}
+
+variable "helm_provider_version" {
+  description = "Helm provider version"
+  type        = string
+}
+
+variable "github_provider_version" {
+  description = "GitHub provider version"
+  type        = string
+}
+
 variable "vpc_cidr_block" {
   description = "CIDR block for the VPC"
   type        = string

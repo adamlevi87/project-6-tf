@@ -1,5 +1,20 @@
 # modules/external-dns/variables.tf
 
+variable "aws_provider_version" {
+  description = "AWS provider version"
+  type        = string
+}
+
+variable "kubernetes_provider_version" {
+  description = "Kubernetes provider version"
+  type        = string
+}
+
+variable "helm_provider_version" {
+  description = "Helm provider version"
+  type        = string
+}
+
 variable "project_tag" {
   description = "Project tag used for naming"
   type        = string

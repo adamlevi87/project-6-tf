@@ -1,16 +1,14 @@
 # modules/apps/frontend/main.tf
 
 terraform {
-  # latest versions of each provider for 09/2025
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.12.0"
-      #version = "~> 6.6.0"
+      version = var.aws_provider_version
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.38.0"
+      version = var.kubernetes_provider_version
     }
   }
 }
@@ -131,14 +129,14 @@ resource "aws_iam_role_policy_attachment" "frontend_kms_access" {
   policy_arn = aws_iam_policy.frontend_kms_access.arn
 }
 
-
-# Security Group for Frontend
-resource "aws_security_group" "frontend" {
+# SG to be applied onto the ALB (happens when argoCD creates the Shared ALB)
+resource "aws_security_group" "alb_frontend" {
   name        = "${var.project_tag}-${var.environment}-frontend-sg"
   description = "Security group for frontend"
   vpc_id      = var.vpc_id
 
   # Allow Frontend access from the outside
+  # 80 will be redirected to 443 later on (argocd module)
   dynamic "ingress" {
     for_each = [80, 443]
     content {

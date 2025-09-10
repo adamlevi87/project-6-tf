@@ -1,5 +1,10 @@
 # modules/route53/variables.tf
 
+variable "aws_provider_version" {
+  description = "AWS provider version"
+  type        = string
+}
+
 variable "project_tag" {
   type        = string
   description = "Tag to identify the project resources"

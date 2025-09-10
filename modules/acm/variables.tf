@@ -1,5 +1,10 @@
 # modules/acm/variables.tf
 
+variable "aws_provider_version" {
+  description = "AWS provider version"
+  type        = string
+}
+
 variable "project_tag" {
   type        = string
   description = "Tag to identify project resources"

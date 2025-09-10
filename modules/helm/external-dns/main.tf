@@ -1,19 +1,18 @@
 # modules/external-dns/main.tf
 
 terraform {
-  # latest versions of each provider for 09/2025
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.12.0"
+      version = var.aws_provider_version
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.38.0"
+      version = var.kubernetes_provider_version
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 3.0.2"
+      version = var.helm_provider_version
     }
   }
 }
