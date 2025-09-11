@@ -91,7 +91,7 @@ module "acm" {
 }
 
 module "eks" {
-  source = "../modules/eks"
+  source = "../modules/eks/cluster"
   
   project_tag = var.project_tag
   environment = var.environment
@@ -114,7 +114,7 @@ module "eks" {
   cluster_log_retention_days = var.eks_log_retention_days
 
   # ECR for nodegroup permissions
-  ecr_repository_arns = module.ecr.ecr_repository_arns
+  #ecr_repository_arns = module.ecr.ecr_repository_arns
 }
 
 module "aws_auth_config" {
@@ -494,4 +494,37 @@ module "security_groups" {
   cluster_security_group_id     = module.eks.cluster_security_group_id
   # Node group configuration
   node_groups = var.eks_node_groups
+}
+
+module "launch_templates" {
+  source = "../modules/eks/launch_templates"
+
+  project_tag        = var.project_tag
+  environment        = var.environment
+
+  # Node group configuration
+  node_groups = var.eks_node_groups
+
+  cluster_name     = module.eks_cluster.cluster_name
+  cluster_endpoint = module.eks_cluster.cluster_endpoint
+  cluster_ca       = module.eks_cluster.cluster_ca
+  cluster_cidr     = module.eks_cluster.cluster_cidr
+  node_security_group_ids = module.security_groups.eks_node_security_group_ids
+}
+
+module "node_groups" {
+  source = "../modules/eks/node_groups"
+
+  project_tag        = var.project_tag
+  environment        = var.environment
+
+  # ECR for nodegroup permissions
+  ecr_repository_arns = values(module.ecr.ecr_repository_arns)
+
+  # Node group configuration
+  node_groups = var.eks_node_groups
+
+  cluster_name     = module.eks_cluster.cluster_name
+  private_subnet_ids   = module.vpc.private_subnet_ids
+  launch_templates =  module.launch_templates.launch_template_ids
 }

@@ -63,12 +63,6 @@ eks_node_groups = {
       instance-size  = "small"
       workload-type  = "system"
     }
-     taints = [#{
-    #   key    = "dedicated"
-    #   value  = "critical"
-    #   effect = "NoSchedule"
-    # }
-    ]
   }
 }
 

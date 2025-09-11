@@ -1,4 +1,4 @@
-# modules/security_groups/variables.tf
+# modules/eks/launch_templates/variables.tf
 
 variable "project_tag" {
   description = "Project tag for resource naming"
@@ -8,21 +8,6 @@ variable "project_tag" {
 variable "environment" {
   description = "Environment tag (dev, staging, prod)"
   type        = string
-}
-
-variable "vpc_id" {
-  description = "VPC ID where RDS will be deployed"
-  type        = string
-}
-
-# variable "node_group_security_groups" {
-#   type        = map(string)
-#   description = "Map of node group names to their security group IDs"
-# }
-
-variable "argocd_allowed_cidr_blocks" {
-  type        = list(string)
-  description = "List of CIDR blocks allowed to access the ALB-argoCD"
 }
 
 # Node Group Configuration
@@ -35,6 +20,11 @@ variable "node_groups" {
     max_capacity     = number
     min_capacity     = number
     labels           = map(string)
+    taints           = list(object({
+      key    = string
+      value  = string
+      effect = string
+    }))
   }))
   
   validation {
@@ -43,13 +33,28 @@ variable "node_groups" {
   }
 }
 
-variable "eks_api_allowed_cidr_blocks" {
-  description = "CIDR blocks allowed to access the cluster endpoint"
-  type        = list(string)
-  default     = []
+variable "node_security_group_ids" {
+  description = "Map of node group names to their security group IDs"
+  type        = map(string)
 }
 
-variable "cluster_security_group_id" {
-  description = "EKS cluster security group ID"
+variable "cluster_name" {
+  description = "EKS cluster name"
   type        = string
 }
+
+variable "cluster_endpoint" {
+  description = "EKS cluster endpoint"
+  type        = string
+}
+
+variable "cluster_ca" {
+  description = "EKS cluster certificate authority data"
+  type        = string
+}
+
+variable "cluster_cidr" {
+  description = "EKS cluster service IPv4 CIDR"
+  type        = string
+}
+

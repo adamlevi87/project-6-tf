@@ -1,4 +1,4 @@
-# modules/eks/outputs.tf
+# modules/eks/cluster/outputs.tf
 
 output "cluster_name" {
   description = "EKS cluster name"
@@ -30,6 +30,26 @@ output "node_group_security_group_ids" {
 output "cluster_security_group_id" {
   description = "Security group ID of the EKS cluster"
   value       = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+}
+
+output "cluster_name" {
+  description = "EKS cluster name"
+  value       = aws_eks_cluster.main.name
+}
+
+output "cluster_endpoint" {
+  description = "EKS cluster endpoint"
+  value       = aws_eks_cluster.main.endpoint
+}
+
+output "cluster_ca" {
+  description = "EKS cluster certificate authority data"
+  value       = aws_eks_cluster.main.certificate_authority[0].data
+}
+
+output "cluster_cidr" {
+  description = "EKS cluster service IPv4 CIDR"
+  value       = aws_eks_cluster.main.kubernetes_network_config[0].service_ipv4_cidr
 }
 
 # output "cluster_id" {

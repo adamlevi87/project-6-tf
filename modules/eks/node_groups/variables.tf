@@ -1,4 +1,4 @@
-# modules/security_groups/variables.tf
+# modules/eks/node_groups/variables.tf
 
 variable "project_tag" {
   description = "Project tag for resource naming"
@@ -10,19 +10,9 @@ variable "environment" {
   type        = string
 }
 
-variable "vpc_id" {
-  description = "VPC ID where RDS will be deployed"
-  type        = string
-}
-
-# variable "node_group_security_groups" {
-#   type        = map(string)
-#   description = "Map of node group names to their security group IDs"
-# }
-
-variable "argocd_allowed_cidr_blocks" {
-  type        = list(string)
-  description = "List of CIDR blocks allowed to access the ALB-argoCD"
+variable "ecr_repository_arns" {
+  description = "Map of app name to ECR repository ARNs"
+  type = list(string)
 }
 
 # Node Group Configuration
@@ -43,13 +33,17 @@ variable "node_groups" {
   }
 }
 
-variable "eks_api_allowed_cidr_blocks" {
-  description = "CIDR blocks allowed to access the cluster endpoint"
-  type        = list(string)
-  default     = []
+variable "cluster_name" {
+  description = "EKS cluster name"
+  type        = string
 }
 
-variable "cluster_security_group_id" {
-  description = "EKS cluster security group ID"
-  type        = string
+variable "private_subnet_ids" {
+  description = "List of private subnet IDs for EKS cluster"
+  type        = list(string)
+}
+
+variable "launch_template_ids" {
+  description = "Map of node group names to their launch template IDs"
+  type        = map(string)
 }

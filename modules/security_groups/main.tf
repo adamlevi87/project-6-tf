@@ -11,6 +11,18 @@ terraform {
 
 locals {
   joined_security_group_ids = "${aws_security_group.alb_argocd.id},${aws_security_group.alb_frontend.id}"
+  
+  # Create a flattened list of node group pairs for cross-communication
+  # Create all possible pairs of node groups (excluding self-pairs)
+  node_group_pairs = flatten([
+    for ng1_name, ng1_config in var.node_groups : [
+      for ng2_name, ng2_config in var.node_groups : {
+        source = ng1_name
+        target = ng2_name
+      }
+      if ng1_name != ng2_name
+    ]
+  ])
 }
 
 # Frontend

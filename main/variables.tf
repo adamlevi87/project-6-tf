@@ -138,11 +138,6 @@ variable "eks_node_groups" {
     max_capacity     = number
     min_capacity     = number
     labels           = map(string)
-    taints           = list(object({
-      key    = string
-      value  = string
-      effect = string
-    }))
   }))
   
   validation {
