@@ -106,11 +106,6 @@ github_admin_team = "devops"
 github_readonly_team = "developers"
 
 # ArgoCD
-  # ArgoCD Creation Control
-  # Set to false for initial infrastructure deployment
-  # (to support initial - first CICD run where ECR images will not be ready and the app_of_apps sync will fail)
-  # Set to true to create ArgoCD after infrastructure is ready - this is the default now
-  argocd_enabled                      = true
 argocd_chart_version                = "8.3.6"
 argocd_namespace                    = "argocd"
 argocd_allowed_cidr_blocks          = ["85.65.167.191/32"]

@@ -262,17 +262,6 @@ variable "frontend_helm_release_name" {
 }
 
 ## ArgoCD
-# ArgoCD Creation Control
-variable "argocd_enabled" {
-  description = "Enable ArgoCD deployment. Set to false for initial infrastructure deployment, true to create ArgoCD."
-  type        = bool
-  default     = true
-  validation {
-    condition     = can(var.argocd_enabled)
-    error_message = "ArgoCD enabled must be a boolean value (true or false)."
-  }
-}
-
 variable "argocd_chart_version" {
   type        = string
   description = "ArgoCD Helm chart version"

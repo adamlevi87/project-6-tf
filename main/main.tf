@@ -406,9 +406,6 @@ module "gitops_bootstrap" {
 #   the bootstrap module works hand in hand with this
           ####### important: App_of_Apps is only setup during the helm install
 module "argocd" {
-  # Create the module only if the variable is true
-  count = var.argocd_enabled ? 1 : 0
-
   source         = "../modules/helm/argocd"
 
   project_tag        = var.project_tag
@@ -468,9 +465,6 @@ module "argocd" {
 }
 
 module "external_secrets_operator" {
-  # Create the module only if the variable is true
-  count = var.argocd_enabled ? 1 : 0
-
   source        = "../modules/helm/external-secrets-operator"
   
   project_tag        = var.project_tag
