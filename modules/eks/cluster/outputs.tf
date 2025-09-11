@@ -47,6 +47,10 @@ output "cluster_cidr" {
   value       = aws_eks_cluster.main.kubernetes_network_config[0].service_ipv4_cidr
 }
 
+# output "cluster_certificate_authority_data" {
+#   value = aws_eks_cluster.main.certificate_authority[0].data
+# }
+
 # output "cluster_id" {
 #   description = "EKS cluster ID"
 #   value       = aws_eks_cluster.main.id
@@ -85,10 +89,6 @@ output "cluster_cidr" {
 # output "node_group_statuses" {
 #   description = "Map of node group names to their statuses"
 #   value       = { for ng_name, ng in aws_eks_node_group.main : ng_name => ng.status }
-# }
-
-# output "cluster_certificate_authority_data" {
-#   value = aws_eks_cluster.main.certificate_authority[0].data
 # }
 
 # # Debug output for nodeadm configs per node group
