@@ -384,7 +384,7 @@ data "kubernetes_service" "webhook_service" {
 }
 
 # Check if ValidatingWebhookConfiguration is actually ready
-data "kubernetes_validating_webhook_configuration_v1" "aws_lbc_webhook" {
+data "kubernetes_validating_webhook_configuration" "aws_lbc_webhook" {
   metadata {
     name = local.chart_name
   }
@@ -394,16 +394,12 @@ data "kubernetes_validating_webhook_configuration_v1" "aws_lbc_webhook" {
     helm_release.this,
     data.kubernetes_service.webhook_service
   ]
-  
-  timeouts {
-    read = "5m"  # Wait up to 5 minutes for webhook config
-  }
 }
 
 # Simple deployment readiness check - no overkill ingress testing
 resource "null_resource" "webhook_deployment_ready" {
   depends_on = [
-    data.kubernetes_validating_webhook_configuration_v1.aws_lbc_webhook
+    data.kubernetes_validating_webhook_configuration.aws_lbc_webhook
   ]
   
   provisioner "local-exec" {
