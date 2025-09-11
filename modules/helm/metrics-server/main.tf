@@ -23,72 +23,49 @@ resource "helm_release" "this" {
   namespace        = var.namespace
   create_namespace = false
 
-  set = [
-    {
-      name  = "serviceAccount.create"
-      value = "false"
-    },
-    {
-      name  = "serviceAccount.name"
-      value = var.service_account_name
-    },
-    {
-      name  = "args[0]"
-      value = "--cert-dir=/tmp"
-    },
-    {
-      name  = "extraArgs[0]"
-      value = "--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"
-    },
-    {
-      name  = "args[1]"
-      value = "--kubelet-use-node-status-port"
-    },
-    {
-      name  = "args[2]"
-      value = "--kubelet-insecure-tls"
-    },
-    {
-      name  = "service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
-      value = "none"
-    },
-    {
-      name  = "metrics.enabled"
-      value = "false"
-    },
-    {
-      name  = "serviceMonitor.enabled"
-      value = "false"
-    },
-    {
-      name  = "resources.requests.cpu"
-      value = var.cpu_requests
-    },
-    {
-      name  = "resources.requests.memory"
-      value = var.memory_requests
-    },
-    {
-      name  = "resources.limits.cpu"
-      value = var.cpu_limits
-    },
-    {
-      name  = "resources.limits.memory"
-      value = var.memory_limits
-    },
-    {
-      name  = "affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key"
-      value = "kubernetes.io/os"
-    },
-    {
-      name  = "affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator"
-      value = "In"
-    },
-    {
-      name  = "affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]"
-      value = "linux"
-    }
+  values = [
+    yamlencode({
+      serviceAccount = {
+        create = false
+        name   = var.service_account_name
+      }
+      
+      args = [
+        "--cert-dir=/tmp",
+        "--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname",
+        "--kubelet-use-node-status-port", 
+        "--kubelet-insecure-tls"
+      ]
+      
+      service = {
+        annotations = {
+          "service.beta.kubernetes.io/aws-load-balancer-type" = "none"
+        }
+      }
+      
+      metrics = {
+        enabled = false
+      }
+      
+      serviceMonitor = {
+        enabled = false
+      }
+      
+      resources = {
+        requests = {
+          cpu    = var.cpu_requests
+          memory = var.memory_requests
+        }
+        limits = {
+          cpu    = var.cpu_limits
+          memory = var.memory_limits
+        }
+      }
+      
+
+    })
   ]
+  
   depends_on = [
     kubernetes_service_account.this
   ]
