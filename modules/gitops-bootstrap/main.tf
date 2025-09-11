@@ -81,13 +81,20 @@ resource "null_resource" "manage_pr" {
       PR_TITLE="${var.bootstrap_mode ? "Bootstrap: ${var.project_tag} ${var.environment}" : "Update: ${var.environment} infrastructure"}"
       PR_BODY="${var.bootstrap_mode ? "Bootstrap GitOps configuration for ${var.project_tag}" : "Update infrastructure values for ${var.environment}"}"
       
-
-      # Add at the start of local-exec script:
+      # Debug output BEFORE redirect so we see it in terraform logs
+      echo "=== TERRAFORM DEBUG ==="
+      echo "AUTO_MERGE value: '${var.auto_merge_pr}'"
+      echo "BOOTSTRAP_MODE: '${var.bootstrap_mode}'"
+      echo "UPDATE_APPS: '${var.update_apps}'"
+      echo "BRANCH_NAME: '$BRANCH_NAME'"
+      echo "Starting PR management script..."
+      
+      # Now redirect to log file
       exec > /tmp/tf-gitops-debug.log 2>&1
       echo "=== PR Management Debug Log - $(date) ==="
       echo "BRANCH_NAME: $BRANCH_NAME"
       echo "REPO_NAME: $REPO_NAME" 
-      echo "Variables passed: bootstrap_mode=${var.bootstrap_mode}, update_apps=${var.update_apps}"
+      echo "Variables passed: bootstrap_mode=${var.bootstrap_mode}, update_apps=${var.update_apps}, auto_merge=${var.auto_merge_pr}"
       
       echo "Attempting to create PR from $BRANCH_NAME to $TARGET_BRANCH..."
       
@@ -168,10 +175,6 @@ resource "null_resource" "manage_pr" {
           echo "Empty PR and branch cleaned up from GitHub. Terraform state will be corrected on next run."
         else
           echo "PR has meaningful changes - leaving PR #$PR_NUMBER open"
-        fi
-        
-      else
-          echo "PR has meaningful changes - leaving PR #$PR_NUMBER open"
           
           # AUTO-MERGE if variable is true
           if [ "${var.auto_merge_pr}" = "true" ]; then
@@ -191,6 +194,16 @@ resource "null_resource" "manage_pr" {
             echo "Auto-merge disabled - PR #$PR_NUMBER left open for manual review"
           fi
         fi
+        
+      else
+        echo "Failed to create PR. HTTP Code: $HTTP_CODE"
+        echo "Response: $PR_DATA"
+        exit 1
+      fi
+      
+      # Copy debug log back to stdout so terraform shows it
+      echo "=== Debug log contents ===" >&2
+      cat /tmp/tf-gitops-debug.log >&2
     EOT
   }
 
