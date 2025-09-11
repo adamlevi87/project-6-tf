@@ -400,10 +400,9 @@ module "gitops_bootstrap" {
 
 # the initial app_of_apps sync has been automated
 # this option requires argoCD to be created only AFTER everything else is ready
-# for example, app repo workflow for build & push 
-# including PR merges from both TF & app repo (digest update)
-# also, in this module the Project & App_of_apps will be setup
-#   the bootstrap module works hand in hand with this
+# we accept that the initial sync might fail (mainly due to missing images, until they are built)
+# also, in this module the Project & App_of_apps will created (helm actually manages them both)
+#   the bootstrap module creates reference only copies of project/app of apps
           ####### important: App_of_Apps is only setup during the helm install
 module "argocd" {
   source         = "../modules/helm/argocd"
