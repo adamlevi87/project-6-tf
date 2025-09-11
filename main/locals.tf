@@ -116,6 +116,12 @@ locals {
     argocd_github_sso_secret_name   = "${var.project_tag}-${var.environment}-argocd-github-sso"
     alb_group_name                  = "${var.project_tag}-${var.environment}-alb-shared-group"
 
+    
+    autoscaling_group_arns = [
+        for asg_name in module.node_groups.autoscaling_group_arns :
+        "arn:aws:autoscaling:${var.aws_region}:${local.account_id}:autoScalingGroup:*:autoScalingGroupName/${asg_name}"
+    ]
+
     # # Merge generated passwords into the configuration
     # secrets_config_with_passwords  = {
     #   for name, config in var.secrets_config :
