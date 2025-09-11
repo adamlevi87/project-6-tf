@@ -1,9 +1,9 @@
 # Frontend infrastructure values - managed by Terraform
-# digest is managed by the application repo workflow (build-and-push action or update-digest-only)
+# this is missing the version (digest) - saved in infra-values.yaml file & handled by
+# the application repo (build & push and update digest)
 
 image:
   repository: "${ecr_frontend_repo_url}"
-  digest: "sha256:YOUR_SHA"
   tag: ""
   pullPolicy: Always
 

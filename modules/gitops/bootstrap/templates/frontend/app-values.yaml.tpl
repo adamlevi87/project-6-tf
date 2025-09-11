@@ -1,5 +1,5 @@
 # Frontend application values - static configuration
-# This file is created once during bootstrap and maintained in GitOps
+# This file is created once during bootstrap and maintained in Git
 
 replicaCount: 1
 

@@ -312,7 +312,7 @@ module "secrets_app_envs" {
 module "gitops_bootstrap" {
   #count = (var.bootstrap_mode || var.update_apps) ? 1 : 0
   
-  source = "../modules/gitops-bootstrap"
+  source = "../modules/gitops/bootstrap"
   
   # Pass the raw data to module
   current_files_data = data.github_repository_file.current_gitops_files
@@ -384,6 +384,9 @@ module "gitops_bootstrap" {
 # this option requires argoCD to be created only AFTER everything else is ready
 # for example, app repo workflow for build & push 
 # including PR merges from both TF & app repo (digest update)
+# also, in this module the Project & App_of_apps will be setup
+#   the bootstrap module works hand in hand with this
+          ####### important: App_of_Apps is only setup during the helm install
 module "argocd" {
   # Create the module only if the variable is true
   count = var.argocd_enabled ? 1 : 0
