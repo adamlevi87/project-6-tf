@@ -14,7 +14,7 @@ RESET="\033[0m"
 # Arguments
 ENV="${1:-dev}"
 BACKEND_CONFIG_FILE="../environments/${ENV}/backend.config"
-TF_WORK_DIR="../main"
+TF_WORK_DIR="."
 
 show_help() {
   echo -e "${CYAN}Migrate Terraform State to Remote Backend${RESET}"
