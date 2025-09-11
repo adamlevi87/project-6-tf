@@ -80,7 +80,8 @@ aws_lb_controller_chart_version     = "1.13.4"
 external_dns_chart_version          = "1.19.0"
 cluster_autoscaler_chart_version    = "9.50.1"
 metrics_server_chart_version        = "3.13.0"
-external_secrets_operator_chart_version = "0.19.2"
+external_secrets_operator_chart_version = "0.9.17"
+#external_secrets_operator_chart_version = "0.19.2"
 
 eks_user_access_map = {
   adam_local = {
