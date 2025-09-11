@@ -80,3 +80,8 @@ variable "vpc_id" {
   description = "VPC ID where RDS will be deployed"
   type        = string
 }
+
+variable "node_security_group_ids" {
+  description = "Map of node group names to their security group IDs"
+  type        = map(string)
+}

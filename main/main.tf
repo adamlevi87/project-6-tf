@@ -107,6 +107,7 @@ module "eks" {
   
   # Node group configuration
   node_groups = var.eks_node_groups
+  node_security_group_ids = module.security_groups.eks_node_security_group_ids
   
   # Logging
   cluster_enabled_log_types = var.cluster_enabled_log_types
@@ -487,6 +488,475 @@ module "security_groups" {
   environment        = var.environment
 
   vpc_id = module.vpc.vpc_id
-  node_group_security_groups = module.eks.node_group_security_group_ids
+  #node_group_security_groups = module.eks.node_group_security_group_ids
   argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
+
+  # Node group configuration
+  node_groups = var.eks_node_groups
 }
+
+# ── CLUSTER to NODES (Egress from Cluster Security Group) ──
+
+resource "aws_vpc_security_group_egress_rule" "cluster_to_node_kubelet" {
+  for_each = var.node_groups
+
+  security_group_id            = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+  referenced_security_group_id = aws_security_group.nodes[each.key].id
+  from_port                    = 10250
+  to_port                      = 10250
+  ip_protocol                  = "tcp"
+  description                  = "REQUIRED: Cluster control plane to kubelet API on ${each.key} nodes"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "eks-essential"
+    Rule    = "cluster-to-kubelet"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "cluster_to_node_ephemeral" {
+  for_each = var.node_groups
+
+  security_group_id            = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+  referenced_security_group_id = aws_security_group.nodes[each.key].id
+  from_port                    = 1025
+  to_port                      = 65535
+  ip_protocol                  = "tcp"
+  description                  = "REQUIRED: Cluster control plane to ephemeral ports on ${each.key} nodes (includes pod-to-pod via CNI)"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "eks-essential"
+    Rule    = "cluster-to-ephemeral"
+    Note    = "Covers kubelet(10250) and HTTPS(443) but kept separate for documentation"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "cluster_to_node_https" {
+  for_each = var.node_groups
+
+  security_group_id            = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+  referenced_security_group_id = aws_security_group.nodes[each.key].id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+  description                  = "DOCUMENTATION: Cluster control plane to HTTPS on ${each.key} nodes (covered by ephemeral rule but explicit for clarity)"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "documentation"
+    Rule    = "cluster-to-https"
+    Note    = "Redundant with ephemeral rule - kept for explicit documentation"
+  }
+}
+
+# ── NODES to CLUSTER (Egress from Node Security Groups) ──
+
+resource "aws_vpc_security_group_egress_rule" "node_to_cluster_api" {
+  for_each = var.node_groups
+
+  security_group_id            = aws_security_group.nodes[each.key].id
+  referenced_security_group_id = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+  description                  = "REQUIRED: ${each.key} nodes to cluster API server (authentication, API calls)"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "eks-essential"
+    Rule    = "node-to-api"
+  }
+}
+
+# ── CLUSTER ← NODES (Ingress to Cluster Security Group) ──
+
+resource "aws_vpc_security_group_ingress_rule" "cluster_allow_node_api" {
+  for_each = var.node_groups
+
+  security_group_id            = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+  referenced_security_group_id = aws_security_group.nodes[each.key].id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+  description                  = "REQUIRED: Allow ${each.key} nodes to cluster API server access"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "eks-essential"
+    Rule    = "allow-node-to-api"
+  }
+}
+
+# ── NODES ← CLUSTER (Ingress to Node Security Groups) ──
+
+resource "aws_vpc_security_group_ingress_rule" "node_allow_cluster_kubelet" {
+  for_each = var.node_groups
+
+  security_group_id            = aws_security_group.nodes[each.key].id
+  referenced_security_group_id = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+  from_port                    = 10250
+  to_port                      = 10250
+  ip_protocol                  = "tcp"
+  description                  = "REQUIRED: Allow cluster control plane to kubelet on ${each.key} nodes"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "eks-essential"
+    Rule    = "allow-cluster-to-kubelet"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "node_allow_cluster_ephemeral" {
+  for_each = var.node_groups
+
+  security_group_id            = aws_security_group.nodes[each.key].id
+  referenced_security_group_id = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+  from_port                    = 1025
+  to_port                      = 65535
+  ip_protocol                  = "tcp"
+  description                  = "REQUIRED: Allow cluster control plane to ephemeral ports on ${each.key} nodes"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "eks-essential"
+    Rule    = "allow-cluster-to-ephemeral"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "node_allow_cluster_https" {
+  for_each = var.node_groups
+
+  security_group_id            = aws_security_group.nodes[each.key].id
+  referenced_security_group_id = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+  from_port                    = 443
+  to_port                      = 443
+  ip_protocol                  = "tcp"
+  description                  = "DOCUMENTATION: Allow cluster control plane to HTTPS on ${each.key} nodes (covered by ephemeral but explicit)"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "documentation"
+    Rule    = "allow-cluster-to-https"
+    Note    = "Redundant with ephemeral rule - kept for explicit documentation"
+  }
+}
+
+# ================================
+# SECTION 2: EXTERNAL ACCESS
+# Purpose: Allow access from outside the VPC to cluster services
+# ================================
+
+resource "aws_vpc_security_group_ingress_rule" "eks_api_from_cidrs" {
+  for_each = toset(var.eks_api_allowed_cidr_blocks)
+
+  security_group_id = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  cidr_ipv4         = each.value
+  description       = "EXTERNAL: Allow kubectl/API access from ${each.value} (GitHub Actions, admin IPs)"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "external-access"
+    Rule    = "api-from-cidr"
+    Source  = each.value
+  }
+}
+
+# ================================
+# SECTION 3: INTRA-CLUSTER COMMUNICATION
+# Purpose: Enable pod-to-pod communication within and across node groups
+# This is what enables Kubernetes networking to function
+# ================================
+
+# ── SAME NODE GROUP COMMUNICATION ──
+
+resource "aws_vpc_security_group_ingress_rule" "node_to_node_same_group" {
+  for_each = var.node_groups
+
+  security_group_id            = aws_security_group.nodes[each.key].id
+  referenced_security_group_id = aws_security_group.nodes[each.key].id
+  ip_protocol                  = "-1"  # All protocols
+  description                  = "INTRA-GROUP: Allow all communication between nodes within ${each.key} group (pod-to-pod, service discovery)"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "kubernetes-networking"
+    Rule    = "same-group-ingress"
+    Scope   = each.key
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "node_to_node_same_group" {
+  for_each = var.node_groups
+
+  security_group_id            = aws_security_group.nodes[each.key].id
+  referenced_security_group_id = aws_security_group.nodes[each.key].id
+  ip_protocol                  = "-1"  # All protocols
+  description                  = "INTRA-GROUP: Allow all communication from nodes within ${each.key} group"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "kubernetes-networking"
+    Rule    = "same-group-egress"
+    Scope   = each.key
+  }
+}
+
+# ── CROSS NODE GROUP COMMUNICATION ──
+
+resource "aws_vpc_security_group_ingress_rule" "cross_nodegroup_communication" {
+  for_each = {
+    for pair in local.node_group_pairs : "${pair.source}-to-${pair.target}" => pair
+  }
+
+  security_group_id            = aws_security_group.nodes[each.value.target].id
+  referenced_security_group_id = aws_security_group.nodes[each.value.source].id
+  ip_protocol                  = "-1"  # All protocols
+  description                  = "CROSS-GROUP: Allow all communication from ${each.value.source} nodes to ${each.value.target} nodes (enables pod scheduling flexibility)"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "kubernetes-networking"
+    Rule    = "cross-group-ingress"
+    Source  = each.value.source
+    Target  = each.value.target
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "cross_nodegroup_communication" {
+  for_each = {
+    for pair in local.node_group_pairs : "${pair.source}-to-${pair.target}" => pair
+  }
+
+  security_group_id            = aws_security_group.nodes[each.value.source].id
+  referenced_security_group_id = aws_security_group.nodes[each.value.target].id
+  ip_protocol                  = "-1"  # All protocols
+  description                  = "CROSS-GROUP: Allow all communication from ${each.value.source} nodes to ${each.value.target} nodes"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "kubernetes-networking"
+    Rule    = "cross-group-egress"
+    Source  = each.value.source
+    Target  = each.value.target
+  }
+}
+
+# ================================
+# SECTION 4: INTERNET ACCESS
+# Purpose: Enable nodes to reach external services (AWS APIs, package repos, registries)
+# REDUNDANCY NOTE: The 'all_outbound' rule makes most specific rules redundant,
+# but we keep specific rules for documentation and future granular control
+# ================================
+
+# ── OPERATIONAL RULE: Broad Internet Access ──
+
+resource "aws_vpc_security_group_egress_rule" "nodes_all_outbound" {
+  for_each = var.node_groups
+
+  security_group_id = aws_security_group.nodes[each.key].id
+  description       = "OPERATIONAL: Allow all outbound traffic from ${each.key} nodes (simplifies troubleshooting, covers all AWS APIs)"
+  
+  ip_protocol = "-1"  # All protocols
+  cidr_ipv4   = "0.0.0.0/0"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Name    = "${var.project_tag}-${var.environment}-${each.key}-all-outbound"
+    Purpose = "operational-simplicity"
+    Rule    = "all-outbound"
+    Note    = "Makes specific rules below redundant but kept for documentation"
+  }
+}
+
+# -- DOCUMENTATION RULES: Specific Services --
+# These rules are COVERED by the all_outbound rule above but kept for:
+# 1. Explicit documentation of what services nodes need
+# 2. Future ability to remove all_outbound and use granular rules
+# 3. Security audit clarity
+
+resource "aws_vpc_security_group_egress_rule" "nodes_dns_udp" {
+  for_each = var.node_groups
+
+  security_group_id = aws_security_group.nodes[each.key].id
+  description       = "DOCUMENTATION: DNS resolution (UDP) from ${each.key} nodes to internet (covered by all_outbound)"
+  
+  ip_protocol = "udp"
+  from_port   = 53
+  to_port     = 53
+  cidr_ipv4   = "0.0.0.0/0"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "documentation"
+    Rule    = "dns-udp"
+    Note    = "Redundant with all_outbound - kept for explicit documentation"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "nodes_dns_tcp" {
+  for_each = var.node_groups
+
+  security_group_id = aws_security_group.nodes[each.key].id
+  description       = "DOCUMENTATION: DNS resolution (TCP) from ${each.key} nodes to internet (large queries, covered by all_outbound)"
+  
+  ip_protocol = "tcp"
+  from_port   = 53
+  to_port     = 53
+  cidr_ipv4   = "0.0.0.0/0"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "documentation"
+    Rule    = "dns-tcp"
+    Note    = "Redundant with all_outbound - kept for explicit documentation"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "nodes_https_outbound" {
+  for_each = var.node_groups
+
+  security_group_id = aws_security_group.nodes[each.key].id
+  description       = "DOCUMENTATION: HTTPS from ${each.key} nodes to AWS APIs, registries (covered by all_outbound)"
+  
+  ip_protocol = "tcp"
+  from_port   = 443
+  to_port     = 443
+  cidr_ipv4   = "0.0.0.0/0"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "documentation"
+    Rule    = "https-outbound"
+    Note    = "Redundant with all_outbound - kept for explicit documentation"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "nodes_http_outbound" {
+  for_each = var.node_groups
+
+  security_group_id = aws_security_group.nodes[each.key].id
+  description       = "DOCUMENTATION: HTTP from ${each.key} nodes to package repos, updates (covered by all_outbound)"
+  
+  ip_protocol = "tcp"
+  from_port   = 80
+  to_port     = 80
+  cidr_ipv4   = "0.0.0.0/0"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "documentation"
+    Rule    = "http-outbound"
+    Note    = "Redundant with all_outbound - kept for explicit documentation"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "nodes_ntp" {
+  for_each = var.node_groups
+
+  security_group_id = aws_security_group.nodes[each.key].id
+  description       = "DOCUMENTATION: NTP from ${each.key} nodes to time servers (covered by all_outbound)"
+  
+  ip_protocol = "udp"
+  from_port   = 123
+  to_port     = 123
+  cidr_ipv4   = "0.0.0.0/0"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "documentation"
+    Rule    = "ntp-outbound"
+    Note    = "Redundant with all_outbound - kept for explicit documentation"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "nodes_ephemeral_tcp" {
+  for_each = var.node_groups
+
+  security_group_id = aws_security_group.nodes[each.key].id
+  description       = "DOCUMENTATION: Ephemeral TCP ports from ${each.key} nodes to outbound connections (covered by all_outbound)"
+  
+  ip_protocol = "tcp"
+  from_port   = 1024
+  to_port     = 65535
+  cidr_ipv4   = "0.0.0.0/0"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Name    = "${var.project_tag}-${var.environment}-${each.key}-ephemeral-tcp"
+    Purpose = "documentation"
+    Rule    = "ephemeral-tcp"
+    Note    = "Redundant with all_outbound - kept for explicit documentation"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "nodes_custom_ports" {
+  for_each = var.node_groups
+
+  security_group_id = aws_security_group.nodes[each.key].id
+  description       = "DOCUMENTATION: Custom app ports from ${each.key} nodes to external services (covered by all_outbound)"
+  
+  ip_protocol = "tcp"
+  from_port   = 8000
+  to_port     = 8999
+  cidr_ipv4   = "0.0.0.0/0"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Name    = "${var.project_tag}-${var.environment}-${each.key}-custom-ports"
+    Purpose = "documentation"
+    Rule    = "custom-ports"
+    Note    = "Redundant with all_outbound - kept for explicit documentation"
+  }
+}
+
+# ================================
+# SECURITY GROUP RULES SUMMARY
+# ================================
+# ESSENTIAL RULES (Required for EKS to function):
+#   - cluster_to_node_kubelet / node_allow_cluster_kubelet
+#   - cluster_to_node_ephemeral / node_allow_cluster_ephemeral  
+#   - node_to_cluster_api / cluster_allow_node_api
+#   - nodes_all_outbound (for AWS API access)
+#   - cross_nodegroup_communication (for multi-nodegroup pod scheduling)
+#
+# DOCUMENTATION RULES (Redundant but kept for clarity):
+#   - cluster_to_node_https / node_allow_cluster_https (covered by ephemeral)
+#   - nodes_dns_* / nodes_https_outbound / nodes_http_outbound (covered by all_outbound)
+#   - nodes_ephemeral_tcp / nodes_custom_ports (covered by all_outbound)
+#
+# EXTERNAL ACCESS:
+#   - eks_api_from_cidrs (admin/CI access to cluster API)
+#
+# ARCHITECTURE DECISION:
+# We use a layered approach with both broad rules (operational simplicity) 
+# and specific rules (documentation/future granular control). This provides:
+# 1. Operational reliability (broad rules ensure everything works)
+# 2. Security documentation (specific rules show exactly what's needed)  
+# 3. Future flexibility (can remove broad rules and use specific ones)
+# ================================
+
