@@ -25,7 +25,9 @@ delete_argocd_apps() {
   if kubectl get application "$APP_NAME" -n argocd >/dev/null 2>&1; then
     echo "🗑 Deleting ArgoCD application: $APP_NAME"
     kubectl delete application "$APP_NAME" -n argocd --timeout=30s || {
-      # ... existing force deletion logic
+      echo "⚠️  Graceful deletion failed, force removing finalizers..."
+      kubectl patch application "$APP_NAME" -n argocd -p '{"metadata":{"finalizers":null}}' --type=merge || true
+      kubectl delete application "$APP_NAME" -n argocd --cascade=foreground --force --grace-period=0 || true
     }
   fi
 }
