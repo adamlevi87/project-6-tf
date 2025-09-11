@@ -37,15 +37,15 @@ resource "helm_release" "this" {
       value = "--cert-dir=/tmp"
     },
     {
-      name  = "args[1]"
+      name  = "extraArgs[0]"
       value = "--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"
     },
     {
-      name  = "args[2]"
+      name  = "args[1]"
       value = "--kubelet-use-node-status-port"
     },
     {
-      name  = "args[3]"
+      name  = "args[2]"
       value = "--kubelet-insecure-tls"
     },
     {
@@ -89,7 +89,6 @@ resource "helm_release" "this" {
       value = "linux"
     }
   ]
-
   depends_on = [
     kubernetes_service_account.this
   ]
