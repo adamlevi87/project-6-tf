@@ -134,9 +134,14 @@ resource "aws_iam_policy" "external_dns_custom" {
   })
 
   tags = {
-    Name        = "${var.project_tag}-${var.environment}-external-dns-policy"
     Project     = var.project_tag
     Environment = var.environment
+    Name        = "${var.project_tag}-${var.environment}-external-dns-policy"
     Purpose     = "external-dns"
   }
+}
+
+resource "aws_iam_role_policy_attachment" "this" {
+  role       = aws_iam_role.this.name
+  policy_arn = aws_iam_policy.external_dns_custom.arn
 }

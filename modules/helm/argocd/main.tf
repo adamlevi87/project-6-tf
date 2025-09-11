@@ -178,7 +178,7 @@ resource "helm_release" "this" {
       alb_group_name              = var.alb_group_name
       release_name                = var.release_name
       allowed_cidrs               = jsonencode(var.argocd_allowed_cidr_blocks)
-      security_group_id           = var.joined_security_group_ids
+      security_group_id           = var.alb_security_groups
       acm_cert_arn                = var.acm_cert_arn
       server_secretkey            = random_password.argocd_server_secretkey.result
       github_org                  = var.github_org
