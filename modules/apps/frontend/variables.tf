@@ -1,5 +1,15 @@
 # modules/apps/frontend/variables.tf
 
+variable "project_tag" {
+  description = "Project tag for resource naming"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment tag (dev, staging, prod)"
+  type        = string
+}
+
 variable "oidc_provider_arn" {
   description = "OIDC provider ARN from the EKS module"
   type        = string
@@ -20,20 +30,20 @@ variable "service_account_name" {
   type        = string
 }
 
+variable "s3_bucket_arn" {
+  description = "ARN of the S3 bucket"
+  type        = string
+}
+
+variable "kms_key_arn" {
+  description = "ARN of the KMS key for S3 bucket encryption"
+  type        = string
+}
+
 # variable "node_group_security_groups" {
 #   type        = map(string)
 #   description = "Map of node group names to their security group IDs"
 # }
-
-variable "project_tag" {
-  description = "Project tag for resource naming"
-  type        = string
-}
-
-variable "environment" {
-  description = "Environment tag (dev, staging, prod)"
-  type        = string
-}
 
 # variable "vpc_id" {
 #   description = "VPC ID where RDS will be deployed"

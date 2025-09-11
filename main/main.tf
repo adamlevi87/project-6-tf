@@ -279,6 +279,9 @@ module "frontend" {
   service_account_name      = var.frontend_service_account_name
   namespace                 = var.frontend_service_namespace
 
+  kms_key_arn = module.kms.kms_key_arn
+  s3_bucket_arn = module.s3.bucket_arn
+  
   # EKS related variables
   oidc_provider_arn         = module.eks.oidc_provider_arn
   oidc_provider_url         = module.eks.cluster_oidc_issuer_url
@@ -490,8 +493,11 @@ module "repo_ecr_access" {
 
   github_org         = var.github_org
   github_repo        = var.github_application_repo
+  
   # AWS IAM Identity Provider - created before hand (explained in the variables.tf)
   aws_iam_openid_connect_provider_github_arn = var.aws_iam_openid_connect_provider_github_arn
+
+  s3_bucket_arn = module.s3.bucket_arn
 
   ecr_repository_arns = [
     module.ecr.ecr_repository_arns["frontend"]
