@@ -497,11 +497,7 @@ module "repo_ecr_access" {
   # AWS IAM Identity Provider - created before hand (explained in the variables.tf)
   aws_iam_openid_connect_provider_github_arn = var.aws_iam_openid_connect_provider_github_arn
 
-  ecr_repository_arns = [
-    module.ecr.ecr_repository_arns["frontend"]
-  ]
-  # Also an option (generalized but implicit)
-  # ecr_repository_arns = values(module.ecr.ecr_repository_arns)
+  ecr_repository_arns = values(module.ecr.ecr_repository_arns)
 }
 
 # Creating Repository Secrets and Variables in the Application Repo
