@@ -48,3 +48,13 @@ variable "node_groups" {
   }
 }
 
+variable "eks_api_allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to access the cluster endpoint"
+  type        = list(string)
+  default     = []
+}
+
+variable "cluster_security_group_id" {
+  description = "EKS cluster security group ID"
+  type        = string
+}

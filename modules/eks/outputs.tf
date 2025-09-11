@@ -27,6 +27,11 @@ output "node_group_security_group_ids" {
   value       = { for ng_name, ng in aws_security_group.nodes : ng_name => ng.id }
 }
 
+output "cluster_security_group_id" {
+  description = "Security group ID of the EKS cluster"
+  value       = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
+}
+
 # output "cluster_id" {
 #   description = "EKS cluster ID"
 #   value       = aws_eks_cluster.main.id
@@ -47,11 +52,6 @@ output "node_group_security_group_ids" {
 #   value       = aws_eks_cluster.main.version
 # }
 
-# output "cluster_security_group_id" {
-#   description = "Security group ID attached to the EKS cluster"
-#   value       = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
-# }
-
 # output "node_group_names" {
 #   description = "Map of node group names to their full resource names"
 #   value       = { for ng_name, ng in aws_eks_node_group.main : ng_name => ng.node_group_name }
@@ -70,12 +70,6 @@ output "node_group_security_group_ids" {
 # output "node_group_statuses" {
 #   description = "Map of node group names to their statuses"
 #   value       = { for ng_name, ng in aws_eks_node_group.main : ng_name => ng.status }
-# }
-
-
-# output "cluster_primary_security_group_id" {
-#   description = "The cluster primary security group ID created by EKS"
-#   value       = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
 # }
 
 # output "cluster_certificate_authority_data" {

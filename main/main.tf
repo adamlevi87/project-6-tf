@@ -490,7 +490,8 @@ module "security_groups" {
   vpc_id = module.vpc.vpc_id
   #node_group_security_groups = module.eks.node_group_security_group_ids
   argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
-
+  eks_api_allowed_cidr_blocks   = var.eks_api_allowed_cidr_blocks
+  cluster_security_group_id     = module.eks.cluster_security_group_id
   # Node group configuration
   node_groups = var.eks_node_groups
 }
