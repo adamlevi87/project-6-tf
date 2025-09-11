@@ -13,19 +13,79 @@ terraform {
   }
 }
 
-# locals (keeps the helm_release tidy)
+# locals (keeps the helm_release as tidy as possible)
 locals {
   eso_extra_objects = [
-    # SecretStore in argocd ns, using the argocd SA
+    # --- RBAC: we create a role with permissions (role must exist where the permissions are needed)
+    # role is bound to the ESO service account in the ESO namespace
+    # this allows the ESO controller to operate the Secret store/ externalstore in the argocd ns
+    # basically get/ and use argoCD service account to generate tokens
+    {
+      apiVersion = "rbac.authorization.k8s.io/v1"
+      kind       = "Role"
+      metadata = {
+        name      = "eso-allow-tokenrequest"
+        namespace = "${var.argocd_namespace}"
+        annotations = {
+          "helm.sh/hook"            = "post-install,post-upgrade"
+          "helm.sh/hook-weight"     = "15"
+          #"helm.sh/hook-delete-policy" = "before-hook-creation"
+        }
+      }
+      rules = [
+        {
+          apiGroups     = [""]
+          resources     = ["serviceaccounts"]
+          verbs         = ["get"]
+          resourceNames = ["${var.argocd_service_account_name}"]
+        },
+        {
+          apiGroups     = ["authentication.k8s.io"]
+          resources     = ["serviceaccounts/token"]
+          verbs         = ["create"]
+          resourceNames = ["${var.argocd_service_account_name}"] 
+        }
+      ]        
+    },
+    {
+      apiVersion = "rbac.authorization.k8s.io/v1"
+      kind       = "RoleBinding"
+      metadata = {
+        name      = "eso-allow-tokenrequest"
+        namespace = "${var.argocd_namespace}"
+        annotations = {
+          "helm.sh/hook"            = "post-install,post-upgrade"
+          "helm.sh/hook-weight"     = "16"
+          #"helm.sh/hook-delete-policy" = "before-hook-creation"
+        }
+      }
+      subjects = [
+        {
+          kind      = "ServiceAccount"
+          name      = var.service_account_name         # ESO controller SA name
+          namespace = var.namespace                    # ESO release namespace
+        }
+      ]
+      roleRef = {
+        apiGroup = "rbac.authorization.k8s.io"
+        kind     = "Role"
+        name     = "eso-allow-tokenrequest"
+      }
+    },
+
+
+
+
+    # create a SecretStore in argocd namespace, using the argocd SA (SecretStore is a template\config for ExternalSecret)
     {
       apiVersion = "external-secrets.io/v1beta1"
       kind       = "SecretStore"
       metadata   = {
-        name      = "aws-sm-argocd"       # name it however you like
+        name      = "aws-sm-argocd"
         namespace = "${var.argocd_namespace}"
         annotations = {
           "helm.sh/hook"            = "post-install,post-upgrade"
-          "helm.sh/hook-weight"     = "5"
+          "helm.sh/hook-weight"     = "17"
           "helm.sh/hook-delete-policy" = "before-hook-creation"
         }
       }
@@ -34,12 +94,10 @@ locals {
           aws = {
             service = "SecretsManager"
             region  = "${var.aws_region}"
-            #role = "${var.argocd_service_account_role_arn}"
             auth    = {
               jwt = {
                 serviceAccountRef = {
                   name      = "${var.argocd_service_account_name}"      # the SA you IRSA-bound
-                  #namespace = "${var.argocd_namespace}"
                 }
               }
             }
@@ -48,7 +106,7 @@ locals {
       }
     },
 
-    # 2) ExternalSecret for repository connection with minimal keys in it -> K8s Secret
+    # ExternalSecret for repository connection with minimal keys in it -> K8s Secret
     # (access to the gitops repo)
     {
       apiVersion = "external-secrets.io/v1beta1"
@@ -58,28 +116,40 @@ locals {
         namespace = "${var.argocd_namespace}"
         annotations = {
           "helm.sh/hook"            = "post-install,post-upgrade"
-          "helm.sh/hook-weight"     = "10"
+          "helm.sh/hook-weight"     = "20"
           "helm.sh/hook-delete-policy" = "before-hook-creation"
         }
       }
       spec = {
         refreshInterval = "1m"
+        # using the secret store we created before
         secretStoreRef  = {
           name = "aws-sm-argocd"
           kind = "SecretStore"
         }
         target = {
-          name           = "${var.project_tag}-${var.environment}-argocd-secrets-gitops-repo"   # K8s Secret name
+          # K8s Secret name
+          name           = "${var.project_tag}-${var.environment}-argocd-secrets-gitops-repo"
           creationPolicy = "Owner"
           template       = {
             metadata = {
               labels = {
+                # label so argoCD will use this automatically
                 "argocd.argoproj.io/secret-type" = "repository"
               }
             }
           }
         }
         data = [
+          # Github authentication requires:
+          # type,url,githubAppID,githubAppInstallationID,githubAppPrivateKey
+          {
+            secretKey = "type"
+            remoteRef = {
+              key      = "${var.argocd_secret_name}"
+              property = "type"
+            } 
+          },
           {
             secretKey = "url"
             remoteRef = {
@@ -107,27 +177,12 @@ locals {
               key      = "${var.argocd_secret_name}"
               property = "githubAppPrivateKey"
             } 
-          },
-          {
-            secretKey = "type"
-            remoteRef = {
-              key      = "${var.argocd_secret_name}"
-              property = "type"
-            } 
           }
         ]
-        # Pass-through: copies ALL JSON properties from the AWS secret
-        # dataFrom = [
-        #   { 
-        #     extract = {
-        #       key = "${var.argocd_secret_name}" 
-        #     }
-        #   }
-        # ]
       }
     },
     
-    # 3) ExternalSecret for repository connection with minimal keys in it -> K8s Secret
+    # ExternalSecret for repository connection with minimal keys in it -> K8s Secret
     # (access to the application repo)
     {
       apiVersion = "external-secrets.io/v1beta1"
@@ -143,22 +198,27 @@ locals {
       }
       spec = {
         refreshInterval = "1m"
+        # using the secret store we created before
         secretStoreRef  = {
           name = "aws-sm-argocd"
           kind = "SecretStore"
         }
         target = {
-          name           = "${var.project_tag}-${var.environment}-argocd-secrets-app-repo"   # K8s Secret name
+          # K8s Secret name
+          name           = "${var.project_tag}-${var.environment}-argocd-secrets-app-repo"
           creationPolicy = "Owner"
           template       = {
             metadata = {
               labels = {
+                # label so argoCD will use this automatically
                 "argocd.argoproj.io/secret-type" = "repository"
               }
             }
           }
         }
         data = [
+          # Github authentication requires:
+          # type,url,githubAppID,githubAppInstallationID,githubAppPrivateKey
           {
             secretKey = "url"
             remoteRef = {
@@ -195,15 +255,6 @@ locals {
             } 
           }
         ]
-        
-        # Pass-through: copies ALL JSON properties from the AWS secret
-        # dataFrom = [
-        #   { 
-        #     extract = {
-        #       key = "${var.argocd_secret_name}" 
-        #     }
-        #   }
-        # ]
       }
     },
 
@@ -223,22 +274,27 @@ locals {
       }
       spec = {
         refreshInterval = "1m"
+        # using the secret store we created before
         secretStoreRef  = {
           name = "aws-sm-argocd"
           kind = "SecretStore"
         }
         target = {
-          name           = "${var.argocd_github_sso_secret_name}"   # K8s Secret name
+          # K8s Secret name
+          name           = "${var.argocd_github_sso_secret_name}"
           creationPolicy = "Owner"
           template       = {
             metadata = {
               labels = {
+                # label so argoCD will use this automatically
                 "app.kubernetes.io/part-of" = "argocd"
               }
             }
           }
         }
         data = [
+          # SSO requires:
+          # clientID, clientSecret
           {
             secretKey = "clientID"
             remoteRef = {
@@ -254,79 +310,20 @@ locals {
             } 
           }
         ]
-        
-        # Pass-through: copies ALL JSON properties from the AWS secret
-        # dataFrom = [
-        #   { 
-        #     extract = {
-        #       key = "${var.argocd_secret_name}" 
-        #     }
-        #   }
-        # ]
-      }
-    },
-
-    # --- RBAC: allow ESO controller SA to create TokenRequest in argocd ns ---
-    {
-      apiVersion = "rbac.authorization.k8s.io/v1"
-      kind       = "Role"
-      metadata = {
-        name      = "eso-allow-tokenrequest"
-        namespace = "${var.argocd_namespace}"
-        annotations = {
-          "helm.sh/hook"            = "post-install,post-upgrade"
-          "helm.sh/hook-weight"     = "3"
-          #"helm.sh/hook-delete-policy" = "before-hook-creation"
-        }
-      }
-      rules = [
-        {
-          apiGroups     = [""]
-          resources     = ["serviceaccounts"]
-          verbs         = ["get"]
-          resourceNames = ["${var.argocd_service_account_name}"]
-        },
-        {
-          apiGroups     = ["authentication.k8s.io"]
-          resources     = ["serviceaccounts/token"]
-          verbs         = ["create"]
-          resourceNames = ["${var.argocd_service_account_name}"] 
-        }
-      ]        
-    },
-    {
-      apiVersion = "rbac.authorization.k8s.io/v1"
-      kind       = "RoleBinding"
-      metadata = {
-        name      = "eso-allow-tokenrequest"
-        namespace = "${var.argocd_namespace}"
-        annotations = {
-          "helm.sh/hook"            = "post-install,post-upgrade"
-          "helm.sh/hook-weight"     = "4"
-          #"helm.sh/hook-delete-policy" = "before-hook-creation"
-        }
-      }
-      subjects = [
-        {
-          kind      = "ServiceAccount"
-          name      = var.service_account_name         # ESO controller SA name
-          namespace = var.namespace                    # ESO release namespace
-        }
-      ]
-      roleRef = {
-        apiGroup = "rbac.authorization.k8s.io"
-        kind     = "Role"
-        name     = "eso-allow-tokenrequest"
       }
     }
   ]
-}
 
-
-resource "kubernetes_namespace" "this" {
-  metadata {
-    name = var.namespace
-  }
+  eso_extra_objects_clean = [
+    for obj in local.eso_extra_objects : merge(obj, {
+      metadata = merge(obj.metadata, {
+        annotations = {
+          for k, v in try(obj.metadata.annotations, {}) : k => v
+          if !startswith(k, "helm.sh/")
+        }
+      })
+    })
+  ]
 }
 
 resource "helm_release" "this" {
@@ -339,10 +336,10 @@ resource "helm_release" "this" {
   namespace  = "${var.namespace}"
   create_namespace = false
 
-  # Wait for all resources to be ready
   wait                = true
   wait_for_jobs      = true
-  timeout            = 300  # 5 minutes
+  timeout            = 300
+
   set = concat([
     {
       name  = "installCRDs"
@@ -362,92 +359,29 @@ resource "helm_release" "this" {
     }
   ], var.set_values)
 
-  values = [
-    yamlencode({
-      extraObjects = local.eso_extra_objects
-    })
-  ]
-
-  # dynamic "set" {
-  #   for_each = var.set_values
-  #   content {
-  #     name  = set.value.name
-  #     value = set.value.value
-  #   }
-  # }
+  # REMOVE the values block with extraObjects completely
+  # values = [
+  #   yamlencode({
+  #     extraObjects = local.eso_extra_objects
+  #   })
+  # ]
 
   depends_on = [
-    #aws_iam_role_policy_attachment.this,
-    kubernetes_service_account.this,
-    kubernetes_namespace.this,
-    var.lbc_webhook_ready
+    kubernetes_service_account.this
   ]
 }
 
-# resource "aws_iam_role" "this" {
-#   name = "${var.project_tag}-${var.environment}-eso"
+# Create the extra objects as separate Kubernetes resources AFTER ESO is ready
+resource "kubernetes_manifest" "eso_extra_objects" {
+  count = length(local.eso_extra_objects_clean)
 
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [{
-#       Action = "sts:AssumeRoleWithWebIdentity",
-#       Effect = "Allow",
-#       Principal = {
-#         Federated = var.oidc_provider_arn
-#       },
-#       Condition = {
-#         StringEquals = {
-#           "${replace(var.oidc_provider_url, "https://", "")}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
-#           "${replace(var.oidc_provider_url, "https://", "")}:aud" = "sts.amazonaws.com"
-#         }
-#       }
-#     }]
-#   })
-
-#   tags = {
-#     Name        = "${var.project_tag}-${var.environment}-eso-role"
-#     Environment = var.environment
-#     Project     = var.project_tag
-#     Purpose     = "eso-irsa"
-#   }
-# }
-
-# resource "aws_iam_policy" "this" {
-#   name        = "${var.project_tag}-${var.environment}-eso-policy"
-#   description = "Allow ESO to access Secrets Manager"
-
-#   policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [
-#       {
-#         Effect   = "Allow",
-#         Action   = [
-#           "secretsmanager:GetSecretValue",
-#           "secretsmanager:DescribeSecret",
-#           "secretsmanager:ListSecrets"
-#         ],
-#         Resource = "*"
-#       }
-#     ]
-#   })
-# }
-
-# resource "aws_iam_role_policy_attachment" "this" {
-#   role       = aws_iam_role.this.name
-#   policy_arn = aws_iam_policy.this.arn
-# }
-
+  manifest = local.eso_extra_objects_clean[count.index]
+  
+  depends_on = [helm_release.this]
+}
 resource "kubernetes_service_account" "this" {
   metadata {
     name      = var.service_account_name
     namespace = var.namespace
-    # annotations = {
-    #   "eks.amazonaws.com/role-arn" = aws_iam_role.this.arn
-    #   "meta.helm.sh/release-name"  = var.release_name                # e.g. "external-secrets-dev"
-    #   "meta.helm.sh/release-namespace" = var.namespace
-    # }
-    # labels = {
-    #   "app.kubernetes.io/managed-by" = "Helm"
-    # }
   }
 }
