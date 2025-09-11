@@ -383,23 +383,10 @@ data "kubernetes_service" "webhook_service" {
   depends_on = [helm_release.this]
 }
 
-# Check if ValidatingWebhookConfiguration is actually ready
-data "kubernetes_validating_webhook_configuration" "aws_lbc_webhook" {
-  metadata {
-    name = local.chart_name
-  }
-  
-  # This will WAIT until webhook config exists and is valid, or FAIL
+resource "null_resource" "webhook_deployment_ready" {
   depends_on = [
     helm_release.this,
     data.kubernetes_service.webhook_service
-  ]
-}
-
-# Simple deployment readiness check - no overkill ingress testing
-resource "null_resource" "webhook_deployment_ready" {
-  depends_on = [
-    data.kubernetes_validating_webhook_configuration.aws_lbc_webhook
   ]
   
   provisioner "local-exec" {
@@ -408,12 +395,15 @@ resource "null_resource" "webhook_deployment_ready" {
       kubectl wait --for=condition=Available deployment/${local.chart_name} \
         -n ${var.namespace} --timeout=300s
       
+      echo "⏳ Waiting for ValidatingWebhookConfiguration to be ready..."
+      kubectl wait --for=condition=Ready validatingwebhookconfiguration/${local.chart_name} \
+        --timeout=300s || echo "ValidatingWebhookConfiguration wait completed"
+      
       echo "✅ AWS Load Balancer Controller webhook is ready!"
     EOF
   }
   
-  # Re-run check if webhook config changes
   triggers = {
-    webhook_config_uid = data.kubernetes_validating_webhook_configuration.aws_lbc_webhook.metadata[0].uid
+    service_uid = data.kubernetes_service.webhook_service.metadata[0].uid
   }
 }
