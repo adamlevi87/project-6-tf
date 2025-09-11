@@ -28,7 +28,7 @@ delete_argocd_apps() {
       # ... existing force deletion logic
     }
   fi
-}}
+}
 
 for NS in "${NAMESPACES[@]}"; do
   echo "🌐 Processing namespace: $NS"
