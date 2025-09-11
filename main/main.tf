@@ -103,15 +103,47 @@ module "eks" {
   # Networking (from VPC module)
   private_subnet_ids   = module.vpc.private_subnet_ids
   eks_api_allowed_cidr_blocks  = var.eks_api_allowed_cidr_blocks
-  vpc_id = module.vpc.vpc_id
   
   # Logging
   cluster_enabled_log_types = var.cluster_enabled_log_types
   cluster_log_retention_days = var.eks_log_retention_days
 }
 
+module "security_groups" {
+  source = "../modules/security_groups"
+
+  project_tag        = var.project_tag
+  environment        = var.environment
+
+  vpc_id = module.vpc.vpc_id
+
+  # Security
+  argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
+  eks_api_allowed_cidr_blocks   = var.eks_api_allowed_cidr_blocks
+  cluster_security_group_id     = module.eks.cluster_security_group_id
+  
+  # Node group configuration
+  node_groups = var.eks_node_groups
+}
+
+module "launch_templates" {
+  source = "../modules/eks/launch_templates"
+
+  project_tag        = var.project_tag
+  environment        = var.environment
+
+  # Node group configuration
+  node_groups = var.eks_node_groups
+
+  cluster_name     = module.eks_cluster.cluster_name
+  cluster_endpoint = module.eks_cluster.cluster_endpoint
+  cluster_ca       = module.eks_cluster.cluster_ca
+  cluster_cidr     = module.eks_cluster.cluster_cidr
+  node_security_group_ids = module.security_groups.eks_node_security_group_ids
+}
+
 module "aws_auth_config" {
-  source = "../modules/aws_auth_config"
+  source = "../modules/eks/aws_auth_config"
 
   # needed for the local exec
   aws_region = var.aws_region 
@@ -472,37 +504,6 @@ module "repo_secrets" {
     #Github Token (allows App repo to push into gitops repo)
     TOKEN_GITHUB = "${var.github_token}"
   }
-}
-
-module "security_groups" {
-  source = "../modules/security_groups"
-
-  project_tag        = var.project_tag
-  environment        = var.environment
-
-  vpc_id = module.vpc.vpc_id
-  #node_group_security_groups = module.eks.node_group_security_group_ids
-  argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
-  eks_api_allowed_cidr_blocks   = var.eks_api_allowed_cidr_blocks
-  cluster_security_group_id     = module.eks.cluster_security_group_id
-  # Node group configuration
-  node_groups = var.eks_node_groups
-}
-
-module "launch_templates" {
-  source = "../modules/eks/launch_templates"
-
-  project_tag        = var.project_tag
-  environment        = var.environment
-
-  # Node group configuration
-  node_groups = var.eks_node_groups
-
-  cluster_name     = module.eks_cluster.cluster_name
-  cluster_endpoint = module.eks_cluster.cluster_endpoint
-  cluster_ca       = module.eks_cluster.cluster_ca
-  cluster_cidr     = module.eks_cluster.cluster_cidr
-  node_security_group_ids = module.security_groups.eks_node_security_group_ids
 }
 
 module "node_groups" {

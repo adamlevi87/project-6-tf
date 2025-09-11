@@ -15,21 +15,9 @@ variable "cluster_name" {
   type        = string
 }
 
-# Logging
-variable "cluster_log_retention_days" {
-  description = "CloudWatch log retention period in days"
-  type        = number
-  default     = 7
-  validation {
-    condition = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653], var.cluster_log_retention_days)
-    error_message = "Log retention days must be a valid CloudWatch retention period."
-  }
-}
-
 variable "kubernetes_version" {
   description = "Kubernetes version for the EKS cluster"
   type        = string
-  default     = "1.28"
 }
 
 variable "private_subnet_ids" {
@@ -48,7 +36,13 @@ variable "cluster_enabled_log_types" {
   type        = list(string)
 }
 
-variable "vpc_id" {
-  description = "VPC ID where RDS will be deployed"
-  type        = string
+# Logging
+variable "cluster_log_retention_days" {
+  description = "CloudWatch log retention period in days"
+  type        = number
+  default     = 7
+  validation {
+    condition = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653], var.cluster_log_retention_days)
+    error_message = "Log retention days must be a valid CloudWatch retention period."
+  }
 }

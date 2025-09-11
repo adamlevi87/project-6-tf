@@ -1,4 +1,4 @@
-# modules/aws_auth_config/variables.tf
+# modules/eks/aws_auth_config/variables.tf
 
 variable "map_roles" {
   description = "List of IAM roles to map to Kubernetes RBAC"

@@ -19,10 +19,4 @@ spec:
       - --node-labels=${label_key}=${label_value}
 %{ endfor ~}
       - --node-labels=nodegroup-name=${nodegroup_name}
-      # UPDATED: Dynamic node taints based on node group configuration
-%{ if length(node_taints) > 0 ~}
-%{ for taint in node_taints ~}
-      - --register-with-taints=${taint.key}=${taint.value}:${taint.effect}
-%{ endfor ~}
-%{ endif ~}
   containerd: {}

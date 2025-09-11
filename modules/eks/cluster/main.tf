@@ -27,9 +27,9 @@ resource "aws_iam_role" "cluster_role" {
   })
 
   tags = {
-    Name        = "${var.project_tag}-${var.environment}-eks-cluster-role"
     Project     = var.project_tag
     Environment = var.environment
+    Name        = "${var.project_tag}-${var.environment}-eks-cluster-role"
     Purpose     = "eks-cluster"
   }
 }

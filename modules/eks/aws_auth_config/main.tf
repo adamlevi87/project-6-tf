@@ -1,4 +1,4 @@
-# modules/aws_auth_config/main.tf
+# modules/eks/aws_auth_config/main.tf
 
 terraform {
   required_providers {
