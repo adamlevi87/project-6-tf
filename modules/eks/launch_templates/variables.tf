@@ -57,4 +57,3 @@ variable "cluster_cidr" {
   description = "EKS cluster service IPv4 CIDR"
   type        = string
 }
-

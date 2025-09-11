@@ -105,16 +105,9 @@ module "eks" {
   eks_api_allowed_cidr_blocks  = var.eks_api_allowed_cidr_blocks
   vpc_id = module.vpc.vpc_id
   
-  # Node group configuration
-  node_groups = var.eks_node_groups
-  node_security_group_ids = module.security_groups.eks_node_security_group_ids
-  
   # Logging
   cluster_enabled_log_types = var.cluster_enabled_log_types
   cluster_log_retention_days = var.eks_log_retention_days
-
-  # ECR for nodegroup permissions
-  #ecr_repository_arns = module.ecr.ecr_repository_arns
 }
 
 module "aws_auth_config" {
@@ -526,5 +519,5 @@ module "node_groups" {
 
   cluster_name     = module.eks_cluster.cluster_name
   private_subnet_ids   = module.vpc.private_subnet_ids
-  launch_templates =  module.launch_templates.launch_template_ids
+  launch_template_ids =  module.launch_templates.launch_template_ids
 }

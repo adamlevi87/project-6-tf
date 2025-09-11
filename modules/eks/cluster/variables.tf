@@ -10,29 +10,6 @@ variable "environment" {
   type        = string
 }
 
-variable "ecr_repository_arns" {
-  description = "Map of app name to ECR repository ARNs"
-  type = map(string)
-}
-
-# Node Group Configuration
-variable "node_groups" {
-  description = "Map of node group configurations"
-  type = map(object({
-    instance_type     = string
-    ami_id           = string
-    desired_capacity = number
-    max_capacity     = number
-    min_capacity     = number
-    labels           = map(string)
-  }))
-  
-  validation {
-    condition = length(var.node_groups) > 0
-    error_message = "At least one node group must be defined."
-  }
-}
-
 variable "cluster_name" {
   description = "Name of the EKS cluster"
   type        = string
@@ -74,9 +51,4 @@ variable "cluster_enabled_log_types" {
 variable "vpc_id" {
   description = "VPC ID where RDS will be deployed"
   type        = string
-}
-
-variable "node_security_group_ids" {
-  description = "Map of node group names to their security group IDs"
-  type        = map(string)
 }
