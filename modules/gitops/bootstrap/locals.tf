@@ -100,7 +100,7 @@ locals {
   #rendered_backend_infra        = templatefile("${path.module}/templates/backend/infra-values.yaml.tpl", local.backend_template_vars)
   
   # Bootstrap templates (only rendered in bootstrap mode)
-  rendered_project              = var.bootstrap_mode ? templatefile("${path.module}/templates/project.yaml.tpl", local.project_template_vars) : ""
+  #rendered_project              = var.bootstrap_mode ? templatefile("${path.module}/templates/project.yaml.tpl", local.project_template_vars) : ""
   rendered_frontend_app         = var.bootstrap_mode ? templatefile("${path.module}/templates/application.yaml.tpl", local.frontend_app_template_vars) : ""
   #rendered_backend_app          = var.bootstrap_mode ? templatefile("${path.module}/templates/application.yaml.tpl", local.backend_app_template_vars) : ""
   rendered_frontend_app_values  = var.bootstrap_mode ? templatefile("${path.module}/templates/frontend/app-values.yaml.tpl", {}) : ""
@@ -114,7 +114,7 @@ locals {
     },
     # Conditionally include bootstrap files
     var.bootstrap_mode ? {
-      (local.project_yaml_path)          = local.rendered_project
+      #(local.project_yaml_path)          = local.rendered_project
       (local.frontend_app_path)          = local.rendered_frontend_app
       #(local.backend_app_path)           = local.rendered_backend_app
       (local.frontend_app_values_path)   = local.rendered_frontend_app_values

@@ -1,3 +1,15 @@
+# reference_only/${environment}/apps/project.yaml
+# ⚠️  WARNING: THIS IS A REFERENCE COPY ONLY! ⚠️  
+#
+# The REAL Project is managed by Terraform (via argocd's helm installation)
+# This file exists for:
+# 1. Documentation - see what the Project looks like
+# 2. Reference - if you need to modify it, update Terraform
+# 3. GitOps completeness - everything "visible" in Git
+#
+# TO MODIFY: Edit modules/gitops/argocd-templates/project.yaml.tpl
+# DO NOT: Apply this file directly or ArgoCD will conflict!
+
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
