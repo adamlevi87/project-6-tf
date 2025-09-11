@@ -91,6 +91,16 @@ variable "vpc_cidr_block" {
   type        = string
 }
 
+variable "nat_mode" {
+  description = "NAT gateway mode: 'single' (primary NAT only), 'real' (NAT per AZ), or 'endpoints' (no NATs)"
+  type        = string
+  default     = "single"
+  validation {
+    condition     = contains(["single", "real", "endpoints"], var.nat_mode)
+    error_message = "NAT mode must be one of: single, real, endpoints"
+  }
+}
+
 variable "enable_lifecycle_policy" {
   description = "Enable or disable S3 bucket lifecycle policy"
   type        = bool
@@ -300,6 +310,16 @@ variable "github_application_repo" {
 
 variable "github_gitops_repo" {
   description = "GitHub repository name"
+  type        = string
+}
+
+variable "github_admin_team" {
+  description = "GitHub team name for admin access to ArgoCD"
+  type        = string
+}
+
+variable "github_readonly_team" {
+  description = "GitHub team name for readonly access to ArgoCD"
   type        = string
 }
 

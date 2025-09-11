@@ -71,8 +71,8 @@ module "route53" {
   environment  = var.environment
   
   domain_name    = var.domain_name
-  subdomain_name = var.subdomain_name
-
+  
+  #subdomain_name = var.subdomain_name
   # cloudfront_domain_name = module.cloudfront.cloudfront_domain_name
   # json_view_base_domain_name = local.json_view_base_domain_name
 
