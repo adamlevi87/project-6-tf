@@ -91,8 +91,7 @@ resource "helm_release" "this" {
   ]
 
   depends_on = [
-    kubernetes_service_account.this,
-    var.eks_dependency
+    kubernetes_service_account.this
   ]
 }
 
