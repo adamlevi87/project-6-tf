@@ -497,8 +497,6 @@ module "repo_ecr_access" {
   # AWS IAM Identity Provider - created before hand (explained in the variables.tf)
   aws_iam_openid_connect_provider_github_arn = var.aws_iam_openid_connect_provider_github_arn
 
-  s3_bucket_arn = module.s3.bucket_arn
-
   ecr_repository_arns = [
     module.ecr.ecr_repository_arns["frontend"]
   ]
