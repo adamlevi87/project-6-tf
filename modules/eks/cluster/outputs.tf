@@ -22,10 +22,10 @@ output "autoscaling_group_arns" {
   }
 }
 
-output "node_group_security_group_ids" {
-  description = "Map of node group names to their security group IDs"
-  value       = { for ng_name, ng in aws_security_group.nodes : ng_name => ng.id }
-}
+# output "node_group_security_group_ids" {
+#   description = "Map of node group names to their security group IDs"
+#   value       = { for ng_name, ng in aws_security_group.nodes : ng_name => ng.id }
+# }
 
 output "cluster_security_group_id" {
   description = "Security group ID of the EKS cluster"

@@ -142,6 +142,24 @@ module "launch_templates" {
   node_security_group_ids = module.security_groups.eks_node_security_group_ids
 }
 
+module "node_groups" {
+  source = "../modules/eks/node_groups"
+
+  project_tag        = var.project_tag
+  environment        = var.environment
+
+  # ECR for nodegroup permissions
+  ecr_repository_arns = values(module.ecr.ecr_repository_arns)
+
+  # Node group configuration
+  node_groups = var.eks_node_groups
+
+  cluster_name     = module.eks_cluster.cluster_name
+  private_subnet_ids   = module.vpc.private_subnet_ids
+  launch_template_ids =  module.launch_templates.launch_template_ids
+}
+
+
 module "aws_auth_config" {
   source = "../modules/eks/aws_auth_config"
 
@@ -504,21 +522,4 @@ module "repo_secrets" {
     #Github Token (allows App repo to push into gitops repo)
     TOKEN_GITHUB = "${var.github_token}"
   }
-}
-
-module "node_groups" {
-  source = "../modules/eks/node_groups"
-
-  project_tag        = var.project_tag
-  environment        = var.environment
-
-  # ECR for nodegroup permissions
-  ecr_repository_arns = values(module.ecr.ecr_repository_arns)
-
-  # Node group configuration
-  node_groups = var.eks_node_groups
-
-  cluster_name     = module.eks_cluster.cluster_name
-  private_subnet_ids   = module.vpc.private_subnet_ids
-  launch_template_ids =  module.launch_templates.launch_template_ids
 }
