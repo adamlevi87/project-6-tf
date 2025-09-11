@@ -125,10 +125,10 @@ variable "oidc_provider_url" {
 #   type        = string
 # }
 
-variable "node_group_security_groups" {
-  type        = map(string)
-  description = "Map of node group names to their security group IDs"
-}
+# variable "node_group_security_groups" {
+#   type        = map(string)
+#   description = "Map of node group names to their security group IDs"
+# }
 
 variable "secret_arn" {
   description = "ARN of the AWS Secrets Manager secret used by the application"

@@ -403,8 +403,8 @@ module "argocd" {
   alb_group_name            = local.alb_group_name
   
   # Networking
-  vpc_id = module.vpc.vpc_id
-  argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
+  #vpc_id = module.vpc.vpc_id
+  #argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
 
   # Certificate
   domain_name                   = "${var.argocd_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
