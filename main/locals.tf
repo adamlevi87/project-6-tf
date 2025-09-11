@@ -92,7 +92,7 @@ locals {
         var.argocd_aws_secret_key       # e.g., "argocd-secrets"
     ]
 
-    argocd_private_key= sensitive(base64decode(var.argocd_private_key_b64))
+    argocd_private_key  = base64decode(var.argocd_private_key_b64)
     
     # an AWS managed secret will be created from this with the name: var.argocd_aws_secret_key
     # inside it a json, with key:value pairs

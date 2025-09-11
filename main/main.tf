@@ -332,7 +332,7 @@ module "gitops_bootstrap" {
   aws_region    = var.aws_region
   
   # ECR Repository URLs
-  ecr_frontend_repo_url = module.ecr.ecr_repository_urls["frontend"]
+  ecr_frontend_repo_url = module.ecr.ecr_repository_urls["welcome"]
   # not needed
   #ecr_backend_repo_url  = module.ecr.ecr_repository_urls["backend"]
   
@@ -522,7 +522,7 @@ module "repo_secrets" {
   github_secrets = {
     AWS_ROLE_TO_ASSUME = "${module.repo_ecr_access.github_actions_role_arn}"
     # ECR
-    ECR_REPOSITORY_FRONTEND = "${module.ecr.ecr_repository_urls["frontend"]}"
+    ECR_REPOSITORY_FRONTEND = "${module.ecr.ecr_repository_urls["welcome"]}"
     
     #Github Token (allows App repo to push into gitops repo)
     TOKEN_GITHUB = "${var.github_token}"

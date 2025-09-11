@@ -94,7 +94,7 @@ resource "aws_vpc_security_group_egress_rule" "alb_frontend_all_outbound" {
 resource "aws_vpc_security_group_ingress_rule" "allow_alb_to_frontend_pods" {
   for_each = aws_security_group.nodes
 
-  security_group_id            = each.value
+  security_group_id            = each.value.id
   referenced_security_group_id = aws_security_group.alb_frontend.id
   from_port                    = 80
   to_port                      = 80
@@ -179,7 +179,7 @@ resource "aws_vpc_security_group_egress_rule" "alb_argocd_all_outbound" {
 resource "aws_vpc_security_group_ingress_rule" "allow_alb_to_argocd_pods" {
   for_each = aws_security_group.nodes
 
-  security_group_id            = each.value
+  security_group_id            = each.value.id
   referenced_security_group_id = aws_security_group.alb_argocd.id
   from_port                    = 8080
   to_port                      = 8080
