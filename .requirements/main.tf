@@ -38,49 +38,49 @@ resource "aws_iam_role_policy_attachment" "attach_admin_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
-# resource "aws_s3_bucket" "tf_state" {
-#   bucket = var.aws_s3_bucket_name
+resource "aws_s3_bucket" "tf_state" {
+  bucket = var.aws_s3_bucket_name
 
-#   lifecycle {
-#     prevent_destroy = true
-#   }
+  lifecycle {
+    prevent_destroy = true
+  }
 
-#   tags = {
-#     Project = var.project_tag
-#     Environment = var.environment
-#   }
-# }
+  tags = {
+    Project = var.project_tag
+    Environment = var.environment
+  }
+}
 
-# resource "aws_s3_bucket_versioning" "tf_state_versioning" {
-#   bucket = aws_s3_bucket.tf_state.id
+resource "aws_s3_bucket_versioning" "tf_state_versioning" {
+  bucket = aws_s3_bucket.tf_state.id
 
-#   versioning_configuration {
-#     status = "Enabled"
-#   }
-# }
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
 
-# resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state_sse" {
-#   bucket = aws_s3_bucket.tf_state.id
+resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state_sse" {
+  bucket = aws_s3_bucket.tf_state.id
 
-#   rule {
-#     apply_server_side_encryption_by_default {
-#       sse_algorithm = "AES256"
-#     }
-#   }
-# }
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
 
-# resource "aws_dynamodb_table" "tf_lock" {
-#   name         = var.aws_dynamodb_table_name
-#   billing_mode = "PAY_PER_REQUEST"
-#   hash_key     = "LockID"
+resource "aws_dynamodb_table" "tf_lock" {
+  name         = var.aws_dynamodb_table_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
 
-#   attribute {
-#     name = "LockID"
-#     type = "S"
-#   }
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
 
-#   tags = {
-#     Project = var.project_tag
-#     Environment = var.environment
-#   }
-# }
+  tags = {
+    Project = var.project_tag
+    Environment = var.environment
+  }
+}
