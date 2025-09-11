@@ -414,6 +414,6 @@ resource "null_resource" "webhook_deployment_ready" {
   
   # Re-run check if webhook config changes
   triggers = {
-    webhook_config_uid = data.kubernetes_validating_webhook_configuration_v1.aws_lbc_webhook.metadata[0].uid
+    webhook_config_uid = data.kubernetes_validating_webhook_configuration.aws_lbc_webhook.metadata[0].uid
   }
 }
