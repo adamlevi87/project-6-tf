@@ -455,13 +455,13 @@ module "external_secrets_operator" {
   namespace          = var.eks_addons_namespace
 
   # EKS related variables
-  oidc_provider_arn = module.eks.oidc_provider_arn
-  oidc_provider_url  = module.eks.cluster_oidc_issuer_url
+  # oidc_provider_arn = module.eks.oidc_provider_arn
+  # oidc_provider_url  = module.eks.cluster_oidc_issuer_url
 
   # ArgoCD details
   argocd_namespace                = var.argocd_namespace
   argocd_service_account_name     = local.argocd_service_account_name
-  argocd_service_account_role_arn = module.argocd.service_account_role_arn
+  #argocd_service_account_role_arn = module.argocd.service_account_role_arn
   argocd_secret_name              = module.secrets_app_envs.app_secrets_names["${var.argocd_aws_secret_key}"]
   argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
 
