@@ -17,6 +17,12 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    retry:
+      limit: 25                    # High retry limit for missing images
+      backoff:
+        duration: 120s             # Start with 2 minutes
+        factor: 1.3               # Gentle exponential backoff
+        maxDuration: 20m          # Maximum 20 minutes between retries
     syncOptions:
       - CreateNamespace=true
   # Multi-source: CHART comes from app repo; VALUES come from gitops repo via ref

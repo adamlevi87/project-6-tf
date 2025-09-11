@@ -34,11 +34,11 @@ spec:
       prune: true
       selfHeal: true
     retry:
-      limit: 5
+      limit: 20
       backoff:
-        duration: 5s
-        factor: 2
-        maxDuration: 3m
+        duration: 60s
+        factor: 1.5
+        maxDuration: 15m
     syncOptions:
       - CreateNamespace=true
       - PruneLast=true
