@@ -10,13 +10,15 @@ locals {
   gitops_repo_url = "https://github.com/${var.github_org}/${var.github_gitops_repo}.git"
   
   # File paths
-  project_yaml_path          = "projects/${var.project_tag}.yaml"
+  project_yaml_path          = "reference_only/${var.environment}/project/${var.project_tag}.yaml"
+  app_of_apps_yaml_path      = "reference_only/${var.environment}/app_of_apps.yaml"
   frontend_infra_values_path = "environments/${var.environment}/manifests/frontend/infra-values.yaml"
   frontend_app_values_path   = "environments/${var.environment}/manifests/frontend/app-values.yaml"
   # backend_infra_values_path  = "environments/${var.environment}/manifests/backend/infra-values.yaml"
   # backend_app_values_path    = "environments/${var.environment}/manifests/backend/app-values.yaml"
   frontend_app_path          = "environments/${var.environment}/apps/frontend/application.yaml"
   # backend_app_path           = "environments/${var.environment}/apps/backend/application.yaml"
+  
   
   # Template variables for ArgoCD project
   project_template_vars = {
@@ -101,26 +103,28 @@ locals {
   
   # Bootstrap templates (only rendered in bootstrap mode)
   #rendered_project              = var.bootstrap_mode ? templatefile("${path.module}/templates/project.yaml.tpl", local.project_template_vars) : ""
-  rendered_frontend_app         = var.bootstrap_mode ? templatefile("${path.module}/templates/application.yaml.tpl", local.frontend_app_template_vars) : ""
+  rendered_project                = var.bootstrap_mode ? var.argocd_project_yaml : ""
+  rendered_app_of_apps            = var.bootstrap_mode ? var.argocd_app_of_apps_yaml : ""
+  rendered_frontend_app           = var.bootstrap_mode ? templatefile("${path.module}/templates/application.yaml.tpl", local.frontend_app_template_vars) : ""
   #rendered_backend_app          = var.bootstrap_mode ? templatefile("${path.module}/templates/application.yaml.tpl", local.backend_app_template_vars) : ""
-  rendered_frontend_app_values  = var.bootstrap_mode ? templatefile("${path.module}/templates/frontend/app-values.yaml.tpl", {}) : ""
+  rendered_frontend_app_values    = var.bootstrap_mode ? templatefile("${path.module}/templates/frontend/app-values.yaml.tpl", {}) : ""
   #rendered_backend_app_values   = var.bootstrap_mode ? templatefile("${path.module}/templates/backend/app-values.yaml.tpl", {}) : ""
 
-  rendered_content = merge(
-    # Always include infra files
-    {
-      (local.frontend_infra_values_path) = local.rendered_frontend_infra
-      #(local.backend_infra_values_path)  = local.rendered_backend_infra
-    },
-    # Conditionally include bootstrap files
-    var.bootstrap_mode ? {
-      #(local.project_yaml_path)          = local.rendered_project
-      (local.frontend_app_path)          = local.rendered_frontend_app
-      #(local.backend_app_path)           = local.rendered_backend_app
-      (local.frontend_app_values_path)   = local.rendered_frontend_app_values
-      #(local.backend_app_values_path)    = local.rendered_backend_app_values
-    } : {}
-  )
+  # rendered_content = merge(
+  #   # Always include infra files
+  #   {
+  #     (local.frontend_infra_values_path) = local.rendered_frontend_infra
+  #     #(local.backend_infra_values_path)  = local.rendered_backend_infra
+  #   },
+  #   # Conditionally include bootstrap files
+  #   var.bootstrap_mode ? {
+  #     #(local.project_yaml_path)          = local.rendered_project
+  #     (local.frontend_app_path)          = local.rendered_frontend_app
+  #     #(local.backend_app_path)           = local.rendered_backend_app
+  #     (local.frontend_app_values_path)   = local.rendered_frontend_app_values
+  #     #(local.backend_app_values_path)    = local.rendered_backend_app_values
+  #   } : {}
+  # )
 
   # # Real change detection using data sources
   # changed_files = {

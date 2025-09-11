@@ -311,7 +311,7 @@ module "secrets_app_envs" {
 
 module "argocd_templates" {
   # Only create if any of these conditions are true
-  count = (var.argocd_enabled || var.bootstrap_mode || var.update_apps) ? 1 : 0
+  count = (var.argocd_enabled || var.bootstrap_mode ) ? 1 : 0
   
   source = "../modules/gitops/argocd-templates"
   
@@ -335,7 +335,7 @@ module "gitops_bootstrap" {
   gitops_repo_name   = data.github_repository.gitops_repo.name
 
   # GitHub Configuration
-  gitops_repo_owner       = var.github_org
+  #gitops_repo_owner       = var.github_org
   github_gitops_repo      = var.github_gitops_repo
   github_org              = var.github_org  
   github_application_repo = var.github_application_repo
@@ -343,9 +343,9 @@ module "gitops_bootstrap" {
 
   # Project Configuration
   project_tag   = var.project_tag
-  app_name      = var.project_tag
+  #app_name      = var.project_tag
   environment   = var.environment
-  aws_region    = var.aws_region
+  #aws_region    = var.aws_region
   
   # ECR Repository URLs
   ecr_frontend_repo_url = module.ecr.ecr_repository_urls["welcome"]
@@ -380,6 +380,8 @@ module "gitops_bootstrap" {
   
   # ArgoCD Configuration
   argocd_namespace = var.argocd_namespace
+  argocd_project_yaml     = var.bootstrap_mode ? module.argocd_templates[0].project_yaml : ""
+  argocd_app_of_apps_yaml = var.bootstrap_mode ? module.argocd_templates[0].app_of_apps_yaml : ""
   
   # Control Variables
   bootstrap_mode = var.bootstrap_mode

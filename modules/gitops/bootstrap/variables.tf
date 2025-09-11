@@ -1,11 +1,19 @@
 # modules/gitops/bootstrap/variables.tf
 
-# GitHub Configuration
-
-variable "gitops_repo_owner" {
-  description = "GitHub username/organization that owns the GitOps repository"
+variable "project_tag" {
+  description = "Project tag for resource naming and ArgoCD project"
   type        = string
 }
+
+variable "environment" {
+  description = "Environment name (dev, staging, prod)"
+  type        = string
+}
+
+# variable "gitops_repo_owner" {
+#   description = "GitHub username/organization that owns the GitOps repository"
+#   type        = string
+# }
 
 variable "github_gitops_repo" {
   description = "Name of the GitOps repository"
@@ -22,27 +30,16 @@ variable "github_application_repo" {
   type        = string
 }
 
-variable "project_tag" {
-  description = "Project tag for resource naming and ArgoCD project"
-  type        = string
-}
+# variable "app_name" {
+#   description = "Application name for project description"
+#   type        = string
+#   default     = "project-5"
+# }
 
-variable "app_name" {
-  description = "Application name for project description"
-  type        = string
-  default     = "project-5"
-}
-
-# Basic Configuration
-variable "environment" {
-  description = "Environment name (dev, staging, prod)"
-  type        = string
-}
-
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-}
+# variable "aws_region" {
+#   description = "AWS region"
+#   type        = string
+# }
 
 # ECR Repository URLs
 variable "ecr_frontend_repo_url" {
@@ -87,6 +84,18 @@ variable "frontend_external_dns_hostname" {
 variable "auto_merge_pr" {
   description = "Whether to auto-merge the created PR"
   type        = bool
+}
+
+variable "argocd_project_yaml" {
+  description = "Rendered Project YAML from argocd-templates module"
+  type        = string
+  default     = ""
+}
+
+variable "argocd_app_of_apps_yaml" {
+  description = "Rendered App-of-Apps YAML from argocd-templates module"
+  type        = string
+  default     = ""
 }
 
 # variable "frontend_external_secret_name" {

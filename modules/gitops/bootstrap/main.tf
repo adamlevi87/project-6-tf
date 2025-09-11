@@ -19,6 +19,7 @@ resource "github_branch" "gitops_branch" {
 resource "github_repository_file" "bootstrap_files" {
   for_each = var.bootstrap_mode ? {
     "project"              = { path = local.project_yaml_path, content = local.rendered_project }
+    "app_of_apps"          = { path = local.app_of_apps_yaml_path, content = local.rendered_app_of_apps }
     "frontend_application" = { path = local.frontend_app_path, content = local.rendered_frontend_app }
     # "backend_application"  = { path = local.backend_app_path, content = local.rendered_backend_app }
     "frontend_app_values"  = { path = local.frontend_app_values_path, content = local.rendered_frontend_app_values }

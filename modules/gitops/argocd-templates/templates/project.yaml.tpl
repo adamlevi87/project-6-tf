@@ -1,4 +1,4 @@
-# reference_only/${environment}/apps/project.yaml
+# reference_only/${environment}/apps/${project_tag}.yaml
 # ⚠️  WARNING: THIS IS A REFERENCE COPY ONLY! ⚠️  
 #
 # The REAL Project is managed by Terraform (via argocd's helm installation)
