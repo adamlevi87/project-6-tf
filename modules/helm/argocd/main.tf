@@ -20,9 +20,48 @@ terraform {
 locals {
   #joined_security_group_ids = "${aws_security_group.alb_argocd.id},${var.frontend_security_group_id}"
   
-  argocd_additionalObjects = [
+  project_object = merge(
     yamldecode(var.argocd_project_yaml),
-    yamldecode(var.argocd_app_of_apps_yaml)
+    {
+      metadata = merge(
+        yamldecode(var.argocd_project_yaml).metadata,
+        {
+          annotations = merge(
+            try(yamldecode(var.argocd_project_yaml).metadata.annotations, {}),
+            {
+              "helm.sh/hook"                = "post-install,post-upgrade"
+              "helm.sh/hook-weight"         = "1"
+              "helm.sh/hook-delete-policy"  = "before-hook-creation"
+            }
+          )
+        }
+      )
+    }
+  )
+  
+  app_of_apps_object = merge(
+    yamldecode(var.argocd_app_of_apps_yaml),
+    {
+      metadata = merge(
+        yamldecode(var.argocd_app_of_apps_yaml).metadata,
+        {
+          annotations = merge(
+            try(yamldecode(var.argocd_app_of_apps_yaml).metadata.annotations, {}),
+            {
+              "helm.sh/hook"                 = "post-install,post-upgrade"
+              "helm.sh/hook-weight"          = "5"
+              "helm.sh/hook-delete-policy"   = "before-hook-creation"
+              "argocd.argoproj.io/sync-wave" = "-10"
+            }
+          )
+        }
+      )
+    }
+  )
+
+  argocd_additionalObjects = [
+    local.project_object,
+    local.app_of_apps_object
   ]
 }
 
