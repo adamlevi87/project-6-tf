@@ -50,10 +50,10 @@ variable "ecr_frontend_repo_url" {
   type        = string
 }
 
-variable "ecr_backend_repo_url" {
-  description = "ECR repository URL for backend"
-  type        = string
-}
+# variable "ecr_backend_repo_url" {
+#   description = "ECR repository URL for backend"
+#   type        = string
+# }
 
 # Frontend Configuration
 variable "frontend_namespace" {
@@ -94,34 +94,34 @@ variable "frontend_external_dns_hostname" {
 #   type        = string
 # }
 
-# Backend Configuration
-variable "backend_namespace" {
-  description = "Kubernetes namespace for backend"
-  type        = string
-  default     = "backend"
-}
+# # Backend Configuration
+# variable "backend_namespace" {
+#   description = "Kubernetes namespace for backend"
+#   type        = string
+#   default     = "backend"
+# }
 
-variable "backend_service_account_name" {
-  description = "Service account name for backend"
-  type        = string
-  default     = "backend-sa"
-}
+# variable "backend_service_account_name" {
+#   description = "Service account name for backend"
+#   type        = string
+#   default     = "backend-sa"
+# }
 
-variable "backend_container_port" {
-  description = "Container port for backend"
-  type        = number
-  default     = 3000
-}
+# variable "backend_container_port" {
+#   description = "Container port for backend"
+#   type        = number
+#   default     = 3000
+# }
 
-variable "backend_ingress_host" {
-  description = "Ingress host for backend"
-  type        = string
-}
+# variable "backend_ingress_host" {
+#   description = "Ingress host for backend"
+#   type        = string
+# }
 
-variable "backend_external_dns_hostname" {
-  description = "External DNS hostname for backend"
-  type        = string
-}
+# variable "backend_external_dns_hostname" {
+#   description = "External DNS hostname for backend"
+#   type        = string
+# }
 
 # variable "backend_external_secret_name" {
 #   description = "External secret name for backend"
