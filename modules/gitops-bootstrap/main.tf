@@ -90,7 +90,7 @@ resource "null_resource" "manage_pr" {
       echo "Starting PR management script..."
       
       # Now redirect to log file
-      # exec > /tmp/tf-gitops-debug.log 2>&1
+      exec > /tmp/tf-gitops-debug.log 2>&1
       echo "=== PR Management Debug Log - $(date) ==="
       echo "BRANCH_NAME: $BRANCH_NAME"
       echo "REPO_NAME: $REPO_NAME" 
@@ -178,17 +178,20 @@ resource "null_resource" "manage_pr" {
           
           # AUTO-MERGE if variable is true
           if [ "${var.auto_merge_pr}" = "true" ]; then
-            echo "Auto-merging PR #$PR_NUMBER..."
-            MERGE_RESPONSE=$(curl -s -X PUT \
+            echo "Triggering auto-merge workflow for PR #$PR_NUMBER..."
+            
+            # Trigger the auto-merge workflow via repository_dispatch
+            DISPATCH_RESPONSE=$(curl -s -X POST \
               -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls/$PR_NUMBER/merge" \
-              -d '{"commit_title":"Auto-merge: Infrastructure update","merge_method":"squash"}')
+              "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/dispatches" \
+              -d "{\"event_type\":\"auto-merge-pr\",\"client_payload\":{\"pr_number\":$PR_NUMBER}}")
             
-            if echo "$MERGE_RESPONSE" | jq -e '.merged' > /dev/null; then
-              echo "PR #$PR_NUMBER auto-merged successfully"
+            if [ $? -eq 0 ]; then
+              echo "Auto-merge workflow triggered successfully for PR #$PR_NUMBER"
+              echo "Check Actions tab for workflow execution: https://github.com/$REPO_OWNER/$REPO_NAME/actions"
             else
-              echo "Failed to auto-merge PR #$PR_NUMBER: $MERGE_RESPONSE"
+              echo "Failed to trigger auto-merge workflow: $DISPATCH_RESPONSE"
             fi
           else
             echo "Auto-merge disabled - PR #$PR_NUMBER left open for manual review"
@@ -202,8 +205,8 @@ resource "null_resource" "manage_pr" {
       fi
       
       # Copy debug log back to stdout so terraform shows it
-      # echo "=== Debug log contents ===" >&2
-      # cat /tmp/tf-gitops-debug.log >&2
+      echo "=== Debug log contents ===" >&2
+      cat /tmp/tf-gitops-debug.log >&2
     EOT
   }
 
