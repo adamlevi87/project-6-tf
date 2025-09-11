@@ -323,11 +323,11 @@ locals {
 }
 
 
-resource "kubernetes_namespace" "this" {
-  metadata {
-    name = var.namespace
-  }
-}
+# resource "kubernetes_namespace" "this" {
+#   metadata {
+#     name = var.namespace
+#   }
+# }
 
 resource "helm_release" "this" {
   name       = "${var.release_name}"
@@ -378,8 +378,8 @@ resource "helm_release" "this" {
 
   depends_on = [
     #aws_iam_role_policy_attachment.this,
-    kubernetes_service_account.this,
-    kubernetes_namespace.this
+    kubernetes_service_account.this#,
+    #kubernetes_namespace.this
   ]
 }
 
