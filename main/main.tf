@@ -135,10 +135,10 @@ module "launch_templates" {
   # Node group configuration
   node_groups = var.eks_node_groups
 
-  cluster_name     = module.eks_cluster.cluster_name
-  cluster_endpoint = module.eks_cluster.cluster_endpoint
-  cluster_ca       = module.eks_cluster.cluster_ca
-  cluster_cidr     = module.eks_cluster.cluster_cidr
+  cluster_name     = module.eks.cluster_name
+  cluster_endpoint = module.eks.cluster_endpoint
+  cluster_ca       = module.eks.cluster_ca
+  cluster_cidr     = module.eks.cluster_cidr
   node_security_group_ids = module.security_groups.eks_node_security_group_ids
 }
 
@@ -154,7 +154,7 @@ module "node_groups" {
   # Node group configuration
   node_groups = var.eks_node_groups
 
-  cluster_name     = module.eks_cluster.cluster_name
+  cluster_name     = module.eks.cluster_name
   private_subnet_ids   = module.vpc.private_subnet_ids
   launch_template_ids =  module.launch_templates.launch_template_ids
 }
