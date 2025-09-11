@@ -20,7 +20,7 @@ spec:
   sources:
     - repoURL: https://github.com/${github_org}/${github_application_repo}.git    # chart source
       targetRevision: main
-      path: local/helm/base-app/generic/
+      path: helm/
       helm:
         releaseName: ${helm_release_name}
         valueFiles:
