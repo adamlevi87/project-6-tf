@@ -1,4 +1,4 @@
-# modules/gitops-workflow/variables.tf
+# modules/gitops/bootstrap/variables.tf
 
 # GitHub Configuration
 

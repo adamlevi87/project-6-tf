@@ -7,7 +7,7 @@
 # 2. Reference - if you need to modify it, update Terraform
 # 3. GitOps completeness - everything "visible" in Git
 #
-# TO MODIFY: Edit modules/gitops/argocd-templates/app_of_apps.yaml.tpl
+# TO MODIFY: Edit modules/gitops/argocd-templates/templates/app_of_apps.yaml.tpl
 # DO NOT: Apply this file directly or ArgoCD will conflict!
 
 apiVersion: argoproj.io/v1alpha1

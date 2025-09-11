@@ -1,4 +1,4 @@
-# modules/gitops-workflow/main.tf
+# modules/gitops/bootstrap/main.tf
 
 terraform {
   required_providers {

@@ -1,4 +1,4 @@
-# modules/gitops-workflow/locals.tf
+# modules/gitops/bootstrap/locals.tf
 
 locals {
   # Generate branch name

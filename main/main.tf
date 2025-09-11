@@ -309,6 +309,22 @@ module "secrets_app_envs" {
   #depends_on = [module.secrets_rds_password]
 }
 
+module "argocd_templates" {
+  # Only create if any of these conditions are true
+  count = (var.argocd_enabled || var.bootstrap_mode || var.update_apps) ? 1 : 0
+  
+  source = "../modules/gitops/argocd-templates"
+  
+  project_tag                 = var.project_tag
+  argocd_namespace            = var.argocd_namespace
+  github_org                  = var.github_org
+  github_gitops_repo          = var.github_gitops_repo
+  github_application_repo     = var.github_application_repo
+  environment                 = var.environment
+  app_of_apps_path            = var.argocd_app_of_apps_path
+  app_of_apps_target_revision = var.argocd_app_of_apps_target_revision
+}
+
 module "gitops_bootstrap" {
   #count = (var.bootstrap_mode || var.update_apps) ? 1 : 0
   
@@ -423,12 +439,14 @@ module "argocd" {
   
   # Github Settings
   github_org                    = var.github_org
-  github_application_repo       = var.github_application_repo
-  github_gitops_repo            = var.github_gitops_repo
+  #github_application_repo       = var.github_application_repo
+  #github_gitops_repo            = var.github_gitops_repo
  
   # ArgoCD Setup
-  app_of_apps_path              = var.argocd_app_of_apps_path
-  app_of_apps_target_revision   = var.argocd_app_of_apps_target_revision
+  argocd_project_yaml           = module.argocd_templates.project_yaml
+  argocd_app_of_apps_yaml       = module.argocd_templates.app_of_apps_yaml
+  #app_of_apps_path              = var.argocd_app_of_apps_path
+  #app_of_apps_target_revision   = var.argocd_app_of_apps_target_revision
   
   # Github SSO
   github_admin_team             = var.github_admin_team

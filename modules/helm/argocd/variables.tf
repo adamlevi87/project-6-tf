@@ -30,27 +30,27 @@ variable "github_org" {
   type        = string
 }
 
-variable "github_application_repo" {
-  description = "GitHub repository name"
-  type        = string
-}
+# variable "github_application_repo" {
+#   description = "GitHub repository name"
+#   type        = string
+# }
 
-variable "github_gitops_repo" {
-  description = "GitHub repository name"
-  type        = string
-}
+# variable "github_gitops_repo" {
+#   description = "GitHub repository name"
+#   type        = string
+# }
 
-variable "app_of_apps_path" {
-  description = "Path within the GitOps repository where ArgoCD should look for Application manifests."
-  type        = string
-  default     = "apps"
-}
+# variable "app_of_apps_path" {
+#   description = "Path within the GitOps repository where ArgoCD should look for Application manifests."
+#   type        = string
+#   default     = "apps"
+# }
 
-variable "app_of_apps_target_revision" {
-  description = "Branch or Git reference in the GitOps repository that ArgoCD should track."
-  type        = string
-  default     = "main"
-}
+# variable "app_of_apps_target_revision" {
+#   description = "Branch or Git reference in the GitOps repository that ArgoCD should track."
+#   type        = string
+#   default     = "main"
+# }
 
 variable "release_name" {
   type        = string
@@ -118,6 +118,16 @@ variable "oidc_provider_arn" {
 variable "oidc_provider_url" {
   type        = string
   description = "OIDC provider URL (e.g. https://oidc.eks.us-east-1.amazonaws.com/id/EXAMPLEDOCID)"
+}
+
+variable "argocd_project_yaml" {
+  description = "Rendered Project YAML from argocd-templates module"
+  type        = string
+}
+
+variable "argocd_app_of_apps_yaml" {
+  description = "Rendered App-of-Apps YAML from argocd-templates module"
+  type        = string
 }
 
 # variable "vpc_id" {
