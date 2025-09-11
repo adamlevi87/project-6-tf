@@ -10,10 +10,6 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 3.0.2"
     }
-    kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = "~> 1.19.0"
-    }
   }
 }
 
@@ -32,7 +28,7 @@ locals {
         namespace = "${var.argocd_namespace}"
         annotations = {
           "helm.sh/hook"            = "post-install,post-upgrade"
-          "helm.sh/hook-weight"     = "3"
+          "helm.sh/hook-weight"     = "15"
           #"helm.sh/hook-delete-policy" = "before-hook-creation"
         }
       }
@@ -59,7 +55,7 @@ locals {
         namespace = "${var.argocd_namespace}"
         annotations = {
           "helm.sh/hook"            = "post-install,post-upgrade"
-          "helm.sh/hook-weight"     = "4"
+          "helm.sh/hook-weight"     = "16"
           #"helm.sh/hook-delete-policy" = "before-hook-creation"
         }
       }
@@ -89,7 +85,7 @@ locals {
         namespace = "${var.argocd_namespace}"
         annotations = {
           "helm.sh/hook"            = "post-install,post-upgrade"
-          "helm.sh/hook-weight"     = "5"
+          "helm.sh/hook-weight"     = "17"
           "helm.sh/hook-delete-policy" = "before-hook-creation"
         }
       }
@@ -120,7 +116,7 @@ locals {
         namespace = "${var.argocd_namespace}"
         annotations = {
           "helm.sh/hook"            = "post-install,post-upgrade"
-          "helm.sh/hook-weight"     = "10"
+          "helm.sh/hook-weight"     = "20"
           "helm.sh/hook-delete-policy" = "before-hook-creation"
         }
       }
@@ -319,7 +315,6 @@ locals {
   ]
 }
 
-# Phase 1: Install ESO Helm chart only
 resource "helm_release" "this" {
   name       = "${var.release_name}"
   
@@ -330,10 +325,10 @@ resource "helm_release" "this" {
   namespace  = "${var.namespace}"
   create_namespace = false
 
+  # Wait for all resources to be ready
   wait                = true
   wait_for_jobs      = true
-  timeout            = 300
-
+  timeout            = 300  # 5 minutes
   set = concat([
     {
       name  = "installCRDs"
@@ -353,19 +348,15 @@ resource "helm_release" "this" {
     }
   ], var.set_values)
 
+  values = [
+    yamlencode({
+      extraObjects = local.eso_extra_objects
+    })
+  ]
+
   depends_on = [
     kubernetes_service_account.this
   ]
-}
-
-# Phase 2: Create custom resources after ESO is ready
-resource "kubectl_manifest" "eso_extra_objects" {
-  count = length(local.eso_extra_objects)
-  
-  yaml_body = yamlencode(local.eso_extra_objects[count.index])
-  
-  # Wait for ESO to be fully ready
-  depends_on = [helm_release.this]
 }
 
 
