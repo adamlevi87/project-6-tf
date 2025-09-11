@@ -61,7 +61,7 @@ variable "github_oauth_client_secret" {
   sensitive   = true
 }
 
-# Application's repo PAT github token to allow TF repo to write into the application repo
+# Application and Gitops Repo PAT github token to allow TF repo to write into the repo (secrets,variables,new branchs, commits etc)
 # When run from the workflow: will be pulled from the TF's application repo secrets so it must exists beforehand
 # example for the cli command usage: terraform plan -var="github_token=YOURKEY" ..."
 variable "github_token" {
