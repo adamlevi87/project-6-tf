@@ -204,9 +204,9 @@ resource "null_resource" "manage_pr" {
         exit 1
       fi
       
-      # Copy debug log back to stdout so terraform shows it
-      echo "=== Debug log contents ===" >&2
-      cat /tmp/tf-gitops-debug.log >&2
+      # Temporarily disabled - will show all output in terraform logs
+      # echo "=== Debug log contents ===" >&2
+      # cat /tmp/tf-gitops-debug.log >&2
     EOT
   }
 
