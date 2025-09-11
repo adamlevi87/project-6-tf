@@ -445,8 +445,8 @@ module "argocd" {
   #github_gitops_repo            = var.github_gitops_repo
  
   # ArgoCD Setup
-  argocd_project_yaml           = module.argocd_templates.project_yaml
-  argocd_app_of_apps_yaml       = module.argocd_templates.app_of_apps_yaml
+  argocd_project_yaml     = module.argocd_templates[0].project_yaml
+  argocd_app_of_apps_yaml = module.argocd_templates[0].app_of_apps_yaml
   #app_of_apps_path              = var.argocd_app_of_apps_path
   #app_of_apps_target_revision   = var.argocd_app_of_apps_target_revision
   
