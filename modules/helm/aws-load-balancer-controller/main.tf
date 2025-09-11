@@ -381,11 +381,6 @@ data "kubernetes_service" "webhook_service" {
   
   # This will WAIT until the service exists, or FAIL if it doesn't
   depends_on = [helm_release.this]
-  
-  # Add timeout behavior
-  timeouts {
-    read = "5m"  # Wait up to 5 minutes for webhook service
-  }
 }
 
 # Check if ValidatingWebhookConfiguration is actually ready
