@@ -234,6 +234,7 @@ module "cluster_autoscaler" {
   project_tag        = var.project_tag
   environment        = var.environment
 
+  chart_version        = var.cluster_autoscaler_chart_version
   service_account_name = "cluster-autoscaler-${var.environment}-service-account"
   release_name         = "cluster-autoscaler"
   namespace            = var.eks_addons_namespace
