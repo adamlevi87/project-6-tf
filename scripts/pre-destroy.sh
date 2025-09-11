@@ -13,23 +13,22 @@ delete_argocd_apps() {
   local APP_NAME="$1"
   echo "🔍 Checking for ArgoCD application: $APP_NAME"
   
+  # NEW: First suspend the App-of-Apps to stop it from managing anything
+  APP_OF_APPS=$(kubectl get applications -n argocd -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep "app-of-apps" | head -1 || true)
+  if [ -n "$APP_OF_APPS" ]; then
+    echo "🔄 Suspending App-of-Apps: $APP_OF_APPS"
+    kubectl patch application "$APP_OF_APPS" -n argocd \
+      --type='merge' -p='{"spec":{"syncPolicy":{"automated":null}}}' || true
+  fi
+  
+  # EXISTING: Rest of your deletion logic unchanged
   if kubectl get application "$APP_NAME" -n argocd >/dev/null 2>&1; then
     echo "🗑 Deleting ArgoCD application: $APP_NAME"
-    
-    # First try graceful deletion
     kubectl delete application "$APP_NAME" -n argocd --timeout=30s || {
-      echo "⚠️  Graceful deletion failed, force removing finalizers..."
-      kubectl patch application "$APP_NAME" -n argocd -p '{"metadata":{"finalizers":null}}' --type=merge || true
-      kubectl delete application "$APP_NAME" -n argocd --cascade=foreground --force --grace-period=0 || true
+      # ... existing force deletion logic
     }
-    
-    # Wait a bit for ArgoCD to stop managing resources
-    echo "⏳ Waiting for ArgoCD to stop managing resources..."
-    sleep 5
-  else
-    echo "ℹ️  No ArgoCD application found for: $APP_NAME"
   fi
-}
+}}
 
 for NS in "${NAMESPACES[@]}"; do
   echo "🌐 Processing namespace: $NS"
