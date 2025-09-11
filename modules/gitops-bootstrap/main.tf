@@ -90,7 +90,7 @@ resource "null_resource" "manage_pr" {
       echo "Starting PR management script..."
       
       # Now redirect to log file
-      exec > /tmp/tf-gitops-debug.log 2>&1
+      # exec > /tmp/tf-gitops-debug.log 2>&1
       echo "=== PR Management Debug Log - $(date) ==="
       echo "BRANCH_NAME: $BRANCH_NAME"
       echo "REPO_NAME: $REPO_NAME" 
@@ -202,8 +202,8 @@ resource "null_resource" "manage_pr" {
       fi
       
       # Copy debug log back to stdout so terraform shows it
-      echo "=== Debug log contents ===" >&2
-      cat /tmp/tf-gitops-debug.log >&2
+      # echo "=== Debug log contents ===" >&2
+      # cat /tmp/tf-gitops-debug.log >&2
     EOT
   }
 
