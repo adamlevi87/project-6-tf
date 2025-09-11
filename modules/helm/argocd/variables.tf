@@ -10,10 +10,15 @@ variable "environment" {
   type        = string
 }
 
-variable "frontend_security_group_id" {
-  description = "ID of the security group for the frontend"
+variable "alb_security_groups" {
+  description = "Security groups for ALB (comma-separated)"
   type        = string
 }
+
+# variable "frontend_security_group_id" {
+#   description = "ID of the security group for the frontend"
+#   type        = string
+# }
 
 variable "namespace" {
   type        = string
@@ -78,10 +83,10 @@ variable "alb_group_name" {
   default     = "alb_shared_group"  # Optional: override in dev/main.tf if needed
 }
 
-variable "argocd_allowed_cidr_blocks" {
-  type        = list(string)
-  description = "List of CIDR blocks allowed to access the ALB-argoCD"
-}
+# variable "argocd_allowed_cidr_blocks" {
+#   type        = list(string)
+#   description = "List of CIDR blocks allowed to access the ALB-argoCD"
+# }
 
 variable "acm_cert_arn" {
   description = "ARN of the ACM certificate to use for ALB HTTPS listener"
@@ -115,10 +120,10 @@ variable "oidc_provider_url" {
   description = "OIDC provider URL (e.g. https://oidc.eks.us-east-1.amazonaws.com/id/EXAMPLEDOCID)"
 }
 
-variable "vpc_id" {
-  description = "VPC ID where RDS will be deployed"
-  type        = string
-}
+# variable "vpc_id" {
+#   description = "VPC ID where RDS will be deployed"
+#   type        = string
+# }
 
 variable "node_group_security_groups" {
   type        = map(string)

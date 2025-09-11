@@ -20,10 +20,10 @@ variable "service_account_name" {
   type        = string
 }
 
-variable "node_group_security_groups" {
-  type        = map(string)
-  description = "Map of node group names to their security group IDs"
-}
+# variable "node_group_security_groups" {
+#   type        = map(string)
+#   description = "Map of node group names to their security group IDs"
+# }
 
 variable "project_tag" {
   description = "Project tag for resource naming"
@@ -35,7 +35,7 @@ variable "environment" {
   type        = string
 }
 
-variable "vpc_id" {
-  description = "VPC ID where RDS will be deployed"
-  type        = string
-}
+# variable "vpc_id" {
+#   description = "VPC ID where RDS will be deployed"
+#   type        = string
+# }

@@ -229,7 +229,7 @@ module "frontend" {
   project_tag        = var.project_tag
   environment        = var.environment
 
-  vpc_id  = module.vpc.vpc_id
+  #vpc_id  = module.vpc.vpc_id
 
   service_account_name      = var.frontend_service_account_name
   namespace                 = var.frontend_service_namespace
@@ -237,7 +237,7 @@ module "frontend" {
   # EKS related variables
   oidc_provider_arn         = module.eks.oidc_provider_arn
   oidc_provider_url         = module.eks.cluster_oidc_issuer_url
-  node_group_security_groups = module.eks.node_group_security_group_ids
+  #node_group_security_groups = module.eks.node_group_security_group_ids
   
   depends_on = [
     module.eks, 
@@ -311,10 +311,7 @@ module "gitops_bootstrap" {
   
   # Shared ALB Configuration
   alb_group_name         = local.alb_group_name
-    #must be fixed (either accept apps or apps will fail initially)
-    # or move SG creation out of argo
-    # or disable app of apps automatic updates
-    alb_security_groups    = module.argocd.joined_security_group_ids
+  alb_security_groups    = module.security_groups.joined_security_group_ids
   acm_certificate_arn    = module.acm.this_certificate_arn
   
   # ArgoCD Configuration
@@ -329,7 +326,6 @@ module "gitops_bootstrap" {
   target_branch       = var.gitops_target_branch
   
   depends_on = [
-    module.argocd,
     data.github_repository.gitops_repo,
     data.github_repository_file.current_gitops_files
   ]
@@ -370,7 +366,8 @@ module "argocd" {
   acm_cert_arn                  = module.acm.this_certificate_arn
 
   # Security Groups
-  node_group_security_groups    = module.eks.node_group_security_group_ids
+  alb_security_groups    = module.security_groups.joined_security_group_ids
+  #node_group_security_groups    = module.eks.node_group_security_group_ids
   
   # Github Settings
   github_org                    = var.github_org
@@ -387,7 +384,7 @@ module "argocd" {
   argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
 
   # Security groups for alb creation (via an ingress resource [managed by AWS LBC])
-  frontend_security_group_id    = module.frontend.security_group_id
+  #frontend_security_group_id    = module.frontend.security_group_id
 
   secret_arn = module.secrets_app_envs.app_secrets_arns["${var.argocd_aws_secret_key}"]
 
@@ -481,4 +478,15 @@ module "repo_secrets" {
     #Github Token (allows App repo to push into gitops repo)
     TOKEN_GITHUB = "${var.github_token}"
   }
+}
+
+module "security_groups" {
+  source = "../modules/security_groups"
+
+  project_tag        = var.project_tag
+  environment        = var.environment
+
+  vpc_id = module.vpc.vpc_id
+  node_group_security_groups = module.eks.node_group_security_group_ids
+  argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
 }

@@ -129,53 +129,53 @@ resource "aws_iam_role_policy_attachment" "frontend_kms_access" {
   policy_arn = aws_iam_policy.frontend_kms_access.arn
 }
 
-# SG to be applied onto the ALB (happens when argoCD creates the Shared ALB)
-resource "aws_security_group" "alb_frontend" {
-  name        = "${var.project_tag}-${var.environment}-frontend-sg"
-  description = "Security group for frontend"
-  vpc_id      = var.vpc_id
+# # SG to be applied onto the ALB (happens when argoCD creates the Shared ALB)
+# resource "aws_security_group" "alb_frontend" {
+#   name        = "${var.project_tag}-${var.environment}-frontend-sg"
+#   description = "Security group for frontend"
+#   vpc_id      = var.vpc_id
 
-  # Allow Frontend access from the outside
-  # 80 will be redirected to 443 later on (argocd module)
-  dynamic "ingress" {
-    for_each = [80, 443]
-    content {
-      from_port   = ingress.value
-      to_port     = ingress.value
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "Frontend access on port ${ingress.value}"
-    }
-  }
+#   # Allow Frontend access from the outside
+#   # 80 will be redirected to 443 later on (argocd module)
+#   dynamic "ingress" {
+#     for_each = [80, 443]
+#     content {
+#       from_port   = ingress.value
+#       to_port     = ingress.value
+#       protocol    = "tcp"
+#       cidr_blocks = ["0.0.0.0/0"]
+#       description = "Frontend access on port ${ingress.value}"
+#     }
+#   }
 
-  # Outbound rules (usually not needed but good practice)
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "All outbound traffic"
-  }
+#   # Outbound rules (usually not needed but good practice)
+#   egress {
+#     from_port   = 0
+#     to_port     = 0
+#     protocol    = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#     description = "All outbound traffic"
+#   }
 
-  tags = {
-    Project     = var.project_tag
-    Environment = var.environment
-    Name        = "${var.project_tag}-${var.environment}-frontend-sg"
-    Purpose     = "frontend-security"
-  }
-}
+#   tags = {
+#     Project     = var.project_tag
+#     Environment = var.environment
+#     Name        = "${var.project_tag}-${var.environment}-frontend-sg"
+#     Purpose     = "frontend-security"
+#   }
+# }
 
-resource "aws_security_group_rule" "allow_alb_to_frontend_pods" {
-  for_each = var.node_group_security_groups
+# resource "aws_security_group_rule" "allow_alb_to_frontend_pods" {
+#   for_each = var.node_group_security_groups
 
-  type                     = "ingress"
-  from_port                = 80
-  to_port                  = 80
-  protocol                 = "tcp"
-  security_group_id        = each.value
-  source_security_group_id = aws_security_group.frontend.id
-  description              = "Allow ALB to access Frontend pods on port 80 (${each.key} nodes)"
-}
+#   type                     = "ingress"
+#   from_port                = 80
+#   to_port                  = 80
+#   protocol                 = "tcp"
+#   security_group_id        = each.value
+#   source_security_group_id = aws_security_group.alb_frontend.id
+#   description              = "Allow ALB to access Frontend pods on port 80 (${each.key} nodes)"
+# }
 
 # resource "aws_iam_role_policy" "this" {
 #   name = "${var.service_account_name}-policy"

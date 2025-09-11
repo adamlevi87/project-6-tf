@@ -18,7 +18,7 @@ terraform {
 }
 
 locals {
-  joined_security_group_ids = "${aws_security_group.alb_argocd.id},${var.frontend_security_group_id}"
+  #joined_security_group_ids = "${aws_security_group.alb_argocd.id},${var.frontend_security_group_id}"
   
   argocd_additionalObjects = [
     # 1) setting up the Project
@@ -178,7 +178,7 @@ resource "helm_release" "this" {
       alb_group_name              = var.alb_group_name
       release_name                = var.release_name
       allowed_cidrs               = jsonencode(var.argocd_allowed_cidr_blocks)
-      security_group_id           = local.joined_security_group_ids
+      security_group_id           = var.joined_security_group_ids
       acm_cert_arn                = var.acm_cert_arn
       server_secretkey            = random_password.argocd_server_secretkey.result
       github_org                  = var.github_org
@@ -194,8 +194,7 @@ resource "helm_release" "this" {
   
   depends_on = [
       kubernetes_namespace.this,
-      kubernetes_service_account.this,
-      aws_security_group.alb_argocd
+      kubernetes_service_account.this
   ]
 }
 
@@ -233,55 +232,6 @@ resource "aws_iam_role" "this" {
   })
 }
 
-# Security Group for ArgoCD
-# SG to be applied onto the ALB (happens when argoCD creates the Shared ALB)
-resource "aws_security_group" "alb_argocd" {
-  name        = "${var.project_tag}-${var.environment}-argocd-sg"
-  description = "Security group for argocd"
-  vpc_id      = var.vpc_id
-
-  # Allow ArgoCD access from the outside
-  # 80 will be redirected to 443 (controlled via argocd values file values.yaml.tpl ingress section)
-  dynamic "ingress" {
-    for_each = [80, 443]
-    content {
-      from_port   = ingress.value
-      to_port     = ingress.value
-      protocol    = "tcp"
-      cidr_blocks = var.argocd_allowed_cidr_blocks
-      description = "ArgoCD access on port ${ingress.value}"
-    }
-  }
-
-  # Outbound rules (usually not needed but good practice)
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "All outbound traffic"
-  }
-
-  tags = {
-    Project     = var.project_tag
-    Environment = var.environment
-    Name        = "${var.project_tag}-${var.environment}-argocd-sg"
-    Purpose     = "argocd-security"
-  }
-}
-
-resource "aws_security_group_rule" "allow_alb_to_argocd_pods" {
-  for_each = var.node_group_security_groups
-
-  type                     = "ingress"
-  from_port                = 8080
-  to_port                  = 8080
-  protocol                 = "tcp"
-  security_group_id        = each.value
-  source_security_group_id = aws_security_group.alb_argocd.id
-  description              = "Allow ALB to access ArgoCD pods on port 8080 (${each.key} nodes)"
-}
-
 resource "aws_iam_role_policy" "this" {
   name = "${var.service_account_name}-policy"
   role = aws_iam_role.this.id
@@ -299,3 +249,52 @@ resource "aws_iam_role_policy" "this" {
     ]
   })
 }
+
+# # Security Group for ArgoCD
+# # SG to be applied onto the ALB (happens when argoCD creates the Shared ALB)
+# resource "aws_security_group" "alb_argocd" {
+#   name        = "${var.project_tag}-${var.environment}-argocd-sg"
+#   description = "Security group for argocd"
+#   vpc_id      = var.vpc_id
+
+#   # Allow ArgoCD access from the outside
+#   # 80 will be redirected to 443 (controlled via argocd values file values.yaml.tpl ingress section)
+#   dynamic "ingress" {
+#     for_each = [80, 443]
+#     content {
+#       from_port   = ingress.value
+#       to_port     = ingress.value
+#       protocol    = "tcp"
+#       cidr_blocks = var.argocd_allowed_cidr_blocks
+#       description = "ArgoCD access on port ${ingress.value}"
+#     }
+#   }
+
+#   # Outbound rules (usually not needed but good practice)
+#   egress {
+#     from_port   = 0
+#     to_port     = 0
+#     protocol    = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#     description = "All outbound traffic"
+#   }
+
+#   tags = {
+#     Project     = var.project_tag
+#     Environment = var.environment
+#     Name        = "${var.project_tag}-${var.environment}-argocd-sg"
+#     Purpose     = "argocd-security"
+#   }
+# }
+
+# resource "aws_security_group_rule" "allow_alb_to_argocd_pods" {
+#   for_each = var.node_group_security_groups
+
+#   type                     = "ingress"
+#   from_port                = 8080
+#   to_port                  = 8080
+#   protocol                 = "tcp"
+#   security_group_id        = each.value
+#   source_security_group_id = aws_security_group.alb_argocd.id
+#   description              = "Allow ALB to access ArgoCD pods on port 8080 (${each.key} nodes)"
+# }
