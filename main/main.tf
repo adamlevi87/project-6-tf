@@ -510,7 +510,7 @@ module "external_secrets_operator" {
 
 # Application Repo permissions over ECR(s)
 module "repo_ecr_access" {
-  source = "../modules/repo_ecr_access"
+  source = "../modules/github/repo_ecr_access"
 
   project_tag        = var.project_tag
   environment        = var.environment
@@ -526,7 +526,7 @@ module "repo_ecr_access" {
 
 # Creating Repository Secrets and Variables in the Application Repo
 module "repo_secrets" {
-  source = "../modules/repo_secrets"
+  source = "../modules/github/repo_secrets"
   
   environment = var.environment
 
@@ -547,4 +547,21 @@ module "repo_secrets" {
     #Github Token (allows App repo to push into gitops repo)
     TOKEN_GITHUB = "${var.github_token}"
   }
+}
+
+module "trigger_app_build" {
+  count = var.bootstrap_mode ? 1 : 0
+
+  source = "../modules/github/trigger-app-build"
+  
+  github_token            = var.github_token
+  github_org              = var.github_org
+  github_application_repo = var.github_application_repo
+  environment             = var.environment
+  
+  depends_on = [
+    module.ecr,
+    module.repo_secrets,
+    module.repo_ecr_access
+  ]
 }
