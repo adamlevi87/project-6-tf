@@ -281,7 +281,7 @@ module "frontend" {
 
   kms_key_arn = module.kms.kms_key_arn
   s3_bucket_arn = module.s3.bucket_arn
-  
+
   # EKS related variables
   oidc_provider_arn         = module.eks.oidc_provider_arn
   oidc_provider_url         = module.eks.cluster_oidc_issuer_url
@@ -407,7 +407,7 @@ module "argocd" {
   
   # Networking
   #vpc_id = module.vpc.vpc_id
-  #argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
+  argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
 
   # Certificate
   domain_name                   = "${var.argocd_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"

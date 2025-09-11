@@ -83,10 +83,10 @@ variable "alb_group_name" {
   default     = "alb_shared_group"  # Optional: override in dev/main.tf if needed
 }
 
-# variable "argocd_allowed_cidr_blocks" {
-#   type        = list(string)
-#   description = "List of CIDR blocks allowed to access the ALB-argoCD"
-# }
+variable "argocd_allowed_cidr_blocks" {
+  type        = list(string)
+  description = "List of CIDR blocks allowed to access the ALB-argoCD"
+}
 
 variable "acm_cert_arn" {
   description = "ARN of the ACM certificate to use for ALB HTTPS listener"
