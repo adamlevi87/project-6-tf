@@ -7,7 +7,7 @@ output "aws_iam_openid_connect_provider_github_arn" {
   #sensitive   = true
 }
 
-output "AWS_ROLE_TO_ASSUME" {
+output "github_oidc_role_arn" {
   description = "ARN of the GitHub Actions IAM role (for AWS_ROLE_TO_ASSUME secret)"
   value       = aws_iam_role.github_actions.arn
   #sensitive   = true
