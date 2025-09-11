@@ -15,12 +15,12 @@ output "cluster_oidc_issuer_url" {
   value       = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }
 
-output "autoscaling_group_arns" {
-  description = "ARNs of Auto Scaling Groups for node groups"
-  value = { 
-    for ng_name, ng in aws_eks_node_group.main : ng_name => ng.resources[0].autoscaling_groups[0].name 
-  }
-}
+# output "autoscaling_group_arns" {
+#   description = "ARNs of Auto Scaling Groups for node groups"
+#   value = { 
+#     for ng_name, ng in aws_eks_node_group.main : ng_name => ng.resources[0].autoscaling_groups[0].name 
+#   }
+# }
 
 # output "node_group_security_group_ids" {
 #   description = "Map of node group names to their security group IDs"

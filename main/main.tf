@@ -243,7 +243,7 @@ module "cluster_autoscaler" {
   cluster_name       = module.eks.cluster_name
   oidc_provider_arn  = module.eks.oidc_provider_arn
   oidc_provider_url  = module.eks.cluster_oidc_issuer_url
-  autoscaling_group_arns = values(module.eks.autoscaling_group_arns)
+  autoscaling_group_arns = module.node_groups.autoscaling_group_arns
 
   depends_on = [module.eks, module.aws_load_balancer_controller.webhook_ready]
 }
