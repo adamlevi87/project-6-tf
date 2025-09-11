@@ -1,5 +1,76 @@
 # main/variables.tf
 
+# ================================
+# Important requirements - variables that must exists as a repo Secret
+# ================================
+
+# this is the arn that was created using the requirements folder
+# which we then manually set as the secret: AWS_ROLE_TO_ASSUME in the TF github repo
+variable "github_oidc_role_arn" {
+  description = "ARN of the GitHub OIDC role used to deploy from GitHub Actions"
+  type        = string
+  sensitive = true
+}
+
+# github provider ARN, created using the requirements folder
+# When run from the workflow: will be pulled from the TF's application repo secrets
+# example: terraform plan -var="aws_iam_openid_connect_provider_github_arn=ARN"
+variable "aws_iam_openid_connect_provider_github_arn" {
+  type        = string
+  description = "github provider arn [created beforhand, using .requirements folder]"
+  sensitive   = true
+}
+
+# ArgoCD github App credentials
+# This is the installed ArgoCD Github Application: Application ID 
+# This is created prior to running TF (manually) and set as a secret in the TF repository
+# This is then used to create an AWS secret which will give ArgoCD access to the Github Repository
+variable "argocd_app_id" {
+  description = "ArgoCD github application ID"
+  type        = string
+  sensitive = true
+}
+
+# This is the installed ArgoCD Github Application: Installation ID 
+# This is created prior to running TF (manually) and set as a secret in the TF repository
+# This is then used to create an AWS secret which will give ArgoCD access to the Github Repository
+variable "argocd_installation_id" {
+  description = "ArgoCD github installation ID"
+  type        = string
+  sensitive = true
+}
+
+# This is the installed ArgoCD Github Application: Private Key base-64 encoded
+# This is created prior to running TF (manually) and set as a secret in the TF repository
+# This is then used to create an AWS secret which will give ArgoCD access to the Github Repository
+variable "argocd_private_key_b64" {
+  type      = string
+  sensitive = true
+  default   = ""
+}
+
+variable "github_oauth_client_id" {
+  description = "GitHub OAuth App Client ID for ArgoCD authentication"
+  type        = string
+  sensitive   = true
+}
+
+variable "github_oauth_client_secret" {
+  description = "GitHub OAuth App Client Secret for ArgoCD authentication"
+  type        = string
+  sensitive   = true
+}
+
+# Application's repo PAT github token to allow TF repo to write into the application repo
+# When run from the workflow: will be pulled from the TF's application repo secrets so it must exists beforehand
+# example for the cli command usage: terraform plan -var="github_token=YOURKEY" ..."
+variable "github_token" {
+  description = "GitHub PAT with access to manage secrets"
+  type        = string
+  sensitive   = true
+}
+# ================================
+
 variable "project_tag" {
   description = "Project tag for resource naming"
   type        = string
@@ -96,59 +167,6 @@ variable "eks_log_retention_days" {
   type        = number
 }
 
-# ================================
-# Important requirements - variables that must exists as a repo Secret
-# ================================
-
-# this is the arn that was created using the requirements folder
-# which we then manually set as the secret: AWS_ROLE_TO_ASSUME in the TF github repo
-variable "github_oidc_role_arn" {
-  description = "ARN of the GitHub OIDC role used to deploy from GitHub Actions"
-  type        = string
-  sensitive = true
-}
-
-# ArgoCD github App credentials
-# This is the installed ArgoCD Github Application: Application ID 
-# This is created prior to running TF (manually) and set as a secret in the TF repository
-# This is then used to create an AWS secret which will give ArgoCD access to the Github Repository
-variable "argocd_app_id" {
-  description = "ArgoCD github application ID"
-  type        = string
-  sensitive = true
-}
-
-# This is the installed ArgoCD Github Application: Installation ID 
-# This is created prior to running TF (manually) and set as a secret in the TF repository
-# This is then used to create an AWS secret which will give ArgoCD access to the Github Repository
-variable "argocd_installation_id" {
-  description = "ArgoCD github installation ID"
-  type        = string
-  sensitive = true
-}
-
-# This is the installed ArgoCD Github Application: Private Key base-64 encoded
-# This is created prior to running TF (manually) and set as a secret in the TF repository
-# This is then used to create an AWS secret which will give ArgoCD access to the Github Repository
-variable "argocd_private_key_b64" {
-  type      = string
-  sensitive = true
-  default   = ""
-}
-
-variable "github_oauth_client_id" {
-  description = "GitHub OAuth App Client ID for ArgoCD authentication"
-  type        = string
-  sensitive   = true
-}
-
-variable "github_oauth_client_secret" {
-  description = "GitHub OAuth App Client Secret for ArgoCD authentication"
-  type        = string
-  sensitive   = true
-}
-# ================================
-
 variable "eks_user_access_map" {
   description = "Map of IAM users to be added to aws-auth with their usernames and groups"
   type = map(object({
@@ -195,6 +213,26 @@ variable "frontend_service_account_name" {
 
 variable "frontend_service_namespace" {
   description = "Namespace where the frontend service account is deployed"
+  type        = string
+}
+
+variable "frontend_container_port" {
+  description = "Port number exposed by the frontend container"
+  type        = number
+}
+
+variable "frontend_base_domain_name" {
+  type        = string
+  description = "Base domain name for the frontend"
+}
+
+variable "frontend_argocd_app_name" {
+  description = "ArgoCD application name for the frontend"
+  type        = string
+}
+
+variable "frontend_helm_release_name" {
+  description = "Helm release name for the frontend deployment"
   type        = string
 }
 
@@ -268,4 +306,28 @@ variable "github_application_repo" {
 variable "github_gitops_repo" {
   description = "GitHub repository name"
   type        = string
+}
+
+variable "bootstrap_mode" {
+  description = "Whether to create all GitOps files (project + applications + values) - bootstrap mode"
+  type        = bool
+  default     = false
+}
+
+variable "update_apps" {
+  description = "Whether to update infrastructure values for both frontend and backend"
+  type        = bool
+  default     = false
+}
+
+variable "branch_name_prefix" {
+  description = "Prefix for auto-generated branch names"
+  type        = string
+  default     = "terraform-updates"
+}
+
+variable "gitops_target_branch" {
+  description = "Target branch for pull requests"
+  type        = string
+  default     = "main"
 }

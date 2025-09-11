@@ -127,6 +127,18 @@ argocd_aws_secret_key               = "argocd-credentials"
 # ingress controller class
 ingress_controller_class = "alb"
 
+# Gitops related settings
+update_apps = false
+bootstrap_mode = false
+frontend_container_port = 80
+frontend_base_domain_name = "frontend-app"
+branch_name_prefix  = "terraform-updates"
+frontend_argocd_app_name = "frontend"
+frontend_helm_release_name = "frontend"
+# From which branch to create a new branch and where to merge back to
+# when creating initial yamls in the gitops repo
+gitops_target_branch = "main"
+
 
 
 
@@ -135,13 +147,14 @@ ingress_controller_class = "alb"
 
 
 
+# Gitops related settings
 
 
 
 
 
 # Frontend and Backend base domain names
-frontend_base_domain_name = "frontend-app"
+
 # backend_base_domain_name = "backend-app"
 
 # cloudfront_allowed_cidr_blocks = ["85.64.231.47/32"]
@@ -164,14 +177,9 @@ frontend_base_domain_name = "frontend-app"
 # github_admin_team = "Project-5/devops"
 # github_readonly_team = "Project-5/developers"
 
-# Gitops related settings
-update_apps = false
-bootstrap_mode = false
-branch_name_prefix  = "terraform-updates"
 
-# From which branch to create a new branch and where to merge back to
-# when creating initial yamls in the gitops repo
-gitops_target_branch = "main"
+
+
 
 
 

@@ -261,6 +261,79 @@ module "secrets_app_envs" {
   #depends_on = [module.secrets_rds_password]
 }
 
+module "gitops_bootstrap" {
+  #count = (var.bootstrap_mode || var.update_apps) ? 1 : 0
+  
+  source = "../modules/gitops-bootstrap"
+  
+  # Pass the raw data to module
+  current_files_data = data.github_repository_file.current_gitops_files
+  gitops_repo_name   = data.github_repository.gitops_repo.name
+
+  # GitHub Configuration
+  gitops_repo_owner       = var.github_org
+  github_gitops_repo      = var.github_gitops_repo
+  github_org              = var.github_org  
+  github_application_repo = var.github_application_repo
+  github_token            = var.github_token
+  
+  # Project Configuration
+  project_tag   = var.project_tag
+  app_name      = var.project_tag
+  environment   = var.environment
+  aws_region    = var.aws_region
+  
+  # ECR Repository URLs
+  ecr_frontend_repo_url = module.ecr.ecr_repository_urls["frontend"]
+  # not needed
+  #ecr_backend_repo_url  = module.ecr.ecr_repository_urls["backend"]
+  
+  # Frontend Configuration
+  frontend_namespace              = var.frontend_service_namespace
+  frontend_service_account_name   = var.frontend_service_account_name
+  frontend_container_port         = var.frontend_container_port
+  frontend_ingress_host           = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
+  frontend_external_dns_hostname  = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
+  frontend_argocd_app_name        = var.frontend_argocd_app_name
+  frontend_helm_release_name      = var.frontend_helm_release_name
+
+  # frontend_external_secret_name   = "frontend-app-secrets"
+  # frontend_aws_secret_key         = var.frontend_aws_secret_key
+  
+  # Backend Configuration  
+  # backend_namespace               = var.backend_service_namespace
+  # backend_service_account_name    = var.backend_service_account_name
+  # backend_container_port          = 3000
+  # backend_ingress_host            = "${var.backend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
+  # backend_external_dns_hostname   = "${var.backend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
+  # backend_external_secret_name    = "backend-app-secrets"
+  # backend_aws_secret_key          = var.backend_aws_secret_key
+  
+  # Shared ALB Configuration
+  alb_group_name         = local.alb_group_name
+    #must be fixed (either accept apps or apps will fail initially)
+    # or move SG creation out of argo
+    # or disable app of apps automatic updates
+    alb_security_groups    = module.argocd.joined_security_group_ids
+  acm_certificate_arn    = module.acm.this_certificate_arn
+  
+  # ArgoCD Configuration
+  argocd_namespace = var.argocd_namespace
+  
+  # Control Variables
+  bootstrap_mode = var.bootstrap_mode
+  update_apps    = var.update_apps
+  
+  # Branch details for PR creations
+  branch_name_prefix  = var.branch_name_prefix
+  target_branch       = var.gitops_target_branch
+  
+  depends_on = [
+    module.argocd,
+    data.github_repository.gitops_repo,
+    data.github_repository_file.current_gitops_files
+  ]
+}
 
 # the initial app_of_apps sync has been automated
 # this option requires argoCD to be created only AFTER everything else is ready
@@ -286,7 +359,7 @@ module "argocd" {
 
   # ingress / ALB settings
   ingress_controller_class  = var.ingress_controller_class
-  alb_group_name            = "${var.project_tag}-${var.environment}-alb-shared-group"
+  alb_group_name            = local.alb_group_name
   
   # Networking
   vpc_id = module.vpc.vpc_id
@@ -366,7 +439,46 @@ module "external_secrets_operator" {
   ]
 }
 
+# Application Repo permissions over ECR(s)
+module "repo_ecr_access" {
+  source = "../modules/repo_ecr_access"
 
+  project_tag        = var.project_tag
+  environment        = var.environment
 
+  github_org         = var.github_org
+  github_repo        = var.github_application_repo
+  # AWS IAM Identity Provider - created before hand (explained in the variables.tf)
+  aws_iam_openid_connect_provider_github_arn = var.aws_iam_openid_connect_provider_github_arn
 
+  ecr_repository_arns = [
+    module.ecr.ecr_repository_arns["frontend"]
+  ]
+  # Also an option (generalized but implicit)
+  # ecr_repository_arns = values(module.ecr.ecr_repository_arns)
+}
 
+# Creating Repository Secrets and Variables in the Application Repo
+module "repo_secrets" {
+  source = "../modules/repo_secrets"
+  
+  environment = var.environment
+
+  repository_name = var.github_application_repo
+
+  github_variables = {
+    AWS_REGION = var.aws_region
+    GITOPS_REPO = "${var.github_org}/${var.github_gitops_repo}"
+  }
+
+  # will be Cleaning SHA suffixes from Terraform
+  # outputs that sometimes contain --SPLIT-- markers (like ECR urls)
+  github_secrets = {
+    AWS_ROLE_TO_ASSUME = "${module.repo_ecr_access.github_actions_role_arn}"
+    # ECR
+    ECR_REPOSITORY_FRONTEND = "${module.ecr.ecr_repository_urls["frontend"]}"
+    
+    #Github Token (allows App repo to push into gitops repo)
+    TOKEN_GITHUB = "${var.github_token}"
+  }
+}
