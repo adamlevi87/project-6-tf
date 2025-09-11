@@ -171,10 +171,26 @@ resource "null_resource" "manage_pr" {
         fi
         
       else
-        echo "Failed to create PR (HTTP: $HTTP_CODE)" >&2
-        echo "Response: $PR_DATA" >&2
-        exit 1
-      fi
+          echo "PR has meaningful changes - leaving PR #$PR_NUMBER open"
+          
+          # AUTO-MERGE if variable is true
+          if [ "${var.auto_merge_pr}" = "true" ]; then
+            echo "Auto-merging PR #$PR_NUMBER..."
+            MERGE_RESPONSE=$(curl -s -X PUT \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls/$PR_NUMBER/merge" \
+              -d '{"commit_title":"Auto-merge: Infrastructure update","merge_method":"squash"}')
+            
+            if echo "$MERGE_RESPONSE" | jq -e '.merged' > /dev/null; then
+              echo "PR #$PR_NUMBER auto-merged successfully"
+            else
+              echo "Failed to auto-merge PR #$PR_NUMBER: $MERGE_RESPONSE"
+            fi
+          else
+            echo "Auto-merge disabled - PR #$PR_NUMBER left open for manual review"
+          fi
+        fi
     EOT
   }
 

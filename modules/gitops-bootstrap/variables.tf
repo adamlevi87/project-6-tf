@@ -84,6 +84,11 @@ variable "frontend_external_dns_hostname" {
   type        = string
 }
 
+variable "auto_merge_pr" {
+  description = "Whether to auto-merge the created PR"
+  type        = bool
+}
+
 # variable "frontend_external_secret_name" {
 #   description = "External secret name for frontend"
 #   type        = string

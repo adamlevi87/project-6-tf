@@ -124,6 +124,8 @@ ingress_controller_class = "alb"
 # Gitops related settings
 update_apps = false
 bootstrap_mode = false
+auto_merge_pr = false
+
 frontend_container_port = 80
 frontend_base_domain_name = "frontend-app"
 branch_name_prefix  = "terraform-updates"

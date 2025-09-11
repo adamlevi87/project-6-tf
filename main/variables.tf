@@ -355,6 +355,11 @@ variable "update_apps" {
   default     = false
 }
 
+variable "auto_merge_pr" {
+  description = "Whether to auto-merge the created PR"
+  type        = bool
+}
+
 variable "branch_name_prefix" {
   description = "Prefix for auto-generated branch names"
   type        = string
