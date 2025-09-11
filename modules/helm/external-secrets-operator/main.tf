@@ -313,6 +313,17 @@ locals {
       }
     }
   ]
+
+  eso_extra_objects_clean = [
+    for obj in local.eso_extra_objects : merge(obj, {
+      metadata = merge(obj.metadata, {
+        annotations = {
+          for k, v in try(obj.metadata.annotations, {}) : k => v
+          if !startswith(k, "helm.sh/")
+        }
+      })
+    })
+  ]
 }
 
 resource "helm_release" "this" {
@@ -325,10 +336,10 @@ resource "helm_release" "this" {
   namespace  = "${var.namespace}"
   create_namespace = false
 
-  # Wait for all resources to be ready
   wait                = true
   wait_for_jobs      = true
-  timeout            = 300  # 5 minutes
+  timeout            = 300
+
   set = concat([
     {
       name  = "installCRDs"
@@ -348,18 +359,26 @@ resource "helm_release" "this" {
     }
   ], var.set_values)
 
-  values = [
-    yamlencode({
-      extraObjects = local.eso_extra_objects
-    })
-  ]
+  # REMOVE the values block with extraObjects completely
+  # values = [
+  #   yamlencode({
+  #     extraObjects = local.eso_extra_objects
+  #   })
+  # ]
 
   depends_on = [
     kubernetes_service_account.this
   ]
 }
 
+# Create the extra objects as separate Kubernetes resources AFTER ESO is ready
+resource "kubernetes_manifest" "eso_extra_objects" {
+  count = length(local.eso_extra_objects_clean)
 
+  manifest = local.eso_extra_objects_clean[count.index]
+  
+  depends_on = [helm_release.this]
+}
 resource "kubernetes_service_account" "this" {
   metadata {
     name      = var.service_account_name
