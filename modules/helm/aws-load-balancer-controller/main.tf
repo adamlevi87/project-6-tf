@@ -17,16 +17,12 @@ terraform {
   }
 }
 
-locals {
-    chart_name = "aws-load-balancer-controller"
-}
-
 # Install AWS Load Balancer Controller via Helm
 resource "helm_release" "this" {
   name       = "${var.release_name}"
   
   repository = "https://aws.github.io/eks-charts"
-  chart      = local.chart_name
+  chart      = "aws-load-balancer-controller"
   version    = var.chart_version
   
   namespace  = "${var.namespace}"
@@ -379,7 +375,7 @@ resource "aws_iam_role_policy_attachment" "this" {
 # webhook readiness check - waits for actual webhook to be ready
 data "kubernetes_service" "webhook_service" {
   metadata {
-    name      = "${local.chart_name}-webhook-service"
+    name      = "${local.release_name}-webhook-service"
     namespace = var.namespace
   }
   
@@ -396,11 +392,11 @@ resource "null_resource" "webhook_deployment_ready" {
   provisioner "local-exec" {
     command = <<-EOF
       echo "⏳ Waiting for AWS Load Balancer Controller deployment to be ready..."
-      kubectl wait --for=condition=Available deployment/${local.chart_name} \
+      kubectl wait --for=condition=Available deployment/${local.release_name} \
         -n ${var.namespace} --timeout=300s
       
       echo "⏳ Waiting for ValidatingWebhookConfiguration to be ready..."
-      kubectl wait --for=condition=Ready validatingwebhookconfiguration/${local.chart_name} \
+      kubectl wait --for=condition=Ready validatingwebhookconfiguration/${local.release_name} \
         --timeout=300s || echo "ValidatingWebhookConfiguration wait completed"
       
       echo "✅ AWS Load Balancer Controller webhook is ready!"
