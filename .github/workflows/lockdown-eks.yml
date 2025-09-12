@@ -11,11 +11,6 @@ on:
         description: 'EKS cluster security group ID'
         required: true
         type: string
-      aws_region:
-        description: 'AWS region'
-        required: true
-        type: string
-        default: 'us-east-1'
       environment:
         description: 'Environment'
         required: true
@@ -44,7 +39,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ github.event.inputs.aws_region }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Check current security group rules
         id: check_rules
