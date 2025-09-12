@@ -137,7 +137,7 @@ resource "aws_s3_bucket_policy" "base_restrictive" {
           StringNotEquals = {
             "aws:PrincipalArn" = [
               "arn:aws:iam::${var.account_id}:root",
-              "arn:aws:iam::${var.account_id}:group/administrators"
+              "arn:aws:iam::${var.account_id}:group/admins"
             ]
           }
         }
