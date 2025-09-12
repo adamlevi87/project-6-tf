@@ -337,7 +337,7 @@ module "argocd_templates" {
 }
 
 module "gitops_bootstrap" {
-  #count = (var.bootstrap_mode || var.update_apps) ? 1 : 0
+  count = (var.bootstrap_mode || var.update_apps) ? 1 : 0
   
   source = "../modules/gitops/bootstrap"
   
