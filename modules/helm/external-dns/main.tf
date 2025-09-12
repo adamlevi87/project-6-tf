@@ -32,10 +32,15 @@ resource "helm_release" "this" {
       name  = "provider"
       value = "aws"
     },
+    # changed to sync to support updating and deleting records
     {
       name  = "policy"
-      value = "upsert-only"
+      value = "sync"
     },
+    # {
+    #   name  = "policy"
+    #   value = "upsert-only"
+    # },
     {
       name  = "txtOwnerId"
       value = var.txt_owner_id
