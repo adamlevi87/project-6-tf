@@ -82,24 +82,11 @@ resource "null_resource" "manage_pr" {
       PR_TITLE="${var.bootstrap_mode ? "Bootstrap: ${var.project_tag} ${var.environment}" : "Update: ${var.environment} infrastructure"}"
       PR_BODY="${var.bootstrap_mode ? "Bootstrap GitOps configuration for ${var.project_tag}" : "Update infrastructure values for ${var.environment}"}"
       
-      # Debug output BEFORE redirect so we see it in terraform logs
-      echo "=== TERRAFORM DEBUG ==="
-      echo "AUTO_MERGE value: '${var.auto_merge_pr}'"
-      echo "BOOTSTRAP_MODE: '${var.bootstrap_mode}'"
-      echo "UPDATE_APPS: '${var.update_apps}'"
-      echo "BRANCH_NAME: '$BRANCH_NAME'"
-      echo "Starting PR management script..."
-      
-      # Now redirect to log file
-      exec > /tmp/tf-gitops-debug.log 2>&1
-      echo "=== PR Management Debug Log - $(date) ==="
+      echo "=== Creating PR ==="
       echo "BRANCH_NAME: $BRANCH_NAME"
-      echo "REPO_NAME: $REPO_NAME" 
-      echo "Variables passed: bootstrap_mode=${var.bootstrap_mode}, update_apps=${var.update_apps}, auto_merge=${var.auto_merge_pr}"
+      echo "TARGET_BRANCH: $TARGET_BRANCH"
       
-      echo "Attempting to create PR from $BRANCH_NAME to $TARGET_BRANCH..."
-      
-      # Create JSON payload properly using jq
+      # Create JSON payload
       JSON_PAYLOAD=$(jq -n \
         --arg title "$PR_TITLE" \
         --arg body "$PR_BODY" \
@@ -107,107 +94,38 @@ resource "null_resource" "manage_pr" {
         --arg base "$TARGET_BRANCH" \
         '{title: $title, body: $body, head: $head, base: $base}')
       
-      # Try to create PR - store response and HTTP code separately
+      echo "JSON_PAYLOAD: $JSON_PAYLOAD"
+      
+      # Try to create PR
       HTTP_CODE=$(curl -s -o /tmp/pr_response.json -w "%%{http_code}" \
         -H "Authorization: token $GITHUB_TOKEN" \
         -H "Accept: application/vnd.github.v3+json" \
         "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls" \
         -d "$JSON_PAYLOAD")
       
-      PR_DATA=$(cat /tmp/pr_response.json)
+      echo "HTTP_CODE: $HTTP_CODE"
+      echo "Response: $(cat /tmp/pr_response.json)"
       
       if [ "$HTTP_CODE" = "422" ]; then
-        echo "No commits between branches - cleaning up empty branch..."
-        
-        # Delete the empty branch
-        echo "Deleting branch $BRANCH_NAME..."
-        DELETE_CODE=$(curl -s -o /dev/null -w "%%{http_code}" \
-          -X DELETE \
-          -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/git/refs/heads/$BRANCH_NAME")
-        
-        if [[ "$DELETE_CODE" =~ ^(200|204)$ ]]; then
-          echo "Empty branch deleted successfully"
-          
-          # Remove branch from Terraform state - NOTE: This will fail due to state lock
-          # terraform state rm github_branch.gitops_branch
-          echo "Branch removed from GitHub. Terraform state will be corrected on next run."
-        else
-          echo "Failed to delete branch (HTTP: $DELETE_CODE)" >&2
-          exit 1
-        fi
-        
+        echo "No changes to create PR for"
+        exit 0
       elif [[ "$HTTP_CODE" =~ ^(200|201)$ ]]; then
-        echo "PR created successfully"
+        PR_NUMBER=$(cat /tmp/pr_response.json | jq -r '.number')
+        echo "Created PR #$PR_NUMBER"
         
-        # Extract PR number
-        PR_NUMBER=$(echo "$PR_DATA" | jq -r '.number')
-        echo "PR #$PR_NUMBER created"
-        
-        # Check if PR has actual file changes
-        echo "Checking PR #$PR_NUMBER for file changes..."
-        CHANGED_FILES=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-          "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls/$PR_NUMBER/files" | \
-          jq length)
-        
-        echo "PR #$PR_NUMBER has $CHANGED_FILES file changes"
-        
-        if [ "$CHANGED_FILES" -eq 0 ]; then
-          echo "No file changes detected - cleaning up empty PR and branch..."
-          
-          # Close the PR
-          echo "Closing PR #$PR_NUMBER..."
-          curl -s -X PATCH \
+        if [ "${var.auto_merge_pr}" = "true" ]; then
+          echo "Triggering auto-merge..."
+          curl -X POST \
             -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls/$PR_NUMBER" \
-            -d '{"state":"closed"}'
-          
-          # Delete the branch
-          echo "Deleting branch $BRANCH_NAME..."
-          curl -s -X DELETE \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/git/refs/heads/$BRANCH_NAME"
-          
-          # Remove branch from Terraform state - NOTE: This will fail due to state lock  
-          # terraform state rm github_branch.gitops_branch
-          echo "Empty PR and branch cleaned up from GitHub. Terraform state will be corrected on next run."
-        else
-          echo "PR has meaningful changes - leaving PR #$PR_NUMBER open"
-          
-          # AUTO-MERGE if variable is true
-          if [ "${var.auto_merge_pr}" = "true" ]; then
-            echo "Triggering auto-merge workflow for PR #$PR_NUMBER..."
-            
-            # Trigger the auto-merge workflow via repository_dispatch
-            DISPATCH_RESPONSE=$(curl -s -X POST \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/dispatches" \
-              -d "{\"event_type\":\"auto-merge-pr\",\"client_payload\":{\"pr_number\":$PR_NUMBER}}")
-            
-            if [ $? -eq 0 ]; then
-              echo "Auto-merge workflow triggered successfully for PR #$PR_NUMBER"
-              echo "Check Actions tab for workflow execution: https://github.com/$REPO_OWNER/$REPO_NAME/actions"
-            else
-              echo "Failed to trigger auto-merge workflow: $DISPATCH_RESPONSE"
-            fi
-          else
-            echo "Auto-merge disabled - PR #$PR_NUMBER left open for manual review"
-          fi
+            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/dispatches" \
+            -d "{\"event_type\":\"auto-merge-pr\",\"client_payload\":{\"pr_number\":$PR_NUMBER}}"
         fi
-        
       else
         echo "Failed to create PR. HTTP Code: $HTTP_CODE"
-        echo "Response: $PR_DATA"
+        cat /tmp/pr_response.json
         exit 1
       fi
-      
-      # Temporarily disabled - will show all output in terraform logs
-      # echo "=== Debug log contents ===" >&2
-      # cat /tmp/tf-gitops-debug.log >&2
     EOT
   }
 
