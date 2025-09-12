@@ -32,6 +32,10 @@ resource "helm_release" "this" {
   namespace  = "${var.namespace}"
   create_namespace = false
   
+  timeout = 600  # 10 minutes timeout
+  wait = true
+  wait_for_jobs = true
+
   set = [
     {
         name  = "clusterName"
