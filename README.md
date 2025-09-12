@@ -1,1 +1,141 @@
-# project-6-tf
+# Project-6 Infrastructure Setup Guide
+
+## Overview
+This project deploys an EKS cluster with ArgoCD, a sample application, and GitOps workflow using Terraform.
+
+## Prerequisites
+- AWS CLI configured with appropriate permissions
+- Terraform installed
+- GitHub account with organization access
+
+## Setup Instructions
+
+### 1. AWS Infrastructure Prerequisites
+
+Navigate to the `.requirements` folder and run:
+```bash
+cd .requirements
+terraform init
+terraform apply
+```
+
+This creates the foundational AWS resources. **Save the outputs:**
+```
+aws_iam_openid_connect_provider_github_arn = "arn:aws:iam::ACCOUNT:oidc-provider/token.actions.githubusercontent.com"
+github_oidc_role_arn = "arn:aws:iam::ACCOUNT:role/PROJECT_NAME-role-for-manual-tf"
+```
+
+### 2. GitHub Personal Access Token
+
+Create a fine-grained PAT at: https://github.com/settings/personal-access-tokens
+
+**Required permissions for both application and GitOps repositories:**
+- Actions (read/write)
+- Contents (read/write)
+- Pull requests (read/write)
+- Secrets (read/write)
+- Variables (read/write)
+
+### 3. GitHub Application for ArgoCD
+
+1. Create new GitHub App: https://github.com/settings/apps/new
+2. Configuration:
+   - **Name:** Choose descriptive name
+   - **Homepage URL:** Your GitOps repository URL
+   - **Webhook:** Uncheck "Active"
+   - **Repository permissions:** Contents (read)
+   - **Installation:** Only on this account
+3. After creation:
+   - Generate and download private key
+   - Note the App ID from the app settings page
+4. Install the app:
+   - Go to https://github.com/settings/installations
+   - Install app on both application and GitOps repositories
+   - Note the Installation ID from the URL
+
+### 4. GitHub OAuth Application for ArgoCD SSO
+
+1. Go to your GitHub organization: https://github.com/organizations/YOUR_ORG/settings/applications
+2. Create OAuth App:
+   - **Application name:** Choose descriptive name
+   - **Homepage URL:** `https://argocd-ENV.project-6.projects-devops.cfd` (replace ENV)
+   - **Authorization callback URL:** `https://argocd-ENV.project-6.projects-devops.cfd/api/dex/callback`
+3. Generate client secret and save both client ID and secret
+
+### 5. GitHub Organization Teams
+
+Create two teams in your GitHub organization:
+- **developers:** Read-only access to ArgoCD
+- **devops:** Full admin access to ArgoCD
+
+### 6. Repository Secrets Configuration
+
+#### Terraform Repository Secrets
+Set these in your **project-6-tf** repository settings:
+
+**Environment-Independent Secrets:**
+```
+PROVIDER_GITHUB_ARN = arn:aws:iam::ACCOUNT:oidc-provider/token.actions.githubusercontent.com
+TOKEN_GITHUB = github_pat_YOUR_TOKEN
+```
+
+**Environment-Specific Secrets:**
+For each environment (dev/staging/prod), create:
+```
+AWS_ROLE_TO_ASSUME_TF_DEV = arn:aws:iam::ACCOUNT:role/project-6-dev-initial-role-for-tf
+ARGOCD_APP_ID_TF_DEV = YOUR_GITHUB_APP_ID
+ARGOCD_INSTALLATION_ID_TF_DEV = YOUR_INSTALLATION_ID
+ARGOCD_PRIVATE_KEY_TF_DEV = -----BEGIN RSA PRIVATE KEY-----\nYOUR_KEY_CONTENT\n-----END RSA PRIVATE KEY-----
+OAUTH_GITHUB_CLIENT_ID_TF_DEV = YOUR_OAUTH_CLIENT_ID
+OAUTH_GITHUB_CLIENT_SECRET_TF_DEV = YOUR_OAUTH_CLIENT_SECRET
+```
+
+**Note:** For the private key, use the raw content with actual newlines, not base64 encoded.
+
+#### Repository Variables
+Set these in your **project-6-tf** repository:
+```
+AWS_REGION_TF_DEV = us-east-1
+```
+
+### 7. Deployment
+
+1. **Bootstrap deployment:**
+   ```bash
+   # Set bootstrap_mode = true in your tfvars
+   # Set auto_merge_pr = true for automatic PR merging
+   terraform apply
+   ```
+
+2. **Access ArgoCD:**
+   - URL: `https://argocd-dev.project-6.projects-devops.cfd`
+   - Login with GitHub SSO (authorize the application on first login)
+
+3. **Subsequent updates:**
+   ```bash
+   # Set bootstrap_mode = false, update_apps = true for infrastructure updates only
+   terraform apply
+   ```
+
+## Workflow Variables Summary
+
+- **auto_merge_pr:** Controls automatic PR merging in GitOps repository
+- **bootstrap_mode:** Creates initial ArgoCD projects and applications + triggers app build
+- **update_apps:** Updates infrastructure values in GitOps repository only
+
+## Troubleshooting
+
+### ArgoCD Access Issues
+- Verify DNS propagation (can take 10-20 minutes)
+- Check ALB target health
+- Ensure your IP is whitelisted in `argocd_allowed_cidr_blocks`
+
+### GitHub Authentication
+- Ensure GitHub App is installed on both repositories
+- Verify OAuth application callback URL matches ArgoCD domain
+- Check organization team membership for proper RBAC access
+
+### Workflow Triggers
+- Verify all environment-specific secrets exist
+- Check GitHub Actions logs for API permission errors
+- Ensure workflows have proper permissions configured
