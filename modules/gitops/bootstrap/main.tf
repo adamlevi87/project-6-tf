@@ -110,7 +110,7 @@ resource "null_resource" "manage_pr" {
       if [ "$HTTP_CODE" = "422" ]; then
         echo "No changes to create PR for"
         exit 0
-      elif [[ "$HTTP_CODE" =~ ^(200|201)$ ]]; then
+      elif [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
         PR_NUMBER=$(cat /tmp/pr_response.json | jq -r '.number')
         echo "Created PR #$PR_NUMBER"
         

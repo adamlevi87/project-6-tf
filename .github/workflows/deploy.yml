@@ -106,6 +106,9 @@ jobs:
               ;;
           esac
 
+      - name: Check jq availability
+        run: which jq && jq --version || echo "jq not found"
+
       - name: Terraform Action
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
