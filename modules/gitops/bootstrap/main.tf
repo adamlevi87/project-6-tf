@@ -69,6 +69,7 @@ resource "null_resource" "manage_pr" {
   ]
 
   provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
     command = <<-EOT
       #!/bin/bash
       set -e
