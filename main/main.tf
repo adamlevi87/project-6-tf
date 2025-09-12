@@ -44,6 +44,8 @@ module "s3" {
   # KMS encryption
   kms_key_arn = module.kms.kms_key_arn
   
+  account_id = local.account_id
+
   # Lifecycle configuration
   enable_lifecycle_policy = true
   data_retention_days     = var.environment == "prod" ? 0 : 365  # Keep prod data forever, dev/staging for 1 year

@@ -100,3 +100,36 @@ resource "aws_s3_bucket_lifecycle_configuration" "app_data_lifecycle" {
     }
   }
 }
+
+# Base restrictive policy - DENY ALL by default (only root can access initially)
+resource "aws_s3_bucket_policy" "base_restrictive" {
+  bucket     = aws_s3_bucket.app_data.id
+  depends_on = [aws_s3_bucket_public_access_block.app_data_pab]
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "DenyAllExceptRoot"
+        Effect    = "Deny"
+        Principal = "*"
+        Action    = "s3:*"
+        Resource = [
+          aws_s3_bucket.app_data.arn,
+          "${aws_s3_bucket.app_data.arn}/*"
+        ]
+        Condition = {
+          StringNotEquals = {
+            "aws:PrincipalArn" = [
+              "arn:aws:iam::${var.account_id}:root"
+            ]
+          }
+        }
+      }
+    ]
+  })
+  
+  lifecycle {
+    ignore_changes = [policy]
+  }
+}

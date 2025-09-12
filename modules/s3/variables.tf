@@ -21,6 +21,11 @@ variable "kms_key_arn" {
   type        = string
 }
 
+variable "account_id" {
+  description = "AWS Account ID"
+  type        = string
+}
+
 variable "enable_lifecycle_policy" {
   description = "Enable S3 lifecycle policy for cost optimization"
   type        = bool
