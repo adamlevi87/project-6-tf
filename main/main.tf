@@ -311,7 +311,7 @@ module "secrets_app_envs" {
 
 module "argocd_templates" {
   # Only create if any of these conditions are true
-  count = (var.argocd_enabled || var.bootstrap_mode ) ? 1 : 0
+  count = var.bootstrap_mode ? 1 : 0
   
   source = "../modules/gitops/argocd-templates"
   
