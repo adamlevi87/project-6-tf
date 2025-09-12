@@ -570,7 +570,7 @@ module "trigger_app_build" {
 # ====================================================================
 
 module "eks_lockdown" {
-  source = "../modules/eks-lockdown"
+  source = "../modules/eks/lockdown"
   
   # EXPLICIT DEPENDENCIES - Add ALL modules here!
   # This ensures lockdown runs LAST, after all k8s operations complete
