@@ -183,7 +183,7 @@ module "aws_auth_config" {
   # AWS Local Users permissions over the EKS
   eks_user_access_map = local.map_users
 
-  depends_on = [module.eks]
+  depends_on = [module.eks, module.node_groups]
 }
 
 module "aws_load_balancer_controller" {
