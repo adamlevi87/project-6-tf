@@ -37,7 +37,7 @@ spec:
       limit: 20
       backoff:
         duration: 60s
-        factor: 1.5
+        factor: 2
         maxDuration: 15m
     syncOptions:
       - CreateNamespace=true
