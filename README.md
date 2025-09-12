@@ -87,12 +87,12 @@ Set these in your **project-6-tf** repository settings:
 ```
 PROVIDER_GITHUB_ARN = arn:aws:iam::ACCOUNT:oidc-provider/token.actions.githubusercontent.com
 TOKEN_GITHUB = github_pat_YOUR_TOKEN
+AWS_ROLE_TO_ASSUME_TF = arn:aws:iam::ACCOUNT:role/project-6-dev-initial-role-for-tf
 ```
 
 **Environment-Specific Secrets:**
 For each environment (dev/staging/prod), create:
 ```
-AWS_ROLE_TO_ASSUME_TF_DEV = arn:aws:iam::ACCOUNT:role/project-6-dev-initial-role-for-tf
 ARGOCD_APP_ID_TF_DEV = YOUR_GITHUB_APP_ID
 ARGOCD_INSTALLATION_ID_TF_DEV = YOUR_INSTALLATION_ID
 ARGOCD_PRIVATE_KEY_TF_DEV = -----BEGIN RSA PRIVATE KEY-----\nYOUR_KEY_CONTENT\n-----END RSA PRIVATE KEY-----
@@ -100,7 +100,8 @@ OAUTH_GITHUB_CLIENT_ID_TF_DEV = YOUR_OAUTH_CLIENT_ID
 OAUTH_GITHUB_CLIENT_SECRET_TF_DEV = YOUR_OAUTH_CLIENT_SECRET
 ```
 
-**Note:** For the private key, use the raw content with actual newlines, not base64 encoded.
+**Note:** For the private key, base64 encode the entire key content (including BEGIN/END lines) (encoding will create it as a single line- this is desired).
+When encoding (and copying to github) - its important to copy just the key's content, without any additional spaces/empty lines.
 
 #### Repository Variables
 Set these in your **project-6-tf** repository:
