@@ -114,7 +114,6 @@ resource "aws_s3_bucket_policy" "base_restrictive" {
         Effect    = "Allow"
         Principal = {
           AWS = [
-            "arn:aws:iam::${var.account_id}:root",
             "arn:aws:iam::${var.account_id}:group/admins"
           ]
         }
@@ -136,7 +135,6 @@ resource "aws_s3_bucket_policy" "base_restrictive" {
         Condition = {
           StringNotEquals = {
             "aws:PrincipalArn" = [
-              "arn:aws:iam::${var.account_id}:root",
               "arn:aws:iam::${var.account_id}:group/admins"
             ]
           }

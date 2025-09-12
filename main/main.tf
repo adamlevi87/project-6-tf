@@ -294,7 +294,8 @@ module "frontend" {
   
   depends_on = [
     module.eks, 
-    module.aws_load_balancer_controller.webhook_ready
+    module.aws_load_balancer_controller.webhook_ready,
+    module.s3
   ]
 }
 
