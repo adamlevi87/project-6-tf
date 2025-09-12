@@ -120,6 +120,7 @@ jobs:
           
         run: |
           COMMON_VARS=(
+            -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
             -var="github_token=$TOKEN_GITHUB"
             -var="aws_region=$AWS_REGION"
             -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
