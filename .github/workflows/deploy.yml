@@ -85,58 +85,7 @@ jobs:
               echo "update_apps=false" >> $GITHUB_OUTPUT
               ;;
           esac
-      
-      
-
-
-
-
-      - name: Debug PROVIDER_GITHUB_ARN
-        run: |
-          echo "Debugging PROVIDER_GITHUB_ARN..."
           
-          # Write secret to file (files will be created in main/ directory)
-          echo "${{ secrets.PROVIDER_GITHUB_ARN }}" > provider_debug.txt
-          
-          # Also write what Terraform will receive
-          echo "PROVIDER_GITHUB_ARN=${{ secrets.PROVIDER_GITHUB_ARN }}" > terraform_vars_debug.txt
-          echo "AWS_ROLE_TO_ASSUME=${{ secrets.AWS_ROLE_TO_ASSUME }}" >> terraform_vars_debug.txt
-          
-          # Check basic properties without revealing content
-          echo "File size: $(wc -c < provider_debug.txt) bytes" 
-          echo "Line count: $(wc -l < provider_debug.txt)"
-          echo "Current directory: $(pwd)"
-          echo "Files created: $(ls -la *.txt)"
-          
-      - name: Upload debug files
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-secrets-${{ github.run_id }}
-          path: |
-            main/provider_debug.txt
-            main/terraform_vars_debug.txt
-          retention-days: 1
-          overwrite: true
-
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       - name: Terraform Action
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
