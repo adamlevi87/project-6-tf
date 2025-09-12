@@ -106,7 +106,7 @@ OAUTH_GITHUB_CLIENT_SECRET_TF_DEV = YOUR_OAUTH_CLIENT_SECRET
 **Note:** For the private key, base64 encode the entire key content (including BEGIN/END lines) as a single line. Ensure no extra spaces or newlines are added before or after the encoded content when pasting into the GitHub secret field.
 suggestion: encode from a linux machine:
 ```bash
-   cat your-private-key.pem | base64 -w 0 > encoded.txt
+cat your-private-key.pem | base64 -w 0 > encoded.txt
 ```
 
 #### Repository Variables
