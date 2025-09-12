@@ -85,18 +85,38 @@ jobs:
               echo "update_apps=false" >> $GITHUB_OUTPUT
               ;;
           esac
-          
+
+      - name: Set Environment Suffix
+        id: env_suffix
+        run: |
+          case "${{ github.event.inputs.env }}" in
+            dev)
+              echo "suffix=DEV" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "suffix=STAGING" >> $GITHUB_OUTPUT
+              ;;
+            prod)
+              echo "suffix=PROD" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "❌ ERROR: Invalid environment '${{ github.event.inputs.env }}'"
+              echo "Must be one of: dev, staging, prod"
+              exit 1
+              ;;
+          esac
+
       - name: Terraform Action
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
           AWS_REGION: ${{ env.AWS_REGION }}
           PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          ARGOCD_APP_ID: ${{ secrets.ARGOCD_APP_ID }}
-          ARGOCD_INSTALLATION_ID: ${{ secrets.ARGOCD_INSTALLATION_ID }}
-          ARGOCD_PRIVATE_KEY_B64: ${{ secrets.ARGOCD_PRIVATE_KEY }}
-          OAUTH_GITHUB_CLIENT_ID: ${{ secrets.OAUTH_GITHUB_CLIENT_ID }}
-          OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}
+          ARGOCD_APP_ID: ${{ secrets[format('ARGOCD_APP_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_INSTALLATION_ID: ${{ secrets[format('ARGOCD_INSTALLATION_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_PRIVATE_KEY_B64: ${{ secrets[format('ARGOCD_PRIVATE_KEY_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_ID: ${{ secrets[format('OAUTH_GITHUB_CLIENT_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets[format('OAUTH_GITHUB_CLIENT_SECRET_TF_{0}', steps.env_suffix.outputs.suffix)] }}
           
         run: |
           COMMON_VARS=(
