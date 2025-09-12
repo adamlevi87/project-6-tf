@@ -135,7 +135,7 @@ resource "null_resource" "manage_pr" {
       echo "Found $CHANGES changed files. Proceeding with PR creation..."
       
       # Create PR with proper JSON escaping
-      PR_RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" \
+      PR_RESPONSE=$(curl -s -w "HTTPSTATUS:%%{http_code}" \
         -H "Authorization: token $GITHUB_TOKEN" \
         -H "Accept: application/vnd.github.v3+json" \
         -H "Content-Type: application/json" \
