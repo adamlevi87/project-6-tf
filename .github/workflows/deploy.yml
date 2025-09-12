@@ -21,14 +21,24 @@ on:
           - plan
           - apply
           - plan-and-apply
-          - bootstrap-all
-          - update-apps
           - destroy
-      auto_merge_pr:
+      gitops_mode:
+        description: "GitOps configuration mode"
+        required: true
+        default: none
+        type: choice
+        options:
+          - none              # No GitOps changes
+          - update-infra      # Update infrastructure values only
+          - bootstrap         # Full bootstrap (create all files)
+      auto_merge:
         description: "Auto-merge GitOps PRs"
         required: false
-        default: true
+        default: false
         type: boolean
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
 
 jobs:
   terraform:
@@ -45,35 +55,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
-      - name: Set environment variables
-        run: |
-          case "${{ github.event.inputs.env }}" in
-            dev)
-              echo "AWS_REGION=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
-              echo "ARGOCD_APP_ID=${{ secrets.ARGOCD_APP_ID_TF_DEV }}" >> $GITHUB_ENV
-              echo "ARGOCD_INSTALLATION_ID=${{ secrets.ARGOCD_INSTALLATION_ID_TF_DEV }}" >> $GITHUB_ENV
-              echo "ARGOCD_PRIVATE_KEY_B64=${{ secrets.ARGOCD_PRIVATE_KEY_TF_DEV }}" >> $GITHUB_ENV
-              echo "OAUTH_GITHUB_CLIENT_ID=${{ secrets.OAUTH_GITHUB_CLIENT_ID_TF_DEV }}" >> $GITHUB_ENV
-              echo "OAUTH_GITHUB_CLIENT_SECRET=${{ secrets.OAUTH_GITHUB_CLIENT_SECRET_TF_DEV }}" >> $GITHUB_ENV
-              ;;
-            staging)
-              echo "AWS_REGION=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
-              echo "ARGOCD_APP_ID=${{ secrets.ARGOCD_APP_ID_TF_STAGING }}" >> $GITHUB_ENV
-              echo "ARGOCD_INSTALLATION_ID=${{ secrets.ARGOCD_INSTALLATION_ID_TF_STAGING }}" >> $GITHUB_ENV
-              echo "ARGOCD_PRIVATE_KEY_B64=${{ secrets.ARGOCD_PRIVATE_KEY_TF_STAGING }}" >> $GITHUB_ENV
-              echo "OAUTH_GITHUB_CLIENT_ID=${{ secrets.OAUTH_GITHUB_CLIENT_ID_TF_STAGING }}" >> $GITHUB_ENV
-              echo "OAUTH_GITHUB_CLIENT_SECRET=${{ secrets.OAUTH_GITHUB_CLIENT_SECRET_TF_STAGING }}" >> $GITHUB_ENV
-              ;;
-            prod)
-              echo "AWS_REGION=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
-              echo "ARGOCD_APP_ID=${{ secrets.ARGOCD_APP_ID_TF_PROD }}" >> $GITHUB_ENV
-              echo "ARGOCD_INSTALLATION_ID=${{ secrets.ARGOCD_INSTALLATION_ID_TF_PROD }}" >> $GITHUB_ENV
-              echo "ARGOCD_PRIVATE_KEY_B64=${{ secrets.ARGOCD_PRIVATE_KEY_TF_PROD }}" >> $GITHUB_ENV
-              echo "OAUTH_GITHUB_CLIENT_ID=${{ secrets.OAUTH_GITHUB_CLIENT_ID_TF_PROD }}" >> $GITHUB_ENV
-              echo "OAUTH_GITHUB_CLIENT_SECRET=${{ secrets.OAUTH_GITHUB_CLIENT_SECRET_TF_PROD }}" >> $GITHUB_ENV
-              ;;
-          esac
       
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -87,21 +68,61 @@ jobs:
       - name: Terraform Init
         run: terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
 
+      - name: Set GitOps Variables
+        id: gitops_vars
+        run: |
+          case "${{ github.event.inputs.gitops_mode }}" in
+            none)
+              echo "bootstrap_mode=false" >> $GITHUB_OUTPUT
+              echo "update_apps=false" >> $GITHUB_OUTPUT
+              ;;
+            update-infra)
+              echo "bootstrap_mode=false" >> $GITHUB_OUTPUT
+              echo "update_apps=true" >> $GITHUB_OUTPUT
+              ;;
+            bootstrap)
+              echo "bootstrap_mode=true" >> $GITHUB_OUTPUT
+              echo "update_apps=false" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
       - name: Terraform Action
+        env:
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          ARGOCD_APP_ID: ${{ secrets.ARGOCD_APP_ID }}
+          ARGOCD_INSTALLATION_ID: ${{ secrets.ARGOCD_INSTALLATION_ID }}
+          ARGOCD_PRIVATE_KEY_B64: ${{ secrets.ARGOCD_PRIVATE_KEY }}
+          OAUTH_GITHUB_CLIENT_ID: ${{ secrets.OAUTH_GITHUB_CLIENT_ID }}
+          OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}
+          
         run: |
           COMMON_VARS=(
             -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
-            -var="github_token=${{ secrets.TOKEN_GITHUB }}"
-            -var="aws_region=${{ env.AWS_REGION }}"
-            -var="aws_iam_openid_connect_provider_github_arn=${{ secrets.PROVIDER_GITHUB_ARN }}"
-            -var="github_oidc_role_arn=${{ secrets.AWS_ROLE_TO_ASSUME }}"
-            -var="argocd_app_id=${{ env.ARGOCD_APP_ID }}"
-            -var="argocd_installation_id=${{ env.ARGOCD_INSTALLATION_ID }}"
-            -var="argocd_private_key_b64=${{ env.ARGOCD_PRIVATE_KEY_B64 }}"
-            -var="github_oauth_client_id=${{ env.OAUTH_GITHUB_CLIENT_ID }}"
-            -var="github_oauth_client_secret=${{ env.OAUTH_GITHUB_CLIENT_SECRET }}"
-            -var="auto_merge_pr=${{ github.event.inputs.auto_merge_pr }}"
+            -var="github_token=$TOKEN_GITHUB"
+            -var="aws_region=$AWS_REGION"
+            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+            -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+            -var="argocd_app_id=$ARGOCD_APP_ID"
+            -var="argocd_installation_id=$ARGOCD_INSTALLATION_ID"
+            -var="argocd_private_key_b64=$ARGOCD_PRIVATE_KEY_B64"
+            -var="github_oauth_client_id=$OAUTH_GITHUB_CLIENT_ID"
+            -var="github_oauth_client_secret=$OAUTH_GITHUB_CLIENT_SECRET"
+            -var="bootstrap_mode=${{ steps.gitops_vars.outputs.bootstrap_mode }}"
+            -var="update_apps=${{ steps.gitops_vars.outputs.update_apps }}"
+            -var="auto_merge_pr=${{ github.event.inputs.auto_merge }}"
           )
+          
+          echo "================================================"
+          echo "Environment: ${{ github.event.inputs.env }}"
+          echo "Action: ${{ github.event.inputs.action }}"
+          echo "GitOps Mode: ${{ github.event.inputs.gitops_mode }}"
+          echo "Bootstrap: ${{ steps.gitops_vars.outputs.bootstrap_mode }}"
+          echo "Update Apps: ${{ steps.gitops_vars.outputs.update_apps }}"
+          echo "Auto Merge: ${{ github.event.inputs.auto_merge }}"
+          echo "================================================"
           
           case "${{ github.event.inputs.action }}" in
             plan)
@@ -112,16 +133,10 @@ jobs:
               ;;
             plan-and-apply)
               terraform plan "${COMMON_VARS[@]}"
+              echo "================================================"
+              echo "Plan complete. Proceeding with apply..."
+              echo "================================================"
               terraform apply -auto-approve "${COMMON_VARS[@]}"
-              ;;
-            bootstrap-all)
-              terraform apply -auto-approve "${COMMON_VARS[@]}" \
-                -var="bootstrap_mode=true"
-              ;;
-            update-apps)
-              terraform apply -auto-approve "${COMMON_VARS[@]}" \
-                -var="bootstrap_mode=false" \
-                -var="update_apps=true"
               ;;
             destroy)
               terraform destroy -auto-approve "${COMMON_VARS[@]}"
@@ -134,8 +149,28 @@ jobs:
       - name: Summary
         if: always()
         run: |
-          echo "## Terraform Pipeline Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: ${{ github.event.inputs.env }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Action**: ${{ github.event.inputs.action }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Auto-merge PRs**: ${{ github.event.inputs.auto_merge_pr }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Terraform Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Parameter | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | \`${{ github.event.inputs.env }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Action** | \`${{ github.event.inputs.action }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **GitOps Mode** | \`${{ github.event.inputs.gitops_mode }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Bootstrap Mode** | \`${{ steps.gitops_vars.outputs.bootstrap_mode }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Update Apps** | \`${{ steps.gitops_vars.outputs.update_apps }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Auto-merge PRs** | \`${{ github.event.inputs.auto_merge }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ github.event.inputs.gitops_mode }}" == "bootstrap" ]]; then
+            echo "### 📝 Bootstrap Mode" >> $GITHUB_STEP_SUMMARY
+            echo "Created all GitOps configuration files including:" >> $GITHUB_STEP_SUMMARY
+            echo "- ArgoCD Project and App-of-Apps (reference)" >> $GITHUB_STEP_SUMMARY
+            echo "- Application manifests" >> $GITHUB_STEP_SUMMARY
+            echo "- Infrastructure and application values" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ github.event.inputs.gitops_mode }}" == "update-infra" ]]; then
+            echo "### 🔄 Infrastructure Update Mode" >> $GITHUB_STEP_SUMMARY
+            echo "Updated infrastructure values only" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚡ No GitOps Changes" >> $GITHUB_STEP_SUMMARY
+            echo "Terraform changes only - no GitOps modifications" >> $GITHUB_STEP_SUMMARY
+          fi
