@@ -167,7 +167,7 @@ resource "null_resource" "manage_pr" {
               --argjson pr_number "$PR_NUMBER" \
               '{event_type: $event_type, client_payload: {pr_number: $pr_number}}')
             
-            DISPATCH_RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" \
+            DISPATCH_RESPONSE=$(curl -s -w "HTTPSTATUS:%%{http_code}" \
               -H "Authorization: token $GITHUB_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Content-Type: application/json" \
