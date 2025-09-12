@@ -35,18 +35,21 @@ locals {
   
   # Create updated policy with modified deny statement
   updated_policy = {
-    Version = local.current_policy.Version
-    Statement = [
-      for stmt in local.current_policy.Statement : 
-      lookup(stmt, "Sid", "") == var.s3_policy_deny_rule_name ? merge(stmt, {
-        Condition = {
+  Version = local.current_policy.Version
+  Statement = [
+    for stmt in local.current_policy.Statement : 
+    lookup(stmt, "Sid", "") == var.s3_policy_deny_rule_name ? merge(stmt, {
+      Condition = merge(
+        try(stmt.Condition, {}),
+        {
           StringNotEquals = {
             "aws:PrincipalArn" = local.updated_principals
           }
         }
-      }) : stmt
-    ]
-  }
+      )
+    }) : stmt
+  ]
+}
 }
 
 resource "aws_s3_bucket_policy" "updated" {
