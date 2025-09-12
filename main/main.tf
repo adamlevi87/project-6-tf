@@ -48,7 +48,7 @@ module "s3" {
   #account_id = local.account_id
 
   allowed_principals = [
-    "arn:aws:iam::${local.account_id}:user/project-6-dev-initial-role-for-tf",
+    "arn:aws:iam::${local.account_id}:role/project-6-dev-initial-role-for-tf",
     "arn:aws:iam::${local.account_id}:user/adam.local",
     "arn:aws:iam::${local.account_id}:user/adam.login",
     module.frontend.iam_role_arn
