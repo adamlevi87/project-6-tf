@@ -116,11 +116,21 @@ resource "null_resource" "manage_pr" {
         
         if [ "${var.auto_merge_pr}" = "true" ]; then
           echo "Triggering auto-merge..."
-          curl -X POST \
+          DISPATCH_RESPONSE=$(curl -s -w "\nHTTP_CODE:%%{http_code}" -X POST \
             -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/dispatches" \
-            -d "{\"event_type\":\"auto-merge-pr\",\"client_payload\":{\"pr_number\":$PR_NUMBER}}"
+            -d "{\"event_type\":\"auto-merge-pr\",\"client_payload\":{\"pr_number\":$PR_NUMBER}}")
+          
+          DISPATCH_CODE=$(echo "$DISPATCH_RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
+          echo "Dispatch response code: $DISPATCH_CODE"
+          
+          if [ "$DISPATCH_CODE" != "204" ]; then
+            echo "Failed to trigger auto-merge. Response:"
+            echo "$DISPATCH_RESPONSE"
+          else
+            echo "Auto-merge workflow triggered successfully"
+          fi
         fi
       else
         echo "Failed to create PR. HTTP Code: $HTTP_CODE"
