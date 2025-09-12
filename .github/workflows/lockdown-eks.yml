@@ -11,19 +11,13 @@ on:
         description: 'EKS cluster security group ID'
         required: true
         type: string
-      environment:
-        description: 'Environment'
-        required: true
-        type: choice
-        options:
-          - dev
-          - staging
-          - prod
       trigger_source:
         description: 'What triggered this lockdown'
         required: false
         type: string
         default: 'manual'
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
 
 jobs:
   lockdown:
@@ -91,7 +85,6 @@ jobs:
       - name: Summary
         run: |
           echo "## EKS Lockdown Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Security Group**: ${{ github.event.inputs.cluster_security_group_id }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Trigger Source**: ${{ github.event.inputs.trigger_source }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: EKS API access locked down ✅" >> $GITHUB_STEP_SUMMARY
