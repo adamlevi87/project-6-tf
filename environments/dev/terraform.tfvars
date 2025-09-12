@@ -102,6 +102,7 @@ frontend_service_account_name = "frontend-sa"
 github_org = "adamlevi87"
 github_application_repo = "project-6-app"
 github_gitops_repo  = "project-6-gitops"
+github_terraform_repo  = "project-6-tf"
 github_admin_team = "devops"
 github_readonly_team = "developers"
 

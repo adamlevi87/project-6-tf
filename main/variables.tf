@@ -312,6 +312,11 @@ variable "github_org" {
   type        = string
 }
 
+variable "github_terraform_repo" {
+  description = "GitHub repository name"
+  type        = string
+}
+
 variable "github_application_repo" {
   description = "GitHub repository name"
   type        = string

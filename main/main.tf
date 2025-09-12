@@ -558,3 +558,43 @@ module "trigger_app_build" {
     module.repo_ecr_access
   ]
 }
+
+# main/main.tf (add this section at the end)
+
+# ====================================================================
+# EKS LOCKDOWN - Runs after ALL other modules complete
+# ====================================================================
+# IMPORTANT: When adding new modules to main.tf, that use: 
+# kubectl, helm, or kubernetes provider, ADD THEM to the depends_on 
+# list below to ensure EKS lockdown happens after they complete.
+# ====================================================================
+
+module "eks_lockdown" {
+  source = "../modules/eks-lockdown"
+  
+  # EXPLICIT DEPENDENCIES - Add ALL modules here!
+  # This ensures lockdown runs LAST, after all k8s operations complete
+  depends_on = [  
+    # Kubernetes/Helm modules (CRITICAL - these need EKS API access)
+    module.argocd,
+    module.external_dns,
+    module.aws_load_balancer_controller,
+    module.external_secrets_operator,
+    module.cluster_autoscaler,
+    module.metrics_server,
+    
+    # Application modules
+    module.frontend,
+    
+    # ADD NEW MODULES HERE ↑
+    # Template: module.your_new_module,
+  ]
+  
+  # Pass required variables to trigger workflow
+  github_token              = var.github_token
+  github_org                = var.github_org
+  github_repo               = var.github_terraform_repo
+  cluster_security_group_id = module.eks.cluster_security_group_id
+  aws_region                = var.aws_region
+  environment               = var.environment
+}
