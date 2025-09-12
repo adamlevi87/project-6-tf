@@ -97,6 +97,21 @@ resource "null_resource" "manage_pr" {
       
       echo "JSON_PAYLOAD: $JSON_PAYLOAD"
       
+      # Check if there are actual changes
+      echo "Checking for actual changes between branches..."
+      CHANGES=$(curl -s \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        -H "Accept: application/vnd.github.v3+json" \
+        "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/compare/$TARGET_BRANCH...$BRANCH_NAME" | \
+        jq '.files | length')
+      
+      if [ "$CHANGES" = "0" ] || [ -z "$CHANGES" ]; then
+        echo "No actual changes detected. Skipping PR creation."
+        exit 0
+      fi
+      
+      echo "Found $CHANGES changed files. Proceeding with PR creation..."
+
       # Try to create PR
       HTTP_CODE=$(curl -s -o /tmp/pr_response.json -w "%%{http_code}" \
         -H "Authorization: token $GITHUB_TOKEN" \
