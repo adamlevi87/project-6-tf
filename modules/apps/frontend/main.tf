@@ -13,6 +13,23 @@ terraform {
   }
 }
 
+data "aws_s3_bucket_policy" "current" {
+  bucket = var.s3_bucket_id
+}
+
+locals {
+  current_policy = jsondecode(data.aws_s3_bucket_policy.current.policy)
+  
+  # Extract current allowed principals from the Deny condition
+  current_principals = local.current_policy.Statement[0].Condition.StringNotEquals["aws:PrincipalArn"]
+  
+  # Add our IRSA role to the list (avoid duplicates)
+  updated_principals = distinct(concat(
+    local.current_principals,
+    [aws_iam_role.this.arn]
+  ))
+}
+
 resource "aws_iam_role" "this" {
   name = "${var.project_tag}-${var.environment}-${var.service_account_name}-irsa-role"
 
@@ -56,6 +73,8 @@ resource "kubernetes_service_account" "this" {
     }
   }
 }
+
+
 
 # IAM policy for frontend s3 access
 resource "aws_iam_policy" "frontend_s3_access" {

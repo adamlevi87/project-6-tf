@@ -110,6 +110,21 @@ resource "aws_s3_bucket_policy" "base_restrictive" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid       = "AllowAdministrators"
+        Effect    = "Allow"
+        Principal = {
+          AWS = [
+            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root",
+            "arn:aws:iam::${data.aws_caller_identity.current.account_id}:group/administrators"
+          ]
+        }
+        Action = "s3:*"
+        Resource = [
+          aws_s3_bucket.app_data.arn,
+          "${aws_s3_bucket.app_data.arn}/*"
+        ]
+      },
+      {
         Sid       = "DenyAllExceptRoot"
         Effect    = "Deny"
         Principal = "*"
@@ -121,7 +136,8 @@ resource "aws_s3_bucket_policy" "base_restrictive" {
         Condition = {
           StringNotEquals = {
             "aws:PrincipalArn" = [
-              "arn:aws:iam::${var.account_id}:root"
+              "arn:aws:iam::${var.account_id}:root",
+              "arn:aws:iam::${var.account_id}:group/administrators"
             ]
           }
         }
