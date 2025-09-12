@@ -26,6 +26,11 @@ variable "account_id" {
   type        = string
 }
 
+variable "s3_policy_deny_rule_name" {
+  description = "Name of the S3 policy deny rule to modify"
+  type        = string
+}
+
 variable "enable_lifecycle_policy" {
   description = "Enable S3 lifecycle policy for cost optimization"
   type        = bool

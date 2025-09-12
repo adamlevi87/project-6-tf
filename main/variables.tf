@@ -121,6 +121,11 @@ variable "nat_mode" {
   }
 }
 
+variable "s3_policy_deny_rule_name" {
+  description = "Name of the S3 policy deny rule to modify"
+  type        = string
+}
+
 variable "enable_lifecycle_policy" {
   description = "Enable or disable S3 bucket lifecycle policy"
   type        = bool

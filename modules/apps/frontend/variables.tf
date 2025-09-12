@@ -35,6 +35,11 @@ variable "s3_bucket_arn" {
   type        = string
 }
 
+variable "s3_policy_deny_rule_name" {
+  description = "Name of the S3 policy deny rule to modify"
+  type        = string
+}
+
 variable "kms_key_arn" {
   description = "ARN of the KMS key for S3 bucket encryption"
   type        = string

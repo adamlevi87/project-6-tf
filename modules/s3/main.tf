@@ -125,7 +125,7 @@ resource "aws_s3_bucket_policy" "base_restrictive" {
         ]
       },
       {
-        Sid       = "DenyAllExceptRoot"
+        Sid       = var.s3_policy_deny_rule_name
         Effect    = "Deny"
         Principal = "*"
         Action    = "s3:*"
@@ -144,8 +144,4 @@ resource "aws_s3_bucket_policy" "base_restrictive" {
       }
     ]
   })
-  
-  lifecycle {
-    ignore_changes = [policy]
-  }
 }

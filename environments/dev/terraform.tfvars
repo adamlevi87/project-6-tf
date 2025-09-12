@@ -27,7 +27,7 @@ additional_availability_zones = 1  # Can be reduced in single mode without affec
 # S3 Configurations
 # ================================
 enable_lifecycle_policy = true
-
+s3_policy_deny_rule_name = "DenyAllExceptions"
 # ================================
 # ECR Configurations
 # ================================
