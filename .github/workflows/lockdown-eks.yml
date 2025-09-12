@@ -40,24 +40,10 @@ jobs:
       id-token: write  # Required for OIDC
     
     steps:
-      - name: Set environment variables
-        run: |
-          case "${{ github.event.inputs.environment }}" in
-            dev)
-              echo "AWS_ROLE_TO_ASSUME=${{ secrets.AWS_ROLE_TO_ASSUME_TF_DEV }}" >> $GITHUB_ENV
-              ;;
-            staging)
-              echo "AWS_ROLE_TO_ASSUME=${{ secrets.AWS_ROLE_TO_ASSUME_TF_STAGING }}" >> $GITHUB_ENV
-              ;;
-            prod)
-              echo "AWS_ROLE_TO_ASSUME=${{ secrets.AWS_ROLE_TO_ASSUME_TF_PROD }}" >> $GITHUB_ENV
-              ;;
-          esac
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ github.event.inputs.aws_region }}
 
       - name: Check current security group rules
