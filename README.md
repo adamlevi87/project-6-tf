@@ -79,6 +79,7 @@ You cannot choose the URL arbitrarily - it must match your Terraform domain conf
 Create two teams in your GitHub organization:
 - **developers:** Read-only access to ArgoCD
 - **devops:** Full admin access to ArgoCD
+* Update their names in the tfvars (github_admin_team ,github_readonly_team)
 
 ### 6. Repository Secrets Configuration
 
@@ -146,10 +147,12 @@ AWS_REGION = us-east-1
 
 ## Workflow Variables Summary
 
-- **auto_merge_pr:** Controls automatic PR merging in GitOps repository
-- **bootstrap_mode:** Creates initial ArgoCD projects and applications + triggers app build
-  - Triggers app build = Triggers Application Repository's workflow that builds the app, pushes to ECR, creates a GitOps PR, and automatically merges it
-- **update_apps:** Updates infrastructure values in GitOps repository only
+- **auto_merge_pr:** Controls automatic PR merging in GitOps repository (triggers a Gitops repo workflow to merge)
+- **bootstrap_mode:** Creates yamls in the GitOps Repository: (Creates a PR)
+                        ArgoCD project and app-of-apps yaml are for reference only (they are deployed using helm).Applications and their value files are also created.
+                        
+                    This mode also Triggers the Application Repository's workflow that builds the app, pushes to ECR, creates a GitOps PR to update the digest, and triggers a Gitops Repo workflow to merge it.
+- **update_apps:** Updates infrastructure values in GitOps repository only (Creates a PR)
 
 ## Troubleshooting
 
