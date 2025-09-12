@@ -14,6 +14,8 @@ resource "null_resource" "trigger_eks_lockdown" {
   provisioner "local-exec" {
     command = <<-EOT
       echo "🔒 Triggering EKS lockdown workflow..."
+      echo "Repository: ${var.github_org}/${var.github_repo}"
+      echo "Security Group: ${var.cluster_security_group_id}"
       
       curl -X POST \
         -H "Accept: application/vnd.github+json" \
@@ -28,14 +30,17 @@ resource "null_resource" "trigger_eks_lockdown" {
             "environment": "${var.environment}",
             "trigger_source": "terraform"
           }
-        }'
+        }' \
+        -w "HTTP Status: %{http_code}\n" \
+        -o /dev/null -s
       
-      echo "✅ EKS lockdown workflow triggered successfully"
+      if [ $? -eq 0 ]; then
+        echo "✅ EKS lockdown workflow API call completed"
+      else
+        echo "❌ Failed to trigger workflow"
+        exit 1
+      fi
     EOT
-    
-    environment = {
-      GITHUB_TOKEN = var.github_token
-    }
   }
   
   triggers = {
