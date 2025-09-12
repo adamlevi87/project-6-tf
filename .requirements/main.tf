@@ -24,6 +24,9 @@ resource "aws_iam_role" "github_actions" {
         },
         Action = "sts:AssumeRoleWithWebIdentity",
         Condition = {
+          StringEquals = {
+            "${aws_iam_openid_connect_provider.github.url}:aud" = "sts.amazonaws.com"
+          },
           StringLike = {
             "${aws_iam_openid_connect_provider.github.url}:sub" = "repo:${var.github_org}/${var.github_repo}:*"
           }
