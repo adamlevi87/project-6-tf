@@ -21,7 +21,7 @@ spec:
       limit: 25                    # High retry limit for missing images
       backoff:
         duration: 120s             # Start with 2 minutes
-        factor: 1.3               # Gentle exponential backoff
+        factor: 2               # Gentle exponential backoff
         maxDuration: 20m          # Maximum 20 minutes between retries
     syncOptions:
       - CreateNamespace=true
