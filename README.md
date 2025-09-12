@@ -65,12 +65,14 @@ Create a fine-grained PAT at: https://github.com/settings/personal-access-tokens
 - Format: `https://{argocd_base_domain_name}-{environment}.{subdomain_name}.{domain_name}`
 - Example: `https://argocd-dev.project-6.projects-devops.cfd`
 - Configure these in your `terraform.tfvars`:
-```hcl
+  ```hcl
   argocd_base_domain_name = "argocd"
   environment = "dev" 
   subdomain_name = "project-6"
   domain_name = "projects-devops.cfd"
-```
+  ```
+
+You cannot choose the URL arbitrarily - it must match your Terraform domain configuration.
 
 ### 5. GitHub Organization Teams
 
@@ -86,8 +88,8 @@ Set these in your **project-6-tf** repository settings:
 **Environment-Independent Secrets:**
 ```
 PROVIDER_GITHUB_ARN = arn:aws:iam::ACCOUNT:oidc-provider/token.actions.githubusercontent.com
+AWS_ROLE_TO_ASSUME = arn:aws:iam::ACCOUNT:role/project-6-dev-initial-role-for-tf
 TOKEN_GITHUB = github_pat_YOUR_TOKEN
-AWS_ROLE_TO_ASSUME_TF = arn:aws:iam::ACCOUNT:role/project-6-dev-initial-role-for-tf
 ```
 
 **Environment-Specific Secrets:**
@@ -95,44 +97,58 @@ For each environment (dev/staging/prod), create:
 ```
 ARGOCD_APP_ID_TF_DEV = YOUR_GITHUB_APP_ID
 ARGOCD_INSTALLATION_ID_TF_DEV = YOUR_INSTALLATION_ID
-ARGOCD_PRIVATE_KEY_TF_DEV = -----BEGIN RSA PRIVATE KEY-----\nYOUR_KEY_CONTENT\n-----END RSA PRIVATE KEY-----
+ARGOCD_PRIVATE_KEY_TF_DEV = BASE64_ENCODED_PRIVATE_KEY
 OAUTH_GITHUB_CLIENT_ID_TF_DEV = YOUR_OAUTH_CLIENT_ID
 OAUTH_GITHUB_CLIENT_SECRET_TF_DEV = YOUR_OAUTH_CLIENT_SECRET
 ```
 
-**Note:** For the private key, base64 encode the entire key content (including BEGIN/END lines) (encoding will create it as a single line- this is desired).
-When encoding (and copying to github) - its important to copy just the key's content, without any additional spaces/empty lines.
+**Note:** For the private key, base64 encode the entire key content (including BEGIN/END lines) as a single line. Ensure no extra spaces or newlines are added before or after the encoded content when pasting into the GitHub secret field.
 
 #### Repository Variables
 Set these in your **project-6-tf** repository:
 ```
-AWS_REGION_TF_DEV = us-east-1
+AWS_REGION = us-east-1
 ```
 
 ### 7. Deployment
 
-1. **Bootstrap deployment:**
+1. **Initialize Terraform:**
    ```bash
-   # Set bootstrap_mode = true in your tfvars
-   # Set auto_merge_pr = true for automatic PR merging
-   terraform apply
+   cd main
+   terraform init
    ```
 
-2. **Access ArgoCD:**
+2. **Plan and review changes:**
+   ```bash
+   terraform plan -var-file="../environments/dev/terraform.tfvars"
+   ```
+
+3. **Bootstrap deployment:**
+   ```bash
+   terraform apply --auto-approve \
+     --var-file="../environments/dev/terraform.tfvars" \
+     --var="auto_merge_pr=true" \
+     --var="bootstrap_mode=true"
+   ```
+
+4. **Access ArgoCD:**
    - URL: Automatically generated as `https://{argocd_base_domain_name}-{environment}.{subdomain_name}.{domain_name}`
    - For default config: `https://argocd-dev.project-6.projects-devops.cfd`
    - Login with GitHub SSO (authorize the application on first login)
 
-3. **Subsequent updates:**
+5. **Subsequent updates:**
    ```bash
-   # Set bootstrap_mode = false, update_apps = true for infrastructure updates only
-   terraform apply
+   terraform apply --auto-approve \
+     --var-file="../environments/dev/terraform.tfvars" \
+     --var="bootstrap_mode=false" \
+     --var="update_apps=true"
    ```
 
 ## Workflow Variables Summary
 
 - **auto_merge_pr:** Controls automatic PR merging in GitOps repository
 - **bootstrap_mode:** Creates initial ArgoCD projects and applications + triggers app build
+  - Triggers app build = Triggers Application Repository's workflow that builds the app, pushes to ECR, creates a GitOps PR, and automatically merges it
 - **update_apps:** Updates infrastructure values in GitOps repository only
 
 ## Troubleshooting
