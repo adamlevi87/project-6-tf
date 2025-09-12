@@ -70,6 +70,7 @@ Create a fine-grained PAT at: https://github.com/settings/personal-access-tokens
   environment = "dev" 
   subdomain_name = "project-6"
   domain_name = "projects-devops.cfd"
+```
 
 ### 5. GitHub Organization Teams
 
@@ -117,7 +118,8 @@ AWS_REGION_TF_DEV = us-east-1
    ```
 
 2. **Access ArgoCD:**
-   - URL: `https://argocd-dev.project-6.projects-devops.cfd`
+   - URL: Automatically generated as `https://{argocd_base_domain_name}-{environment}.{subdomain_name}.{domain_name}`
+   - For default config: `https://argocd-dev.project-6.projects-devops.cfd`
    - Login with GitHub SSO (authorize the application on first login)
 
 3. **Subsequent updates:**
