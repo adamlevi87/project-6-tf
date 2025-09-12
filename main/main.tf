@@ -322,7 +322,6 @@ module "secrets_app_envs" {
 
 module "argocd_templates" {
   # Only create if any of these conditions are true
-  count = var.bootstrap_mode ? 1 : 0
   
   source = "../modules/gitops/argocd-templates"
   
@@ -391,8 +390,8 @@ module "gitops_bootstrap" {
   
   # ArgoCD Configuration
   argocd_namespace = var.argocd_namespace
-  argocd_project_yaml     = var.bootstrap_mode ? module.argocd_templates[0].project_yaml : ""
-  argocd_app_of_apps_yaml = var.bootstrap_mode ? module.argocd_templates[0].app_of_apps_yaml : ""
+  argocd_project_yaml     = module.argocd_templates.project_yaml
+  argocd_app_of_apps_yaml = module.argocd_templates.app_of_apps_yaml
   
   # Control Variables
   bootstrap_mode = var.bootstrap_mode
@@ -452,8 +451,8 @@ module "argocd" {
   #github_gitops_repo            = var.github_gitops_repo
  
   # ArgoCD Setup
-  argocd_project_yaml     = module.argocd_templates[0].project_yaml
-  argocd_app_of_apps_yaml = module.argocd_templates[0].app_of_apps_yaml
+  argocd_project_yaml     = module.argocd_templates.project_yaml
+  argocd_app_of_apps_yaml = module.argocd_templates.app_of_apps_yaml
   #app_of_apps_path              = var.argocd_app_of_apps_path
   #app_of_apps_target_revision   = var.argocd_app_of_apps_target_revision
   
