@@ -10,7 +10,7 @@ terraform {
 }
 
 # Trigger GitHub workflow to lockdown EKS access
-resource "terraform_data" "trigger_eks_lockdown" {
+resource "null_resource" "trigger_eks_lockdown" {
   provisioner "local-exec" {
     command = <<-EOT
       echo "🔒 Triggering EKS lockdown workflow..."
@@ -38,8 +38,8 @@ resource "terraform_data" "trigger_eks_lockdown" {
     }
   }
   
-  # Optional: Add a small delay to ensure workflow starts
-  provisioner "local-exec" {
-    command = "sleep 5"
+  triggers = {
+    cluster_sg_id = var.cluster_security_group_id
+    environment   = var.environment
   }
 }
