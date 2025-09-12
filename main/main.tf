@@ -45,8 +45,14 @@ module "s3" {
   kms_key_arn = module.kms.kms_key_arn
   
   s3_policy_deny_rule_name = var.s3_policy_deny_rule_name
-  account_id = local.account_id
+  #account_id = local.account_id
 
+  allowed_principals = [
+    "arn:aws:iam::${var.account_id}:user/adam.local",
+    "arn:aws:iam::${var.account_id}:user/adam.login",
+    module.frontend.iam_role_arn
+  ]
+  
   # Lifecycle configuration
   enable_lifecycle_policy = true
   data_retention_days     = var.environment == "prod" ? 0 : 365  # Keep prod data forever, dev/staging for 1 year
@@ -284,8 +290,8 @@ module "frontend" {
 
   kms_key_arn               = module.kms.kms_key_arn
   s3_bucket_arn             = module.s3.bucket_arn
-  s3_bucket_id              = module.s3.bucket_id
-  s3_policy_deny_rule_name  = var.s3_policy_deny_rule_name
+  #s3_bucket_id              = module.s3.bucket_id
+  #s3_policy_deny_rule_name  = var.s3_policy_deny_rule_name
 
   # EKS related variables
   oidc_provider_arn         = module.eks.oidc_provider_arn

@@ -13,49 +13,49 @@ terraform {
   }
 }
 
-data "aws_s3_bucket_policy" "current" {
-  bucket = var.s3_bucket_id
-}
+# data "aws_s3_bucket_policy" "current" {
+#   bucket = var.s3_bucket_id
+# }
 
-locals {
-  current_policy = jsondecode(data.aws_s3_bucket_policy.current.policy)
+# locals {
+  # current_policy = jsondecode(data.aws_s3_bucket_policy.current.policy)
   
   # Find the deny statement by its Sid using the variable
-  deny_statement_index = index([for stmt in local.current_policy.Statement : lookup(stmt, "Sid", "")], var.s3_policy_deny_rule_name)
-  deny_statement = local.current_policy.Statement[local.deny_statement_index]
+  #deny_statement_index = index([for stmt in local.current_policy.Statement : lookup(stmt, "Sid", "")], var.s3_policy_deny_rule_name)
+  #deny_statement = local.current_policy.Statement[local.deny_statement_index]
   
   # Extract current allowed principals from the Deny condition
-  current_principals = local.deny_statement.Condition.StringNotEquals["aws:PrincipalArn"]
+  #current_principals = local.deny_statement.Condition.StringNotEquals["aws:PrincipalArn"]
   
   # Add our IRSA role to the list (avoid duplicates)
-  updated_principals = distinct(concat(
-    local.current_principals,
-    [aws_iam_role.this.arn]
-  ))
+  # updated_principals = distinct(concat(
+  #   local.current_principals,
+  #   [aws_iam_role.this.arn]
+  # ))
   
   # Create updated policy with modified deny statement
-  updated_policy = {
-  Version = local.current_policy.Version
-  Statement = [
-    for stmt in local.current_policy.Statement : 
-    lookup(stmt, "Sid", "") == var.s3_policy_deny_rule_name ? merge(stmt, {
-      Condition = merge(
-        try(stmt.Condition, {}),
-        {
-          StringNotEquals = {
-            "aws:PrincipalArn" = local.updated_principals
-          }
-        }
-      )
-    }) : stmt
-  ]
-}
-}
+  # updated_policy = {
+  # Version = local.current_policy.Version
+  #   Statement = [
+  #     for stmt in local.current_policy.Statement : 
+  #     lookup(stmt, "Sid", "") == var.s3_policy_deny_rule_name ? merge(stmt, {
+  #       Condition = merge(
+  #         try(stmt.Condition, {}),
+  #         {
+  #           StringNotEquals = {
+  #             "aws:PrincipalArn" = local.updated_principals
+  #           }
+  #         }
+  #       )
+  #     }) : stmt
+  #   ]
+  # }
+# }
 
-resource "aws_s3_bucket_policy" "updated" {
-  bucket = var.s3_bucket_id
-  policy = jsonencode(local.updated_policy)
-}
+# resource "aws_s3_bucket_policy" "updated" {
+#   bucket = var.s3_bucket_id
+#   policy = jsonencode(local.updated_policy)
+# }
 
 resource "aws_iam_role" "this" {
   name = "${var.project_tag}-${var.environment}-${var.service_account_name}-irsa-role"
@@ -100,8 +100,6 @@ resource "kubernetes_service_account" "this" {
     }
   }
 }
-
-
 
 # IAM policy for frontend s3 access
 resource "aws_iam_policy" "frontend_s3_access" {

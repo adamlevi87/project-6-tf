@@ -113,10 +113,7 @@ resource "aws_s3_bucket_policy" "base_restrictive" {
         Sid       = "AllowAdministrators"
         Effect    = "Allow"
         Principal = {
-          AWS = [
-            "arn:aws:iam::${var.account_id}:user/adam.login",
-            "arn:aws:iam::${var.account_id}:user/adam.local"
-          ]
+          AWS = var.allowed_principals
         }
         Action = "s3:*"
         Resource = [
@@ -135,10 +132,7 @@ resource "aws_s3_bucket_policy" "base_restrictive" {
         ]
         Condition = {
           StringNotEquals = {
-            "aws:PrincipalArn" = [
-              "arn:aws:iam::${var.account_id}:user/adam.login",
-              "arn:aws:iam::${var.account_id}:user/adam.local"
-            ]
+            "aws:PrincipalArn" = var.allowed_principals
           }
         }
       }
