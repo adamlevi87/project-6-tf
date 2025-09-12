@@ -110,13 +110,14 @@ jobs:
           echo "Line count: $(wc -l < provider_debug.txt)"
           
       - name: Upload debug files
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: debug-secrets
+          name: debug-secrets-${{ github.run_id }}
           path: |
             provider_debug.txt
             terraform_vars_debug.txt
           retention-days: 1
+          overwrite: true
 
 
 
