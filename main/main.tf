@@ -44,6 +44,7 @@ module "s3" {
   # KMS encryption
   kms_key_arn = module.kms.kms_key_arn
   
+  s3_policy_deny_rule_name = var.s3_policy_deny_rule_name
   account_id = local.account_id
 
   # Lifecycle configuration
@@ -281,8 +282,10 @@ module "frontend" {
   service_account_name      = var.frontend_service_account_name
   namespace                 = var.frontend_service_namespace
 
-  kms_key_arn = module.kms.kms_key_arn
-  s3_bucket_arn = module.s3.bucket_arn
+  kms_key_arn               = module.kms.kms_key_arn
+  s3_bucket_arn             = module.s3.bucket_arn
+  s3_bucket_id              = module.s3.bucket_id
+  s3_policy_deny_rule_name  = var.s3_policy_deny_rule_name
 
   # EKS related variables
   oidc_provider_arn         = module.eks.oidc_provider_arn

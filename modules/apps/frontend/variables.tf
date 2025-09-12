@@ -35,6 +35,11 @@ variable "s3_bucket_arn" {
   type        = string
 }
 
+variable "s3_bucket_id" {
+  description = "id of the S3 bucket"
+  type        = string
+}
+
 variable "s3_policy_deny_rule_name" {
   description = "Name of the S3 policy deny rule to modify"
   type        = string
