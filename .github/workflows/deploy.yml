@@ -154,7 +154,7 @@ jobs:
             -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
             -var="github_token=$TOKEN_GITHUB"
             -var="aws_region=$AWS_REGION"
-            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+            -var='aws_iam_openid_connect_provider_github_arn='"${PROVIDER_GITHUB_ARN}"''
             -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
             -var="argocd_app_id=$ARGOCD_APP_ID"
             -var="argocd_installation_id=$ARGOCD_INSTALLATION_ID"
