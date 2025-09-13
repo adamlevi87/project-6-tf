@@ -152,7 +152,7 @@ gitops_target_branch = "main"
 # ================================
 # Monitoring Configurations  
 # ================================
-enable_monitoring = true
+enable_monitoring = false
 monitoring_namespace = "monitoring"
 monitoring_release_name = "kube-prometheus-stack"
 kube_prometheus_stack_chart_version = "77.6.2"
