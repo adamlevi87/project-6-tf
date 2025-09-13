@@ -14,9 +14,11 @@ locals {
   app_of_apps_yaml_path      = "reference_only/${var.environment}/app_of_apps.yaml"
   frontend_infra_values_path = "environments/${var.environment}/manifests/frontend/infra-values.yaml"
   frontend_app_values_path   = "environments/${var.environment}/manifests/frontend/app-values.yaml"
+  frontend_app_path          = "environments/${var.environment}/apps/frontend/application.yaml"
+  
   # backend_infra_values_path  = "environments/${var.environment}/manifests/backend/infra-values.yaml"
   # backend_app_values_path    = "environments/${var.environment}/manifests/backend/app-values.yaml"
-  frontend_app_path          = "environments/${var.environment}/apps/frontend/application.yaml"
+  
   # backend_app_path           = "environments/${var.environment}/apps/backend/application.yaml"
   
   

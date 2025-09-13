@@ -2,72 +2,14 @@
 
 terraform {
   required_providers {
-    github = {
-      source  = "integrations/github"
-      version = "~> 6.6.0"
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
     }
   }
 }
 
-resource "github_branch" "gitops_branch" { 
-  repository = var.gitops_repo_name
-  branch     = local.branch_name
-  source_branch = var.target_branch
-}
-
-# Bootstrap files (only in bootstrap mode)
-resource "github_repository_file" "bootstrap_files" {
-  for_each = var.bootstrap_mode ? {
-    "project"              = { path = local.project_yaml_path, content = local.rendered_project }
-    "app_of_apps"          = { path = local.app_of_apps_yaml_path, content = local.rendered_app_of_apps }
-    "frontend_application" = { path = local.frontend_app_path, content = local.rendered_frontend_app }
-    # "backend_application"  = { path = local.backend_app_path, content = local.rendered_backend_app }
-    "frontend_app_values"  = { path = local.frontend_app_values_path, content = local.rendered_frontend_app_values }
-    # "backend_app_values"   = { path = local.backend_app_values_path, content = local.rendered_backend_app_values }
-  } : {}
-  
-  repository = var.gitops_repo_name
-  file       = each.value.path
-  content    = each.value.content
-  branch     = github_branch.gitops_branch.branch
-  
-  commit_message = "Bootstrap: Create ${each.key}"
-  commit_author  = "Terraform GitOps"
-  commit_email   = "terraform@gitops.local"
-  
-  overwrite_on_create = true
-}
-
-# Infrastructure files (bootstrap OR update mode)
-resource "github_repository_file" "infra_files" {
-  for_each = var.bootstrap_mode || var.update_apps ? {
-    "frontend_infra" = { path = local.frontend_infra_values_path, content = local.rendered_frontend_infra }
-    #"backend_infra"  = { path = local.backend_infra_values_path, content = local.rendered_backend_infra }
-  } : {}
-  
-  repository = var.gitops_repo_name
-  file       = each.value.path
-  content    = each.value.content
-  branch     = github_branch.gitops_branch.branch
-  
-  commit_message = var.bootstrap_mode ? "Bootstrap: Create ${each.key} values" : "Update: ${each.key} values for ${var.environment}"
-  commit_author  = "Terraform GitOps"
-  commit_email   = "terraform@gitops.local"
-  
-  overwrite_on_create = true
-  depends_on = [
-    github_repository_file.bootstrap_files
-  ]
-}
-
-# Manage PR creation and cleanup entirely via local-exec
-resource "null_resource" "manage_pr" {
-  depends_on = [
-    github_branch.gitops_branch,
-    github_repository_file.bootstrap_files,
-    github_repository_file.infra_files
-  ]
-
+resource "null_resource" "gitops_bootstrap" {
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
     command = <<-EOT
@@ -76,62 +18,176 @@ resource "null_resource" "manage_pr" {
       
       # Variables
       GITHUB_TOKEN="${var.github_token}"
-      REPO_OWNER="${var.github_org}"
-      REPO_NAME="${var.github_gitops_repo}"
-      BRANCH_NAME="${github_branch.gitops_branch.branch}"
+      GITHUB_ORG="${var.github_org}"
+      GITOPS_REPO="${var.github_gitops_repo}"
       TARGET_BRANCH="${var.target_branch}"
-      PR_TITLE="${var.bootstrap_mode ? "Bootstrap: ${var.project_tag} ${var.environment}" : "Update: ${var.environment} infrastructure"}"
-      PR_BODY="${var.bootstrap_mode ? "Bootstrap GitOps configuration for ${var.project_tag}" : "Update infrastructure values for ${var.environment}"}"
+      BRANCH_NAME="${local.branch_name}"
       
-      echo "=== Creating PR ==="
-      echo "BRANCH_NAME: $BRANCH_NAME"
-      echo "TARGET_BRANCH: $TARGET_BRANCH"
+      echo "=== GitOps Bootstrap ==="
+      echo "Repo: $GITHUB_ORG/$GITOPS_REPO"
+      echo "Branch: $BRANCH_NAME"
+      echo "Mode: ${var.bootstrap_mode ? "bootstrap" : "update"}"
       
-      # Create JSON payload
-      JSON_PAYLOAD=$(jq -n \
-        --arg title "$PR_TITLE" \
-        --arg body "$PR_BODY" \
-        --arg head "$BRANCH_NAME" \
-        --arg base "$TARGET_BRANCH" \
-        '{title: $title, body: $body, head: $head, base: $base}')
+      # Clone the GitOps repository
+      echo "Cloning GitOps repository..."
+      rm -rf gitops-repo
+      git clone "https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_ORG/$GITOPS_REPO.git" gitops-repo
+      cd gitops-repo
       
-      echo "JSON_PAYLOAD: $JSON_PAYLOAD"
+      # Configure git
+      git config user.name "Terraform GitOps"
+      git config user.email "terraform@gitops.local"
       
-      # Try to create PR
-      HTTP_CODE=$(curl -s -o /tmp/pr_response.json -w "%%{http_code}" \
-        -H "Authorization: token $GITHUB_TOKEN" \
-        -H "Accept: application/vnd.github.v3+json" \
-        "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls" \
-        -d "$JSON_PAYLOAD")
+      # Track if any files actually changed
+      CHANGES_MADE=false
       
-      echo "HTTP_CODE: $HTTP_CODE"
-      echo "Response: $(cat /tmp/pr_response.json)"
-      
-      if [ "$HTTP_CODE" = "422" ]; then
-        echo "No changes to create PR for"
-        exit 0
-      elif [[ "$HTTP_CODE" =~ ^(200|201)$ ]]; then
-        PR_NUMBER=$(cat /tmp/pr_response.json | jq -r '.number')
-        echo "Created PR #$PR_NUMBER"
+      # Function to update file if content differs
+      update_file_if_changed() {
+        local file_path="$1"
+        local new_content="$2"
+        local file_description="$3"
         
+        echo "Checking $file_description..."
+        
+        # Create directory if it doesn't exist
+        mkdir -p "$(dirname "$file_path")"
+        
+        # Compare content
+        if [ ! -f "$file_path" ]; then
+          echo "  File doesn't exist, creating..."
+          echo "$new_content" > "$file_path"
+          CHANGES_MADE=true
+        elif ! echo "$new_content" | diff -q "$file_path" - > /dev/null 2>&1; then
+          echo "  Content differs, updating..."
+          echo "$new_content" > "$file_path"
+          CHANGES_MADE=true
+        else
+          echo "  No changes needed"
+        fi
+      }
+      
+      # Bootstrap files (only in bootstrap mode)
+      if [ "${var.bootstrap_mode}" = "true" ]; then
+        echo "=== Bootstrap Mode Files ==="
+        
+        # Project YAML (reference only)
+        update_file_if_changed \
+          "${local.project_yaml_path}" \
+          '${local.rendered_project}' \
+          "ArgoCD Project"
+        
+        # App of Apps YAML (reference only)
+        update_file_if_changed \
+          "${local.app_of_apps_yaml_path}" \
+          '${local.rendered_app_of_apps}' \
+          "App of Apps"
+        
+        # Frontend Application YAML
+        update_file_if_changed \
+          "${local.frontend_app_path}" \
+          '${local.rendered_frontend_app}' \
+          "Frontend Application"
+        
+        # Frontend App Values YAML
+        update_file_if_changed \
+          "${local.frontend_app_values_path}" \
+          '${local.rendered_frontend_app_values}' \
+          "Frontend App Values"
+      fi
+      
+      # Infrastructure files (bootstrap OR update mode)
+      if [ "${var.bootstrap_mode}" = "true" ] || [ "${var.update_apps}" = "true" ]; then
+        echo "=== Infrastructure Files ==="
+        
+        # Frontend Infrastructure Values
+        update_file_if_changed \
+          "${local.frontend_infra_values_path}" \
+          '${local.rendered_frontend_infra}' \
+          "Frontend Infrastructure Values"
+      fi
+      
+      # Check if any changes were made
+      if [ "$CHANGES_MADE" = "false" ]; then
+        echo "No changes detected. Exiting without creating PR."
+        cd ..
+        rm -rf gitops-repo
+        exit 0
+      fi
+      
+      echo "Changes detected. Creating PR..."
+      
+      # Create branch and commit changes
+      git checkout -b "$BRANCH_NAME"
+      git add .
+      
+      # Create commit message
+      if [ "${var.bootstrap_mode}" = "true" ]; then
+        COMMIT_MSG="Bootstrap: ${var.project_tag} ${var.environment} GitOps configuration"
+      else
+        COMMIT_MSG="Update: ${var.environment} infrastructure values"
+      fi
+      
+      git commit -m "$COMMIT_MSG"
+      git push origin "$BRANCH_NAME"
+      
+      # Create PR
+      echo "Creating PR..."
+      if [ "${var.bootstrap_mode}" = "true" ]; then
+        PR_TITLE="Bootstrap: ${var.project_tag} ${var.environment}"
+        PR_BODY="Bootstrap GitOps configuration for ${var.project_tag} ${var.environment}"
+      else
+        PR_TITLE="Update: ${var.environment} infrastructure"
+        PR_BODY="Update infrastructure values for ${var.environment}"
+      fi
+      
+      PR_RESPONSE=$(curl -s -X POST \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        -H "Accept: application/vnd.github+json" \
+        "https://api.github.com/repos/$GITHUB_ORG/$GITOPS_REPO/pulls" \
+        -d "{\"title\":\"$PR_TITLE\",\"body\":\"$PR_BODY\",\"head\":\"$BRANCH_NAME\",\"base\":\"$TARGET_BRANCH\"}")
+      
+      # Extract PR number
+      PR_NUMBER=$(echo "$PR_RESPONSE" | grep '"number"' | head -1 | sed 's/.*"number": *\([0-9]*\).*/\1/')
+      
+      if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" -gt 0 ] 2>/dev/null; then
+        echo "✅ Created PR #$PR_NUMBER"
+        
+        # Trigger auto-merge if enabled
         if [ "${var.auto_merge_pr}" = "true" ]; then
           echo "Triggering auto-merge..."
           curl -X POST \
             -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/dispatches" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_ORG/$GITOPS_REPO/dispatches" \
             -d "{\"event_type\":\"auto-merge-pr\",\"client_payload\":{\"pr_number\":$PR_NUMBER}}"
+          echo "✅ Auto-merge triggered"
         fi
       else
-        echo "Failed to create PR. HTTP Code: $HTTP_CODE"
-        cat /tmp/pr_response.json
+        echo "❌ Failed to create PR"
+        echo "Response: $PR_RESPONSE"
         exit 1
       fi
+      
+      # Cleanup
+      cd ..
+      rm -rf gitops-repo
+      
+      echo "🎉 GitOps bootstrap completed successfully"
     EOT
   }
 
-  # Trigger when branch changes
+  # Trigger recreation when content changes
   triggers = {
-    branch_name = github_branch.gitops_branch.branch
+    bootstrap_mode = var.bootstrap_mode
+    update_apps    = var.update_apps
+    environment    = var.environment
+    # Hash of all rendered content to detect changes
+    content_hash = md5(join("", [
+      var.bootstrap_mode ? local.rendered_project : "",
+      var.bootstrap_mode ? local.rendered_app_of_apps : "",
+      var.bootstrap_mode ? local.rendered_frontend_app : "",
+      var.bootstrap_mode ? local.rendered_frontend_app_values : "",
+      (var.bootstrap_mode || var.update_apps) ? local.rendered_frontend_infra : "",
+    ]))
   }
 }
