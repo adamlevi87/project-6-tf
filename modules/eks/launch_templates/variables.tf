@@ -16,7 +16,7 @@ variable "node_groups" {
   type = map(object({
     instance_type     = string
     ami_id           = string
-    desired_capacity = number
+    #desired_capacity = number
     max_capacity     = number
     min_capacity     = number
     labels           = map(string)
