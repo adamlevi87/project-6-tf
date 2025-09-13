@@ -256,9 +256,24 @@ resource "helm_release" "kube_prometheus_stack" {
         enabled = true
       }
       "prometheus-node-exporter" = {
-        affinity = null
+        affinity = {
+          nodeAffinity = {
+            requiredDuringSchedulingIgnoredDuringExecution = {
+              nodeSelectorTerms = [
+                {
+                  matchExpressions = [
+                    {
+                      key = "kubernetes.io/os"
+                      operator = "In"
+                      values = ["linux"]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
       }
-
       # Kube State Metrics
       kubeStateMetrics = {
         enabled = true
