@@ -27,25 +27,24 @@ locals {
   existing_map_users = try(yamldecode(data.kubernetes_config_map_v1.existing_aws_auth.data["mapUsers"]), [])
   
   # Merge existing roles with new roles (new roles take precedence)
-  merged_map_roles = length(local.existing_map_roles) == 0 ? var.map_roles : values({
-    for role in concat(local.existing_map_roles, var.map_roles) :
-    role.rolearn => role...
+  merged_map_roles = values({
+    for role in concat(
+      length(local.existing_map_roles) == 0 ? [] : local.existing_map_roles,
+      var.map_roles
+    ) : role.rolearn => role...
   })
 
-merged_map_users = length(local.existing_map_users) == 0 ? [
-  for user_key, user in var.eks_user_access_map : {
-    userarn  = user.userarn
-    username = user.username
-    groups   = user.groups
-  }
-  ] : values({
-    for user in concat(local.existing_map_users, [
-      for user_key, user in var.eks_user_access_map : {
-        userarn  = user.userarn
-        username = user.username
-        groups   = user.groups
-      }
-    ]) : user.userarn => user...
+  merged_map_users = values({
+    for user in concat(
+      length(local.existing_map_users) == 0 ? [] : local.existing_map_users,
+      [
+        for user_key, user in var.eks_user_access_map : {
+          userarn  = user.userarn
+          username = user.username
+          groups   = user.groups
+        }
+      ]
+    ) : user.userarn => user...
   })
 }
 
