@@ -342,8 +342,8 @@ module "gitops_bootstrap" {
   source = "../modules/gitops/bootstrap"
   
   # Pass the raw data to module
-  current_files_data = data.github_repository_file.current_gitops_files
-  gitops_repo_name   = data.github_repository.gitops_repo.name
+  # current_files_data = data.github_repository_file.current_gitops_files
+  # gitops_repo_name   = data.github_repository.gitops_repo.name
 
   # GitHub Configuration
   #gitops_repo_owner       = var.github_org
@@ -403,10 +403,10 @@ module "gitops_bootstrap" {
   branch_name_prefix  = var.branch_name_prefix
   target_branch       = var.gitops_target_branch
   
-  depends_on = [
-    data.github_repository.gitops_repo,
-    data.github_repository_file.current_gitops_files
-  ]
+  # depends_on = [
+  #   data.github_repository.gitops_repo,
+  #   data.github_repository_file.current_gitops_files
+  # ]
 }
 
 # the initial app_of_apps sync has been automated

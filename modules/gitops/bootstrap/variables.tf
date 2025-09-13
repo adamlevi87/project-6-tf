@@ -235,18 +235,18 @@ variable "update_apps" {
   default     = false
 }
 
-variable "current_files_data" {
-  description = "Map of current file data from GitHub repository"
-  type = map(object({
-    content = string
-    # Add other attributes as needed
-  }))
-}
+# variable "current_files_data" {
+#   description = "Map of current file data from GitHub repository"
+#   type = map(object({
+#     content = string
+#     # Add other attributes as needed
+#   }))
+# }
 
-variable "gitops_repo_name" {
-  description = "GitHub repository name (from data source)"
-  type        = string
-}
+# variable "gitops_repo_name" {
+#   description = "GitHub repository name (from data source)"
+#   type        = string
+# }
 
 variable "github_token" {
   description = "GitHub PAT with access to manage secrets"
