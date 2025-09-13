@@ -12,7 +12,7 @@ terraform {
 resource "null_resource" "gitops_bootstrap" {
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
-    command = <<-EOT
+    command = <<EOT
       #!/bin/bash
       set -e
       
