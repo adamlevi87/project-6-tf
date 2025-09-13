@@ -472,6 +472,67 @@ module "argocd" {
   ]
 }
 
+module "monitoring" {
+  count = var.enable_monitoring ? 1 : 0
+  
+  source = "../modules/helm/kube-prometheus-stack"
+  
+  project_tag   = var.project_tag
+  environment   = var.environment
+  
+  # Chart configuration
+  chart_version = var.kube_prometheus_stack_chart_version
+  release_name  = var.monitoring_release_name
+  namespace     = var.monitoring_namespace
+  
+  # Domains
+  domain_name       = var.domain_name
+  grafana_domain    = "${var.grafana_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
+  prometheus_domain = var.prometheus_base_domain_name != "" ? "${var.prometheus_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}" : ""
+  
+  # Ingress configuration
+  ingress_controller_class = var.ingress_controller_class
+  alb_group_name          = local.alb_group_name
+  acm_certificate_arn     = module.acm.this_certificate_arn
+  allowed_cidrs           = var.monitoring_allowed_cidr_blocks
+  
+  # Authentication
+  grafana_admin_password = var.grafana_admin_password
+  
+  # Storage configuration
+  storage_class = var.monitoring_storage_class
+  
+  # Prometheus configuration
+  prometheus_retention      = var.prometheus_retention
+  prometheus_retention_size = var.prometheus_retention_size
+  prometheus_storage_size   = var.prometheus_storage_size
+  prometheus_cpu_requests   = var.prometheus_cpu_requests
+  prometheus_memory_requests = var.prometheus_memory_requests
+  prometheus_cpu_limits     = var.prometheus_cpu_limits
+  prometheus_memory_limits  = var.prometheus_memory_limits
+  prometheus_ingress_enabled = var.prometheus_ingress_enabled
+  
+  # Grafana configuration
+  grafana_storage_size    = var.grafana_storage_size
+  grafana_cpu_requests    = var.grafana_cpu_requests
+  grafana_memory_requests = var.grafana_memory_requests
+  grafana_cpu_limits      = var.grafana_cpu_limits
+  grafana_memory_limits   = var.grafana_memory_limits
+  
+  # AlertManager configuration
+  alertmanager_storage_size    = var.alertmanager_storage_size
+  alertmanager_cpu_requests    = var.alertmanager_cpu_requests
+  alertmanager_memory_requests = var.alertmanager_memory_requests
+  alertmanager_cpu_limits      = var.alertmanager_cpu_limits
+  alertmanager_memory_limits   = var.alertmanager_memory_limits
+  
+  depends_on = [
+    module.eks,
+    module.aws_load_balancer_controller.webhook_ready,
+    module.external_dns
+  ]
+}
+
 module "external_secrets_operator" {
   source        = "../modules/helm/external-secrets-operator"
   

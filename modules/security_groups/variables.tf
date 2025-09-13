@@ -48,3 +48,8 @@ variable "cluster_security_group_id" {
   description = "EKS cluster security group ID"
   type        = string
 }
+
+variable "prometheus_allowed_cidr_blocks" {
+  type        = list(string)
+  description = "List of CIDR blocks allowed to access Prometheus/Grafana"
+}

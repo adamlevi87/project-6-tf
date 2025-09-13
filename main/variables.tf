@@ -376,3 +376,141 @@ variable "gitops_target_branch" {
   type        = string
   default     = "main"
 }
+
+# Monitoring Configuration
+variable "enable_monitoring" {
+  description = "Enable monitoring stack (Prometheus, Grafana, AlertManager)"
+  type        = bool
+  default     = false
+}
+
+variable "monitoring_namespace" {
+  description = "Kubernetes namespace for monitoring stack"
+  type        = string
+}
+
+variable "monitoring_release_name" {
+  description = "Helm release name for monitoring stack"
+  type        = string
+}
+
+variable "kube_prometheus_stack_chart_version" {
+  description = "Version of the kube-prometheus-stack Helm chart"
+  type        = string
+}
+
+variable "grafana_base_domain_name" {
+  description = "Base domain name for Grafana"
+  type        = string
+}
+
+variable "prometheus_base_domain_name" {
+  description = "Base domain name for Prometheus"
+  type        = string
+}
+
+variable "grafana_admin_password" {
+  description = "Grafana admin password"
+  type        = string
+  sensitive   = true
+}
+
+variable "prometheus_allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to access Prometheus/Grafana interfaces"
+  type        = list(string)
+  default     = []
+}
+
+# Storage configuration
+variable "monitoring_storage_class" {
+  description = "Storage class for persistent volumes"
+  type        = string
+}
+
+# Prometheus configuration
+variable "prometheus_retention" {
+  description = "Prometheus data retention period"
+  type        = string
+}
+
+variable "prometheus_retention_size" {
+  description = "Prometheus maximum storage size"
+  type        = string
+}
+
+variable "prometheus_storage_size" {
+  description = "Prometheus storage volume size"
+  type        = string
+}
+
+variable "prometheus_cpu_requests" {
+  description = "Prometheus CPU requests"
+  type        = string
+}
+
+variable "prometheus_memory_requests" {
+  description = "Prometheus memory requests"
+  type        = string
+}
+
+variable "prometheus_cpu_limits" {
+  description = "Prometheus CPU limits"
+  type        = string
+}
+
+variable "prometheus_memory_limits" {
+  description = "Prometheus memory limits"
+  type        = string
+}
+
+# Grafana configuration
+variable "grafana_storage_size" {
+  description = "Grafana storage volume size"
+  type        = string
+}
+
+variable "grafana_cpu_requests" {
+  description = "Grafana CPU requests"
+  type        = string
+}
+
+variable "grafana_memory_requests" {
+  description = "Grafana memory requests"
+  type        = string
+}
+
+variable "grafana_cpu_limits" {
+  description = "Grafana CPU limits"
+  type        = string
+}
+
+variable "grafana_memory_limits" {
+  description = "Grafana memory limits"
+  type        = string
+}
+
+# AlertManager configuration
+variable "alertmanager_storage_size" {
+  description = "AlertManager storage volume size"
+  type        = string
+}
+
+variable "alertmanager_cpu_requests" {
+  description = "AlertManager CPU requests"
+  type        = string
+}
+
+variable "alertmanager_memory_requests" {
+  description = "AlertManager memory requests"
+  type        = string
+}
+
+variable "alertmanager_cpu_limits" {
+  description = "AlertManager CPU limits"
+  type        = string
+}
+
+variable "alertmanager_memory_limits" {
+  description = "AlertManager memory limits"
+  type        = string
+}

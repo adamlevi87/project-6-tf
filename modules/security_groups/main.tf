@@ -109,7 +109,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_alb_to_frontend_pods" {
 }
 
 # ArgoCD
-# SG to be applied onto the ALB (happens when argoCD creates the Shared ALB)
+# SG to be applied onto the ALB
 resource "aws_security_group" "alb_argocd" {
   name        = "${var.project_tag}-${var.environment}-argocd-sg"
   description = "Security group for argocd"
@@ -186,6 +186,108 @@ resource "aws_vpc_security_group_ingress_rule" "allow_alb_to_argocd_pods" {
     Project     = var.project_tag
     Environment = var.environment
     Purpose     = "argocd-security"
+    Rule        = "alb-to-pods"
+    NodeGroup   = each.key
+  }
+}
+
+# Prometheus/Grafana
+# SG to be applied onto the ALB
+resource "aws_security_group" "alb_prometheus" {
+  name        = "${var.project_tag}-${var.environment}-prometheus-sg"
+  description = "Security group for Prometheus/Grafana monitoring stack"
+  vpc_id      = var.vpc_id
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Name        = "${var.project_tag}-${var.environment}-prometheus-sg"
+    Purpose     = "prometheus-security"
+  }
+}
+
+# Allow Prometheus access from specified IPs only
+# 80 will be redirected to 443 (controlled via ingress configuration)
+resource "aws_vpc_security_group_ingress_rule" "alb_prometheus_http" {
+  security_group_id = aws_security_group.alb_prometheus.id
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+  cidr_ipv4         = var.prometheus_allowed_cidr_blocks[0]
+  description       = "Prometheus access on port 80"
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose     = "prometheus-security"
+    Rule        = "http-ingress"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "alb_prometheus_https" {
+  security_group_id = aws_security_group.alb_prometheus.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  cidr_ipv4         = var.prometheus_allowed_cidr_blocks[0]
+  description       = "Prometheus access on port 443"
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose     = "prometheus-security"
+    Rule        = "https-ingress"
+  }
+}
+
+# Outbound rules (usually not needed but good practice)
+resource "aws_vpc_security_group_egress_rule" "alb_prometheus_all_outbound" {
+  security_group_id = aws_security_group.alb_prometheus.id
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+  description       = "All outbound traffic"
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose     = "prometheus-security"
+    Rule        = "all-outbound"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_alb_to_prometheus_pods" {
+  for_each = aws_security_group.nodes
+
+  security_group_id            = each.value.id
+  referenced_security_group_id = aws_security_group.alb_prometheus.id
+  from_port                    = 3000
+  to_port                      = 3000
+  ip_protocol                  = "tcp"
+  description                  = "Allow ALB to access Grafana pods on port 3000 (${each.key} nodes)"
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose     = "prometheus-security"
+    Rule        = "alb-to-pods"
+    NodeGroup   = each.key
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_alb_to_prometheus_server_pods" {
+  for_each = aws_security_group.nodes
+
+  security_group_id            = each.value.id
+  referenced_security_group_id = aws_security_group.alb_prometheus.id
+  from_port                    = 9090
+  to_port                      = 9090
+  ip_protocol                  = "tcp"
+  description                  = "Allow ALB to access Prometheus server pods on port 9090 (${each.key} nodes)"
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose     = "prometheus-security"
     Rule        = "alb-to-pods"
     NodeGroup   = each.key
   }

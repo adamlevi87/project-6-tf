@@ -137,8 +137,43 @@ frontend_helm_release_name = "frontend"
 # when creating initial yamls in the gitops repo
 gitops_target_branch = "main"
 
+# ================================
+# Monitoring Configurations
+# ================================
+# Monitoring
+enable_monitoring = true
+monitoring_namespace = "monitoring"
+kube_prometheus_stack_chart_version = "77.6.2"
+grafana_base_domain_name = "grafana"
+grafana_admin_password = "admin123"  # Change this!
+monitoring_allowed_cidr_blocks = ["85.65.167.191/32"]  # Your IP
 
+# Storage configuration
+monitoring_storage_class = "gp2"
 
+# Prometheus configuration
+prometheus_retention = "15d"
+prometheus_retention_size = "10GB"
+prometheus_storage_size = "20Gi"
+prometheus_cpu_requests = "200m"
+prometheus_memory_requests = "400Mi"
+prometheus_cpu_limits = "1000m"
+prometheus_memory_limits = "2Gi"
+prometheus_ingress_enabled = true
+
+# Grafana configuration
+grafana_storage_size = "10Gi"
+grafana_cpu_requests = "100m"
+grafana_memory_requests = "128Mi"
+grafana_cpu_limits = "500m"
+grafana_memory_limits = "1Gi"
+
+# AlertManager configuration
+alertmanager_storage_size = "5Gi"
+alertmanager_cpu_requests = "50m"
+alertmanager_memory_requests = "64Mi"
+alertmanager_cpu_limits = "200m"
+alertmanager_memory_limits = "256Mi"
 
 
 ############################# commented area
