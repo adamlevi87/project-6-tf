@@ -14,8 +14,7 @@ resource "null_resource" "gitops_bootstrap" {
     interpreter = ["/bin/bash", "-c"]
     command = <<-EOT
       #!/bin/bash
-      echo "Script started - test echo" >&2
-      #set -e
+      set -e
       
       # Variables
       GITHUB_TOKEN="${var.github_token}"
@@ -66,45 +65,45 @@ resource "null_resource" "gitops_bootstrap" {
           echo "  No changes needed"
         fi
       }
-
+      
       # Bootstrap files (only in bootstrap mode)
-      if [ "${var.bootstrap_mode ? "true" : "false"}" = "true" ]; then
+      if [ "${var.bootstrap_mode}" = "true" ]; then
         echo "=== Bootstrap Mode Files ==="
         
         # Project YAML (reference only)
-        cat > /tmp/content1 << 'TERRAFORM_EOF'
-      ${local.rendered_project}
-      TERRAFORM_EOF
-        update_file_if_changed "${local.project_yaml_path}" "$(cat /tmp/content1)" "ArgoCD Project"
+        update_file_if_changed \
+          "${local.project_yaml_path}" \
+          '${local.rendered_project}' \
+          "ArgoCD Project"
         
         # App of Apps YAML (reference only)
-        cat > /tmp/content2 << 'TERRAFORM_EOF'
-      ${local.rendered_app_of_apps}
-      TERRAFORM_EOF
-        update_file_if_changed "${local.app_of_apps_yaml_path}" "$(cat /tmp/content2)" "App of Apps"
+        update_file_if_changed \
+          "${local.app_of_apps_yaml_path}" \
+          '${local.rendered_app_of_apps}' \
+          "App of Apps"
         
         # Frontend Application YAML
-        cat > /tmp/content3 << 'TERRAFORM_EOF'
-      ${local.rendered_frontend_app}
-      TERRAFORM_EOF
-        update_file_if_changed "${local.frontend_app_path}" "$(cat /tmp/content3)" "Frontend Application"
+        update_file_if_changed \
+          "${local.frontend_app_path}" \
+          '${local.rendered_frontend_app}' \
+          "Frontend Application"
         
         # Frontend App Values YAML
-        cat > /tmp/content4 << 'TERRAFORM_EOF'
-      ${local.rendered_frontend_app_values}
-      TERRAFORM_EOF
-        update_file_if_changed "${local.frontend_app_values_path}" "$(cat /tmp/content4)" "Frontend App Values"
+        update_file_if_changed \
+          "${local.frontend_app_values_path}" \
+          '${local.rendered_frontend_app_values}' \
+          "Frontend App Values"
       fi
-
+      
       # Infrastructure files (bootstrap OR update mode)
-      if [ "${var.bootstrap_mode ? "true" : "false"}" = "true" ] || [ "${var.update_apps ? "true" : "false"}" = "true" ]; then
+      if [ "${var.bootstrap_mode}" = "true" ] || [ "${var.update_apps}" = "true" ]; then
         echo "=== Infrastructure Files ==="
         
         # Frontend Infrastructure Values
-        cat > /tmp/content5 << 'TERRAFORM_EOF'
-      ${local.rendered_frontend_infra}
-      TERRAFORM_EOF
-        update_file_if_changed "${local.frontend_infra_values_path}" "$(cat /tmp/content5)" "Frontend Infrastructure Values"
+        update_file_if_changed \
+          "${local.frontend_infra_values_path}" \
+          '${local.rendered_frontend_infra}' \
+          "Frontend Infrastructure Values"
       fi
       
       # Check if any changes were made
@@ -115,7 +114,6 @@ resource "null_resource" "gitops_bootstrap" {
         exit 0
       fi
       
-      echo "CHANGES_MADE after all checks: $CHANGES_MADE" >&2
       echo "Changes detected. Creating PR..."
       
       # Create branch and commit changes
@@ -123,7 +121,7 @@ resource "null_resource" "gitops_bootstrap" {
       git add .
       
       # Create commit message
-      if [ "${var.bootstrap_mode ? "true" : "false"}" = "true" ]; then
+      if [ "${var.bootstrap_mode}" = "true" ]; then
         COMMIT_MSG="Bootstrap: ${var.project_tag} ${var.environment} GitOps configuration"
       else
         COMMIT_MSG="Update: ${var.environment} infrastructure values"
@@ -134,7 +132,7 @@ resource "null_resource" "gitops_bootstrap" {
       
       # Create PR
       echo "Creating PR..."
-      if [ "${var.bootstrap_mode ? "true" : "false"}" = "true" ]; then
+      if [ "${var.bootstrap_mode}" = "true" ]; then
         PR_TITLE="Bootstrap: ${var.project_tag} ${var.environment}"
         PR_BODY="Bootstrap GitOps configuration for ${var.project_tag} ${var.environment}"
       else
@@ -155,7 +153,7 @@ resource "null_resource" "gitops_bootstrap" {
         echo "✅ Created PR #$PR_NUMBER"
         
         # Trigger auto-merge if enabled
-        if [ "${var.auto_merge_pr ? "true" : "false"}" = "true" ]; then
+        if [ "${var.auto_merge_pr}" = "true" ]; then
           echo "Triggering auto-merge..."
           curl -X POST \
             -H "Authorization: token $GITHUB_TOKEN" \
