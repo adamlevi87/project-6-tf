@@ -649,11 +649,14 @@ module "eks_lockdown" {
   # This ensures lockdown runs LAST, after all k8s operations complete
   depends_on = [  
     # Kubernetes/Helm modules (CRITICAL - these need EKS API access)
+    module.aws_auth_config,
+    module.eks,
     module.argocd,
-    module.external_dns,
     module.aws_load_balancer_controller,
-    module.external_secrets_operator,
     module.cluster_autoscaler,
+    module.external_dns,
+    module.external_secrets_operator,
+    module.kube_prometheus_stack,
     module.metrics_server,
     
     # Application modules
