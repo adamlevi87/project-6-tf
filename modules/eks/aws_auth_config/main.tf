@@ -30,11 +30,17 @@ locals {
   merged_map_roles = values({
     for role in concat(local.existing_map_roles, var.map_roles) : role.rolearn => role
   })
-  merged_map_users = values({
-  for user in concat(local.existing_map_users, [
+  merged_map_users = length(local.existing_map_users) == 0 ? [
+  for user_key, user in var.eks_user_access_map : {
+    userarn  = user.userarn
+    username = user.username
+    groups   = user.groups
+  }
+  ] : values({
+    for user in concat(local.existing_map_users, [
       for user_key, user in var.eks_user_access_map : {
         userarn  = user.userarn
-        username = user.username  
+        username = user.username
         groups   = user.groups
       }
     ]) : user.userarn => user
