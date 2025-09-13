@@ -126,34 +126,40 @@ resource "aws_security_group" "alb_argocd" {
 # Allow ArgoCD access from the outside
 # 80 will be redirected to 443 (controlled via argocd values file values.yaml.tpl ingress section)
 resource "aws_vpc_security_group_ingress_rule" "alb_argocd_http" {
+  for_each = toset(var.argocd_allowed_cidr_blocks)
+
   security_group_id = aws_security_group.alb_argocd.id
   from_port         = 80
   to_port           = 80
   ip_protocol       = "tcp"
-  cidr_ipv4         = var.argocd_allowed_cidr_blocks[0]
-  description       = "ArgoCD access on port 80"
+  cidr_ipv4         = each.value
+  description       = "ArgoCD access on port 80 from ${each.value}"
 
   tags = {
     Project     = var.project_tag
     Environment = var.environment
     Purpose     = "argocd-security"
     Rule        = "http-ingress"
+    Source      = each.value
   }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "alb_argocd_https" {
+  for_each = toset(var.argocd_allowed_cidr_blocks)
+
   security_group_id = aws_security_group.alb_argocd.id
   from_port         = 443
   to_port           = 443
   ip_protocol       = "tcp"
-  cidr_ipv4         = var.argocd_allowed_cidr_blocks[0]
-  description       = "ArgoCD access on port 443"
+  cidr_ipv4         = each.value
+  description       = "ArgoCD access on port 443 from ${each.value}"
 
   tags = {
     Project     = var.project_tag
     Environment = var.environment
-    Purpose     = "argocd-security"
+    Purpose     = "argocd-security" 
     Rule        = "https-ingress"
+    Source      = each.value
   }
 }
 
@@ -209,34 +215,40 @@ resource "aws_security_group" "alb_prometheus" {
 # Allow Prometheus access from specified IPs only
 # 80 will be redirected to 443 (controlled via ingress configuration)
 resource "aws_vpc_security_group_ingress_rule" "alb_prometheus_http" {
+  for_each = toset(var.prometheus_allowed_cidr_blocks)
+
   security_group_id = aws_security_group.alb_prometheus.id
   from_port         = 80
   to_port           = 80
   ip_protocol       = "tcp"
-  cidr_ipv4         = var.prometheus_allowed_cidr_blocks[0]
-  description       = "Prometheus access on port 80"
+  cidr_ipv4         = each.value
+  description       = "Prometheus access on port 80 from ${each.value}"
 
   tags = {
     Project     = var.project_tag
     Environment = var.environment
     Purpose     = "prometheus-security"
     Rule        = "http-ingress"
+    Source      = each.value
   }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "alb_prometheus_https" {
+  for_each = toset(var.prometheus_allowed_cidr_blocks)
+
   security_group_id = aws_security_group.alb_prometheus.id
   from_port         = 443
   to_port           = 443
   ip_protocol       = "tcp"
-  cidr_ipv4         = var.prometheus_allowed_cidr_blocks[0]
-  description       = "Prometheus access on port 443"
+  cidr_ipv4         = each.value
+  description       = "Prometheus access on port 443 from ${each.value}"
 
   tags = {
     Project     = var.project_tag
     Environment = var.environment
     Purpose     = "prometheus-security"
-    Rule        = "https-ingress"
+    Rule        = "https-ingress" 
+    Source      = each.value
   }
 }
 
