@@ -47,12 +47,10 @@ module "s3" {
   s3_policy_deny_rule_name = var.s3_policy_deny_rule_name
   #account_id = local.account_id
 
-  allowed_principals = [
-    "arn:aws:iam::${local.account_id}:role/project-6-dev-initial-role-for-tf",
-    "arn:aws:iam::${local.account_id}:user/adam.local",
-    "arn:aws:iam::${local.account_id}:user/adam.login",
-    module.frontend.iam_role_arn
-  ]
+  allowed_principals = concat(
+    local.s3_allowed_principal_arns,
+    [module.frontend.iam_role_arn]
+)
   
   # Lifecycle configuration
   enable_lifecycle_policy = true

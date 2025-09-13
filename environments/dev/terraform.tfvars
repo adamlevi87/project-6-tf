@@ -28,6 +28,11 @@ additional_availability_zones = 1  # Can be reduced in single mode without affec
 # ================================
 enable_lifecycle_policy = true
 s3_policy_deny_rule_name = "DenyAllExceptions"
+s3_allowed_principals = [
+  "role/project-6-dev-initial-role-for-tf",
+  "user/adam.local", 
+  "user/adam.login"
+]
 # ================================
 # ECR Configurations
 # ================================

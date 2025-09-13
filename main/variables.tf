@@ -126,6 +126,12 @@ variable "s3_policy_deny_rule_name" {
   type        = string
 }
 
+variable "s3_allowed_principals" {
+  description = "List of IAM users/roles allowed S3 access (format: 'user/username' or 'role/rolename')"
+  type        = list(string)
+  default     = []
+}
+
 variable "enable_lifecycle_policy" {
   description = "Enable or disable S3 bucket lifecycle policy"
   type        = bool

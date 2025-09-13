@@ -122,6 +122,11 @@ locals {
         "arn:aws:autoscaling:${var.aws_region}:${local.account_id}:autoScalingGroup:*:autoScalingGroupName/${asg_name}"
     ]
 
+    # Convert short names to full ARNs
+    s3_allowed_principal_arns = [
+        for principal in var.s3_allowed_principals :
+            "arn:aws:iam::${local.account_id}:${principal}"
+    ]
     # # Merge generated passwords into the configuration
     # secrets_config_with_passwords  = {
     #   for name, config in var.secrets_config :
