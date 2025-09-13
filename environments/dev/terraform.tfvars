@@ -58,10 +58,10 @@ eks_api_allowed_cidr_blocks    = ["85.65.167.191/32","0.0.0.0/0"]
 # EKS Node Groups Configuration - Multi-NodeGroup Setup
 eks_node_groups = {
   critical = {
-    instance_type     = "t3.small"
+    instance_type     = "t3.medium"
     ami_id           = "ami-03943441037953e69"
     desired_capacity = 1
-    max_capacity     = 5
+    max_capacity     = 3
     min_capacity     = 1
     labels = {
       nodegroup-type = "critical"
@@ -157,24 +157,24 @@ monitoring_storage_class = "gp2"
 prometheus_retention = "15d"
 prometheus_retention_size = "10GB"
 prometheus_storage_size = "20Gi"
-prometheus_cpu_requests = "200m"
-prometheus_memory_requests = "400Mi"
-prometheus_cpu_limits = "1000m"
-prometheus_memory_limits = "2Gi"
+prometheus_cpu_requests    = "100m"
+prometheus_memory_requests = "256Mi" 
+prometheus_cpu_limits     = "500m"
+prometheus_memory_limits  = "512Mi"
 
 # Grafana configuration
 grafana_storage_size = "10Gi"
-grafana_cpu_requests = "100m"
+grafana_cpu_requests    = "50m"
 grafana_memory_requests = "128Mi"
-grafana_cpu_limits = "500m"
-grafana_memory_limits = "1Gi"
+grafana_cpu_limits     = "200m" 
+grafana_memory_limits   = "256Mi"
 
 # AlertManager configuration
 alertmanager_storage_size = "5Gi"
-alertmanager_cpu_requests = "50m"
+alertmanager_cpu_requests    = "25m"
 alertmanager_memory_requests = "64Mi"
-alertmanager_cpu_limits = "200m"
-alertmanager_memory_limits = "256Mi"
+alertmanager_cpu_limits     = "100m"
+alertmanager_memory_limits   = "128Mi"
 
 
 ############################# commented area
