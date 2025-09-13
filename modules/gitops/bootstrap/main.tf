@@ -67,7 +67,7 @@ resource "null_resource" "gitops_bootstrap" {
       }
       
       # Bootstrap files (only in bootstrap mode)
-      if [ "${var.bootstrap_mode}" = "true" ]; then
+      if [ "${var.bootstrap_mode ? "true" : "false"}" = "true" ]; then
         echo "=== Bootstrap Mode Files ==="
         
         # Project YAML (reference only)
@@ -96,7 +96,7 @@ resource "null_resource" "gitops_bootstrap" {
       fi
       
       # Infrastructure files (bootstrap OR update mode)
-      if [ "${var.bootstrap_mode}" = "true" ] || [ "${var.update_apps}" = "true" ]; then
+      if [ "${var.bootstrap_mode ? "true" : "false"}" = "true" ] || [ "${var.update_apps ? "true" : "false"}" = "true" ]; then
         echo "=== Infrastructure Files ==="
         
         # Frontend Infrastructure Values
@@ -121,7 +121,7 @@ resource "null_resource" "gitops_bootstrap" {
       git add .
       
       # Create commit message
-      if [ "${var.bootstrap_mode}" = "true" ]; then
+      if [ "${var.bootstrap_mode ? "true" : "false"}" = "true" ]; then
         COMMIT_MSG="Bootstrap: ${var.project_tag} ${var.environment} GitOps configuration"
       else
         COMMIT_MSG="Update: ${var.environment} infrastructure values"
@@ -132,7 +132,7 @@ resource "null_resource" "gitops_bootstrap" {
       
       # Create PR
       echo "Creating PR..."
-      if [ "${var.bootstrap_mode}" = "true" ]; then
+      if [ "${var.bootstrap_mode ? "true" : "false"}" = "true" ]; then
         PR_TITLE="Bootstrap: ${var.project_tag} ${var.environment}"
         PR_BODY="Bootstrap GitOps configuration for ${var.project_tag} ${var.environment}"
       else
@@ -153,7 +153,7 @@ resource "null_resource" "gitops_bootstrap" {
         echo "✅ Created PR #$PR_NUMBER"
         
         # Trigger auto-merge if enabled
-        if [ "${var.auto_merge_pr}" = "true" ]; then
+        if [ "${var.auto_merge_pr ? "true" : "false"}" = "true" ]; then
           echo "Triggering auto-merge..."
           curl -X POST \
             -H "Authorization: token $GITHUB_TOKEN" \
