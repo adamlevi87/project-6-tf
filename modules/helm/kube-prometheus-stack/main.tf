@@ -137,7 +137,7 @@ resource "helm_release" "kube_prometheus_stack" {
         }
         
         # Grafana configuration
-        grafana.ini = {
+        "grafana.ini" = {
           server = {
             root_url = "https://${var.grafana_domain}"
           }
