@@ -26,15 +26,15 @@ locals {
   existing_map_roles = try(yamldecode(data.kubernetes_config_map_v1.existing_aws_auth.data["mapRoles"]), [])
   existing_map_users = try(yamldecode(data.kubernetes_config_map_v1.existing_aws_auth.data["mapUsers"]), [])
   
-  # Merge existing roles with new roles (new roles take precedence)
-  merged_map_roles = values({
+  # Create maps for deduplication (last occurrence wins)
+  roles_map = {
     for role in concat(
       length(local.existing_map_roles) == 0 ? [] : local.existing_map_roles,
       var.map_roles
-    ) : role.rolearn => role...
-  })
-
-  merged_map_users = values({
+    ) : role.rolearn => role
+  }
+  
+  users_map = {
     for user in concat(
       length(local.existing_map_users) == 0 ? [] : local.existing_map_users,
       [
@@ -44,8 +44,12 @@ locals {
           groups   = user.groups
         }
       ]
-    ) : user.userarn => user...
-  })
+    ) : user.userarn => user
+  }
+  
+  # Convert back to arrays (deduplicated)
+  merged_map_roles = values(local.roles_map)
+  merged_map_users = values(local.users_map)
 }
 
 resource "kubernetes_config_map_v1_data" "aws_auth_patch" {
