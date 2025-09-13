@@ -98,9 +98,13 @@ resource "aws_eks_node_group" "main" {
   }
 
   scaling_config {
-    #desired_size = each.value.desired_capacity
+    desired_size = each.value.desired_capacity
     max_size     = each.value.max_capacity
     min_size     = each.value.min_capacity
+  }
+
+  lifecycle {
+    ignore_changes = [scaling_config[0].desired_size]
   }
 
   update_config {
