@@ -9,10 +9,10 @@ terraform {
   }
 }
 
-data "aws_launch_template" "latest" {
-  for_each = var.node_groups
-  id       = var.launch_template_ids[each.key]
-}
+# data "aws_launch_template" "latest" {
+#   for_each = var.node_groups
+#   id       = var.launch_template_ids[each.key]
+# }
 
 # EKS Node Group IAM Role
 resource "aws_iam_role" "node_group_role" {
@@ -99,7 +99,8 @@ resource "aws_eks_node_group" "main" {
 
   launch_template {
     id      = var.launch_template_ids[each.key]
-    version = data.aws_launch_template.latest[each.key].latest_version
+    version = "$Latest"
+    #version = data.aws_launch_template.latest[each.key].latest_version
   }
 
   scaling_config {
@@ -110,8 +111,8 @@ resource "aws_eks_node_group" "main" {
 
   lifecycle {
     ignore_changes = [
-      scaling_config[0].desired_size,
-      launch_template[0].version
+      scaling_config[0].desired_size#,
+      #launch_template[0].version
     ]
   }
 
