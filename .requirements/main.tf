@@ -31,6 +31,13 @@ resource "aws_iam_role" "github_actions" {
             "${aws_iam_openid_connect_provider.github.url}:sub" = "repo:${var.github_org}/${var.github_repo}:*"
           }
         }
+      },
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::864546685796:user/adam.local"
+        },
+        Action = "sts:AssumeRole"
       }
     ]
   })
