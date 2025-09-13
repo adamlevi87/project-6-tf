@@ -103,7 +103,7 @@ resource "helm_release" "kube_prometheus_stack" {
             "alb.ingress.kubernetes.io/conditions.${var.release_name}-prometheus" = jsonencode([{
               field = "source-ip"
               sourceIpConfig = {
-                values = var.allowed_cidrs
+                values = "${var.prometheus_allowed_cidr_blocks}"
               }
             }])
           }
@@ -149,24 +149,28 @@ resource "helm_release" "kube_prometheus_stack" {
         # Ingress configuration
         ingress = {
           enabled = true
-          ingressClassName = var.ingress_controller_class
+          ingressClassName = "alb"
+          hostname = "${grafana_domain_name}"
+          path = "/"
+          pathType = "Prefix"
           annotations = {
-            "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
+            "alb.ingress.kubernetes.io/scheme" = "internet-facing"
             "alb.ingress.kubernetes.io/target-type" = "ip"
-            "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\":80},{\"HTTPS\":443}]"
+            "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
             "alb.ingress.kubernetes.io/ssl-redirect" = "443"
-            "alb.ingress.kubernetes.io/group.name"  = var.alb_group_name
-            "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-            "external-dns.alpha.kubernetes.io/hostname" = var.grafana_domain
-            # Restrict access to specific IPs
-            "alb.ingress.kubernetes.io/conditions.grafana" = jsonencode([{
-              field = "source-ip"
-              sourceIpConfig = {
-                values = var.allowed_cidrs
+            "alb.ingress.kubernetes.io/group.name" = "${alb_group_name}"
+            "alb.ingress.kubernetes.io/security-groups" = "${alb_security_groups}"
+            "alb.ingress.kubernetes.io/certificate-arn" = "${acm_cert_arn}"
+            "external-dns.alpha.kubernetes.io/hostname" = "${grafana_domain_name}"
+            "alb.ingress.kubernetes.io/conditions.${release_name}" = jsonencode([
+              {
+                field = "source-ip"
+                sourceIpConfig = {
+                  values = "${var.grafana_allowed_cidr_blocks}"
+                }
               }
-            }])
+            ])
           }
-          hosts = [var.grafana_domain]
         }
         
         # Default dashboards

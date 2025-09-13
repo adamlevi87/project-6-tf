@@ -496,7 +496,8 @@ module "monitoring" {
   alb_security_groups       = module.security_groups.joined_security_group_ids
   ingress_controller_class  = var.ingress_controller_class
   acm_certificate_arn       = module.acm.this_certificate_arn
-  allowed_cidrs             = var.prometheus_allowed_cidr_blocks
+  prometheus_allowed_cidr_blocks = var.prometheus_allowed_cidr_blocks
+  grafana_allowed_cidr_blocks    = var.grafana_allowed_cidr_blocks
   
   # Authentication
   grafana_admin_password = var.grafana_admin_password

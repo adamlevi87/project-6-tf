@@ -55,8 +55,13 @@ variable "acm_certificate_arn" {
   type        = string
 }
 
-variable "allowed_cidrs" {
-  description = "List of CIDR blocks allowed to access monitoring interfaces"
+variable "prometheus_allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to access Prometheus"
+  type        = list(string)
+}
+
+variable "grafana_allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to access Grafana"
   type        = list(string)
 }
 
