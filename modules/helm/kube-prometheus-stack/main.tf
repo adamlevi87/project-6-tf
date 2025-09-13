@@ -86,8 +86,8 @@ resource "helm_release" "kube_prometheus_stack" {
         # Ingress for Prometheus
         ingress = {
           enabled = true
-          ingressClassName = var.ingress_controller_class
-          hostname = var.prometheus_domain
+          ingressClassName = "${var.ingress_controller_class}"
+          hostname = "${var.prometheus_domain}"
           path = "/"
           pathType = "Prefix"
           annotations = {
@@ -95,10 +95,10 @@ resource "helm_release" "kube_prometheus_stack" {
             "alb.ingress.kubernetes.io/target-type" = "ip"
             "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
             "alb.ingress.kubernetes.io/ssl-redirect" = "443"
-            "alb.ingress.kubernetes.io/group.name"  = var.alb_group_name
-            "alb.ingress.kubernetes.io/security-groups" = var.alb_security_groups
-            "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-            "external-dns.alpha.kubernetes.io/hostname" = var.prometheus_domain
+            "alb.ingress.kubernetes.io/group.name"  = "${var.alb_group_name}"
+            "alb.ingress.kubernetes.io/security-groups" = "${var.alb_security_groups}"
+            "alb.ingress.kubernetes.io/certificate-arn" = "${var.acm_certificate_arn}"
+            "external-dns.alpha.kubernetes.io/hostname" = "${var.prometheus_domain}"
             # Restrict access to specific IPs
             "alb.ingress.kubernetes.io/conditions.${var.release_name}-prometheus" = jsonencode([{
               field = "source-ip"
@@ -149,8 +149,8 @@ resource "helm_release" "kube_prometheus_stack" {
         # Ingress configuration
         ingress = {
           enabled = true
-          ingressClassName = "alb"
-          hostname = "${grafana_domain_name}"
+          ingressClassName = "${var.ingress_controller_class}"
+          hostname = "${var.grafana_domain_name}"
           path = "/"
           pathType = "Prefix"
           annotations = {
@@ -158,11 +158,11 @@ resource "helm_release" "kube_prometheus_stack" {
             "alb.ingress.kubernetes.io/target-type" = "ip"
             "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
             "alb.ingress.kubernetes.io/ssl-redirect" = "443"
-            "alb.ingress.kubernetes.io/group.name" = "${alb_group_name}"
-            "alb.ingress.kubernetes.io/security-groups" = "${alb_security_groups}"
-            "alb.ingress.kubernetes.io/certificate-arn" = "${acm_cert_arn}"
-            "external-dns.alpha.kubernetes.io/hostname" = "${grafana_domain_name}"
-            "alb.ingress.kubernetes.io/conditions.${release_name}" = jsonencode([
+            "alb.ingress.kubernetes.io/group.name" = "${var.alb_group_name}"
+            "alb.ingress.kubernetes.io/security-groups" = "${var.alb_security_groups}"
+            "alb.ingress.kubernetes.io/certificate-arn" = "${var.acm_certificate_arn}"
+            "external-dns.alpha.kubernetes.io/hostname" = "${var.grafana_domain_name}"
+            "alb.ingress.kubernetes.io/conditions.${var.release_name}-grafana" = jsonencode([
               {
                 field = "source-ip"
                 sourceIpConfig = {
