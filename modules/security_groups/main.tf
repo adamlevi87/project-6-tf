@@ -10,7 +10,7 @@ terraform {
 }
 
 locals {
-  joined_security_group_ids = "${aws_security_group.alb_argocd.id},${aws_security_group.alb_frontend.id}"
+  joined_security_group_ids = "${aws_security_group.alb_argocd.id},${aws_security_group.alb_frontend.id},${aws_security_group.alb_prometheus.id},${aws_security_group.alb_grafana.id}"
   
   # Create a flattened list of node group pairs for cross-communication
   # Create all possible pairs of node groups (excluding self-pairs)
@@ -201,7 +201,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_alb_to_argocd_pods" {
 # SG to be applied onto the ALB
 resource "aws_security_group" "alb_prometheus" {
   name        = "${var.project_tag}-${var.environment}-prometheus-sg"
-  description = "Security group for Prometheus/Grafana monitoring stack"
+  description = "Security group for Prometheus"
   vpc_id      = var.vpc_id
 
   tags = {
@@ -305,6 +305,90 @@ resource "aws_vpc_security_group_ingress_rule" "allow_alb_to_prometheus_server_p
   }
 }
 
+# Grafana
+# SG to be applied onto the ALB
+resource "aws_security_group" "alb_grafana" {
+  name        = "${var.project_tag}-${var.environment}-grafana-sg"
+  description = "Security group for grafana"
+  vpc_id      = var.vpc_id
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Name        = "${var.project_tag}-${var.environment}-grafana-sg"
+    Purpose     = "grafana-security"
+  }
+}
+
+# Allow Grafana access from the outside
+resource "aws_vpc_security_group_ingress_rule" "alb_grafana_http" {
+  for_each = toset(var.grafana_allowed_cidr_blocks)
+
+  security_group_id = aws_security_group.alb_grafana.id
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+  cidr_ipv4         = each.value
+  description       = "Grafana access on port 80"
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose     = "grafana-security"
+    Rule        = "http-ingress"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "alb_grafana_https" {
+  for_each = toset(var.grafana_allowed_cidr_blocks)
+
+  security_group_id = aws_security_group.alb_grafana.id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  cidr_ipv4         = each.value
+  description       = "Grafana access on port 443"
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose     = "grafana-security"
+    Rule        = "https-ingress"
+  }
+}
+
+resource "aws_vpc_security_group_egress_rule" "alb_grafana_all_outbound" {
+  security_group_id = aws_security_group.alb_grafana.id
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+  description       = "All outbound traffic"
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose     = "grafana-security"
+    Rule        = "all-outbound"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_alb_to_grafana_pods" {
+  for_each = aws_security_group.nodes
+
+  security_group_id            = each.value.id
+  referenced_security_group_id = aws_security_group.alb_grafana.id
+  from_port                    = 3000
+  to_port                      = 3000
+  ip_protocol                  = "tcp"
+  description                  = "Allow ALB to access Grafana pods on port 3000 (${each.key} nodes)"
+
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose     = "grafana-security"
+    Rule        = "alb-to-pods"
+    NodeGroup   = each.key
+  }
+}
 
 
 # ================================

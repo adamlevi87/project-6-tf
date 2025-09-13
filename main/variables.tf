@@ -421,6 +421,12 @@ variable "prometheus_allowed_cidr_blocks" {
   default     = []
 }
 
+variable "grafana_allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to access Grafana"
+  type        = list(string)
+  default     = []
+}
+
 # Storage configuration
 variable "monitoring_storage_class" {
   description = "Storage class for persistent volumes"

@@ -53,3 +53,8 @@ variable "prometheus_allowed_cidr_blocks" {
   type        = list(string)
   description = "List of CIDR blocks allowed to access Prometheus/Grafana"
 }
+
+variable "grafana_allowed_cidr_blocks" {
+  type        = list(string)
+  description = "List of CIDR blocks allowed to access Grafana"
+}
