@@ -114,6 +114,7 @@ resource "null_resource" "gitops_bootstrap" {
         exit 0
       fi
       
+      echo "CHANGES_MADE after all checks: $CHANGES_MADE" >&2
       echo "Changes detected. Creating PR..."
       
       # Create branch and commit changes
