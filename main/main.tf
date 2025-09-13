@@ -656,7 +656,7 @@ module "eks_lockdown" {
     module.cluster_autoscaler,
     module.external_dns,
     module.external_secrets_operator,
-    module.kube_prometheus_stack,
+    module.monitoring,
     module.metrics_server,
     
     # Application modules
