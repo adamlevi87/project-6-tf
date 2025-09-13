@@ -129,6 +129,7 @@ module "security_groups" {
   argocd_allowed_cidr_blocks      = var.argocd_allowed_cidr_blocks
   eks_api_allowed_cidr_blocks     = var.eks_api_allowed_cidr_blocks
   prometheus_allowed_cidr_blocks  = var.prometheus_allowed_cidr_blocks
+  grafana_allowed_cidr_blocks     = var.grafana_allowed_cidr_blocks
   cluster_security_group_id       = module.eks.cluster_security_group_id
   
   # Node group configuration
