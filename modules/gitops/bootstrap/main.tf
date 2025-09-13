@@ -72,159 +72,147 @@ resource "null_resource" "manage_pr" {
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
     command = <<-EOT
-      #!/bin/bash
-      set -e
-      
-      # Enhanced error handling
-      cleanup_on_error() {
-        echo "Error occurred. Cleaning up..."
-        if [ -n "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "${var.target_branch}" ]; then
-          echo "Attempting to delete branch: $BRANCH_NAME"
-          curl -s -X DELETE \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/git/refs/heads/$BRANCH_NAME" || true
+        #!/bin/bash
+        set -euo pipefail
+
+        DEBUG=${DEBUG:-false}
+        if [[ "$DEBUG" == "true" ]]; then
+          set -x
         fi
-        exit 1
-      }
-      trap cleanup_on_error ERR
-      
-      # Variables
-      GITHUB_TOKEN="${var.github_token}"
-      REPO_OWNER="${var.github_org}"
-      REPO_NAME="${var.github_gitops_repo}"
-      BRANCH_NAME="${github_branch.gitops_branch.branch}"
-      TARGET_BRANCH="${var.target_branch}"
-      PR_TITLE="${var.bootstrap_mode ? "Bootstrap: ${var.project_tag} ${var.environment}" : "Update: ${var.environment} infrastructure"}"
-      PR_BODY="${var.bootstrap_mode ? "Bootstrap GitOps configuration for ${var.project_tag}" : "Update infrastructure values for ${var.environment}"}"
-      
-      echo "=== GitHub PR Management ==="
-      echo "REPO: $REPO_OWNER/$REPO_NAME"
-      echo "BRANCH: $BRANCH_NAME"
-      echo "TARGET: $TARGET_BRANCH"
-      echo "MODE: ${var.bootstrap_mode ? "bootstrap" : "update"}"
-      
-      # Wait a moment for GitHub to process the branch creation
-      echo "Waiting for GitHub to process branch creation..."
-      sleep 5
-      
-      # Check if there are actual file changes
-      echo "Checking for actual changes between branches..."
-      COMPARE_RESPONSE=$(curl -s \
-        -H "Authorization: token $GITHUB_TOKEN" \
-        -H "Accept: application/vnd.github.v3+json" \
-        "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/compare/$TARGET_BRANCH...$BRANCH_NAME")
-      
-      # Check if API call was successful
-      if echo "$COMPARE_RESPONSE" | jq -e '.message' >/dev/null 2>&1; then
-        echo "GitHub API Error: $(echo "$COMPARE_RESPONSE" | jq -r '.message')"
-        exit 1
-      fi
-      
-      CHANGES=$(echo "$COMPARE_RESPONSE" | jq '.files | length')
-      
-      if [ "$CHANGES" = "0" ] || [ -z "$CHANGES" ]; then
-        echo "No actual changes detected. Cleaning up branch and exiting."
-        curl -s -X DELETE \
-          -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/git/refs/heads/$BRANCH_NAME" || true
-        exit 0
-      fi
-      
-      echo "Found $CHANGES changed files. Proceeding with PR creation..."
-      
-      # Create PR with proper JSON escaping
-      PR_RESPONSE=$(curl -s -w "HTTPSTATUS:%%{http_code}" \
-        -H "Authorization: token $GITHUB_TOKEN" \
-        -H "Accept: application/vnd.github.v3+json" \
-        -H "Content-Type: application/json" \
-        "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls" \
-        -d "$(jq -n \
+
+        # Small helper to exit cleanly after printing a message
+        fail() { echo "❌ $*" >&2; exit 1; }
+
+        # curl helper that returns body and http code (stored in global vars)
+        http_request() {
+          local method=$1 url=$2 data=${3:-}
+          if [[ -n "$data" ]]; then
+            response=$(curl -sS -w "HTTPSTATUS:%{http_code}" -X "$method" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Content-Type: application/json" \
+              -d "$data" \
+              "$url")
+          else
+            response=$(curl -sS -w "HTTPSTATUS:%{http_code}" -X "$method" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "$url")
+          fi
+          HTTP_CODE=$(echo "$response" | sed -n 's/.*HTTPSTATUS:\([0-9]*\)$/\1/p')
+          RESPONSE_BODY=$(echo "$response" | sed 's/HTTPSTATUS:[0-9]*$//')
+        }
+
+        # cleanup handler: delete branch if we created it and it's not the target
+        cleanup_on_error() {
+          local branch="$BRANCH_NAME"
+          echo "Error occurred. Attempting cleanup..."
+          if [[ -n "$branch" && "$branch" != "$TARGET_BRANCH" ]]; then
+            echo "Deleting branch: $branch"
+            http_request DELETE "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/git/refs/heads/$branch" || true
+            echo "Delete HTTP code: $HTTP_CODE"
+          fi
+          exit 1
+        }
+        trap cleanup_on_error ERR
+
+        # ---- Variables injected by Terraform ----
+        GITHUB_TOKEN="${var.github_token}"
+        REPO_OWNER="${var.github_org}"
+        REPO_NAME="${var.github_gitops_repo}"    # NOTE: ensure this matches the repo var you use elsewhere
+        BRANCH_NAME="${github_branch.gitops_branch.branch}"
+        TARGET_BRANCH="${var.target_branch}"
+        PR_TITLE="${var.bootstrap_mode ? "Bootstrap: ${var.project_tag} ${var.environment}" : "Update: ${var.environment} infrastructure"}"
+        PR_BODY="${var.bootstrap_mode ? "Bootstrap GitOps configuration for ${var.project_tag}" : "Update infrastructure values for ${var.environment}"}"
+
+        echo "=== GitHub PR Management ==="
+        echo "REPO: $REPO_OWNER/$REPO_NAME"
+        echo "BRANCH: $BRANCH_NAME"
+        echo "TARGET: $TARGET_BRANCH"
+        echo "MODE: ${var.bootstrap_mode ? "bootstrap" : "update"}"
+
+        # Give GitHub a moment to process the branch
+        sleep 3
+
+        # 1) Compare branches to see if there are changes
+        COMPARE_URL="https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/compare/$TARGET_BRANCH...$BRANCH_NAME"
+        http_request GET "$COMPARE_URL"
+
+        if [[ "$HTTP_CODE" -ge 400 ]]; then
+          echo "GitHub compare API returned HTTP $HTTP_CODE"
+          echo "Body: $RESPONSE_BODY"
+          fail "Compare failed"
+        fi
+
+        # Count files changed safely (if 'files' missing treat as 0)
+        CHANGES=$(echo "$RESPONSE_BODY" | jq -r '.files? | length // 0')
+        echo "Files changed: $CHANGES"
+
+        if [[ "$CHANGES" -eq 0 ]]; then
+          echo "No changes detected; deleting branch and exiting gracefully"
+          http_request DELETE "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/git/refs/heads/$BRANCH_NAME" || true
+          echo "Delete HTTP code: $HTTP_CODE"
+          exit 0
+        fi
+
+        echo "Proceeding to create PR (found $CHANGES changed files)..."
+
+        # 2) Create the PR
+        PR_PAYLOAD=$(jq -n \
           --arg title "$PR_TITLE" \
           --arg body "$PR_BODY" \
           --arg head "$BRANCH_NAME" \
           --arg base "$TARGET_BRANCH" \
-          '{title: $title, body: $body, head: $head, base: $base}')")
-      
-      HTTP_CODE=$(echo "$PR_RESPONSE" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
-      RESPONSE_BODY=$(echo "$PR_RESPONSE" | sed 's/HTTPSTATUS:[0-9]*$//')
-      
-      echo "HTTP Code: $HTTP_CODE"
-      echo "Response: $RESPONSE_BODY"
-      
-      case "$HTTP_CODE" in
-        200|201)
-          PR_NUMBER=$(echo "$RESPONSE_BODY" | jq -r '.number')
-          echo "✅ Created PR #$PR_NUMBER"
-          
-          if [ "${var.auto_merge_pr}" = "true" ]; then
-            echo "🔀 Triggering auto-merge workflow..."
-            
-            # Create dispatch payload with proper escaping
-            DISPATCH_PAYLOAD=$(jq -n \
-              --arg event_type "auto-merge-pr" \
-              --argjson pr_number "$PR_NUMBER" \
-              '{event_type: $event_type, client_payload: {pr_number: $pr_number}}')
-            
-            DISPATCH_RESPONSE=$(curl -s -w "HTTPSTATUS:%%{http_code}" \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Content-Type: application/json" \
-              "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/dispatches" \
-              -d "$DISPATCH_PAYLOAD")
-            
-            DISPATCH_CODE=$(echo "$DISPATCH_RESPONSE" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
-            
-            if [ "$DISPATCH_CODE" = "204" ]; then
-              echo "✅ Auto-merge workflow triggered successfully"
+          '{title: $title, body: $body, head: $head, base: $base}')
+        http_request POST "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls" "$PR_PAYLOAD"
+
+        echo "Create PR HTTP $HTTP_CODE"
+        echo "Response: $RESPONSE_BODY"
+
+        case "$HTTP_CODE" in
+          200|201)
+            PR_NUMBER=$(echo "$RESPONSE_BODY" | jq -r '.number')
+            echo "✅ Created PR #$PR_NUMBER"
+            ;;
+          422)
+            # PR already exists? fetch it
+            if echo "$RESPONSE_BODY" | jq -r '.message // empty' | grep -qi "pull request already exists"; then
+              echo "PR already exists between these branches, fetching existing PR number..."
+              http_request GET "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls?head=$REPO_OWNER:$BRANCH_NAME&base=$TARGET_BRANCH"
+              if [[ "$HTTP_CODE" -eq 200 ]]; then
+                PR_NUMBER=$(echo "$RESPONSE_BODY" | jq -r '.[0].number // empty')
+                echo "Found existing PR #$PR_NUMBER"
+              else
+                echo "Failed to list PRs; HTTP $HTTP_CODE"
+                fail "Could not fetch existing PR"
+              fi
             else
-              echo "⚠️  Failed to trigger auto-merge (non-fatal). Code: $DISPATCH_CODE"
-              echo "Response: $(echo "$DISPATCH_RESPONSE" | sed 's/HTTPSTATUS:[0-9]*$//')"
+              fail "Failed to create PR: HTTP $HTTP_CODE - $RESPONSE_BODY"
             fi
-          fi
-          ;;
-        422)
-          # Check if it's because PR already exists
-          if echo "$RESPONSE_BODY" | grep -q "pull request already exists"; then
-            echo "ℹ️  PR already exists between these branches"
-            
-            # Get existing PR number
-            EXISTING_PR=$(curl -s \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls?head=$REPO_OWNER:$BRANCH_NAME&base=$TARGET_BRANCH")
-            
-            PR_NUMBER=$(echo "$EXISTING_PR" | jq -r '.[0].number')
-            if [ "$PR_NUMBER" != "null" ]; then
-              echo "Found existing PR #$PR_NUMBER"
-            fi
+            ;;
+          *)
+            fail "Failed to create PR: HTTP $HTTP_CODE - $RESPONSE_BODY"
+            ;;
+        esac
+
+        # 3) Optionally trigger auto-merge workflow via repository dispatch
+        if [[ "${var.auto_merge_pr}" == "true" ]]; then
+          echo "Triggering auto-merge workflow for PR #$PR_NUMBER..."
+          DISPATCH_PAYLOAD=$(jq -n --arg event_type "auto-merge-pr" --argjson pr_number "$PR_NUMBER" '{event_type: $event_type, client_payload: {pr_number: $pr_number}}')
+          http_request POST "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/dispatches" "$DISPATCH_PAYLOAD"
+          if [[ "$HTTP_CODE" -eq 204 ]]; then
+            echo "✅ Auto-merge workflow dispatched"
           else
-            echo "❌ Failed to create PR. Response: $RESPONSE_BODY"
-            exit 1
+            echo "⚠️  Dispatch HTTP $HTTP_CODE; body: $RESPONSE_BODY"
+            # do not fatal here — non-fatal
           fi
-          ;;
-        *)
-          echo "❌ Failed to create PR. HTTP Code: $HTTP_CODE"
-          echo "Response: $RESPONSE_BODY"
-          exit 1
-          ;;
-      esac
-      
-      echo "🎉 PR management completed successfully"
+        fi
+
+        echo "🎉 PR management completed successfully"
+ 
     EOT
   }
 
-  # Clean up branch on destroy
-  provisioner "local-exec" {
-    when = destroy
-    command = <<-EOT
-      echo "Cleaning up branch: ${self.triggers.branch_name}"
-      curl -s -X DELETE \
-        -H "Authorization: token ${self.triggers.github_token}" \
-        -H "Accept: application/vnd.github.v3+json" \
-        "https://api.github.com/repos/${self.triggers.github_org}/${self.triggers.github_gitops_repo}/git/refs/heads/${self.triggers.branch_name}" || true
-    EOT
   }
 
   # Store values for destroy-time cleanup
