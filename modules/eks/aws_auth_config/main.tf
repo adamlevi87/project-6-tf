@@ -26,26 +26,29 @@ locals {
   existing_map_roles = try(yamldecode(data.kubernetes_config_map_v1.existing_aws_auth.data["mapRoles"]), [])
   existing_map_users = try(yamldecode(data.kubernetes_config_map_v1.existing_aws_auth.data["mapUsers"]), [])
   
-  # Create maps for deduplication (last occurrence wins)
-  roles_map = {
-    for role in concat(
-      length(local.existing_map_roles) == 0 ? [] : local.existing_map_roles,
-      var.map_roles
-    ) : role.rolearn => role
-  }
+  # Get unique role ARNs and user ARNs from existing configmap
+  existing_role_arns = toset([for role in local.existing_map_roles : role.rolearn])
+  existing_user_arns = toset([for user in local.existing_map_users : user.userarn])
   
-  users_map = {
-    for user in concat(
-      length(local.existing_map_users) == 0 ? [] : local.existing_map_users,
-      [
-        for user_key, user in var.eks_user_access_map : {
-          userarn  = user.userarn
-          username = user.username
-          groups   = user.groups
-        }
-      ]
-    ) : user.userarn => user
-  }
+  # Only add new roles that don't already exist
+  new_roles = [
+    for role in var.map_roles : role 
+    if !contains(local.existing_role_arns, role.rolearn)
+  ]
+  
+  # Only add new users that don't already exist  
+  new_users = [
+    for user_key, user in var.eks_user_access_map : {
+      userarn  = user.userarn
+      username = user.username
+      groups   = user.groups
+    } if !contains(local.existing_user_arns, user.userarn)
+  ]
+  
+  # Merge existing + new (no duplicates)
+  merged_map_roles = concat(local.existing_map_roles, local.new_roles)
+  merged_map_users = concat(local.existing_map_users, local.new_users)
+}
   
   # Convert back to arrays (deduplicated)
   merged_map_roles = values(local.roles_map)
