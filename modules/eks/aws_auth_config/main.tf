@@ -61,7 +61,7 @@ resource "kubernetes_config_map_v1_data" "aws_auth_patch" {
 
   force = true
   
-  depends_on = [data.kubernetes_config_map_v1.aws_auth]
+  depends_on = [data.kubernetes_config_map_v1.existing_aws_auth]
 }
 
 # resource "null_resource" "aws_auth_patch" {
