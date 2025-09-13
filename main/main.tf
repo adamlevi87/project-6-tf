@@ -211,7 +211,7 @@ module "aws_load_balancer_controller" {
   oidc_provider_arn    = module.eks.oidc_provider_arn
   oidc_provider_url    = module.eks.cluster_oidc_issuer_url
 
-  depends_on = [module.eks]
+  depends_on = [module.eks, module.node_groups]
 }
 
 module "external_dns" {
@@ -235,7 +235,11 @@ module "external_dns" {
   oidc_provider_arn  = module.eks.oidc_provider_arn
   oidc_provider_url  = module.eks.cluster_oidc_issuer_url
   
-  depends_on = [module.eks, module.aws_load_balancer_controller.webhook_ready]
+  depends_on = [
+    module.eks, 
+    module.node_groups,
+    module.aws_load_balancer_controller
+  ]
 }
 
 module "cluster_autoscaler" {
@@ -255,7 +259,11 @@ module "cluster_autoscaler" {
   oidc_provider_url  = module.eks.cluster_oidc_issuer_url
   autoscaling_group_arns = local.autoscaling_group_arns
 
-  depends_on = [module.eks, module.aws_load_balancer_controller.webhook_ready]
+  depends_on = [
+    module.eks,
+    module.node_groups,
+    module.aws_load_balancer_controller.webhook_ready
+  ]
 }
 
 module "metrics_server" {
@@ -275,7 +283,11 @@ module "metrics_server" {
   cpu_limits      = "1000m"
   memory_limits   = "1000Mi"
 
-  depends_on = [module.eks, module.aws_load_balancer_controller.webhook_ready]
+  depends_on = [
+    module.eks,
+    module.node_groups,
+    module.aws_load_balancer_controller.webhook_ready
+  ]
 }
 
 module "frontend" {
@@ -300,7 +312,8 @@ module "frontend" {
   #node_group_security_groups = module.eks.node_group_security_group_ids
   
   depends_on = [
-    module.eks, 
+    module.eks,
+    module.node_groups,
     module.aws_load_balancer_controller.webhook_ready
   ]
 }
@@ -469,6 +482,7 @@ module "argocd" {
 
   depends_on = [
     module.eks,
+    module.node_groups,
     module.aws_load_balancer_controller.webhook_ready,
     module.acm
   ]
@@ -531,6 +545,7 @@ module "monitoring" {
   
   depends_on = [
     module.eks,
+    module.node_groups,
     module.aws_load_balancer_controller.webhook_ready,
     module.external_dns,
     module.ebs_csi_driver
@@ -568,6 +583,7 @@ module "external_secrets_operator" {
     
   depends_on = [
     module.eks,
+    module.node_groups,
     module.aws_auth_config,
     module.argocd,
     module.secrets_app_envs,
