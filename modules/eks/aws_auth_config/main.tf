@@ -27,14 +27,18 @@ locals {
   existing_map_users = try(yamldecode(data.kubernetes_config_map_v1.existing_aws_auth.data["mapUsers"]), [])
   
   # Merge existing roles with new roles (new roles take precedence)
-  merged_map_roles = concat(local.existing_map_roles, var.map_roles)
-  merged_map_users = concat(local.existing_map_users, [
-    for user_key, user in var.eks_user_access_map : {
-      userarn  = user.userarn
-      username = user.username
-      groups   = user.groups
-    }
-  ])
+  merged_map_roles = values({
+    for role in concat(local.existing_map_roles, var.map_roles) : role.rolearn => role
+  })
+  merged_map_users = values({
+  for user in concat(local.existing_map_users, [
+      for user_key, user in var.eks_user_access_map : {
+        userarn  = user.userarn
+        username = user.username  
+        groups   = user.groups
+      }
+    ]) : user.userarn => user
+  })
 }
 
 resource "null_resource" "aws_auth_patch" {
