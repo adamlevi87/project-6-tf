@@ -10,6 +10,9 @@ terraform {
 }
 
 resource "null_resource" "gitops_bootstrap" {
+  triggers = {
+    always_run = timestamp()
+  }
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
     command = <<EOT
@@ -175,19 +178,4 @@ rm -rf gitops-repo
 echo "🎉 GitOps bootstrap completed successfully"
     EOT
   }
-
-  # Trigger recreation when content changes
-  # triggers = {
-  #   bootstrap_mode = var.bootstrap_mode
-  #   update_apps    = var.update_apps
-  #   environment    = var.environment
-  #   # Hash of all rendered content to detect changes
-  #   content_hash = md5(join("", [
-  #     var.bootstrap_mode ? local.rendered_project : "",
-  #     var.bootstrap_mode ? local.rendered_app_of_apps : "",
-  #     var.bootstrap_mode ? local.rendered_frontend_app : "",
-  #     var.bootstrap_mode ? local.rendered_frontend_app_values : "",
-  #     (var.bootstrap_mode || var.update_apps) ? local.rendered_frontend_infra : "",
-  #   ]))
-  # }
 }
