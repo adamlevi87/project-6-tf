@@ -68,18 +68,6 @@ eks_node_groups = {
       instance-size  = "small"
       workload-type  = "system"
     }
-  },
-  extras = {
-    instance_type     = "t3.medium"
-    ami_id           = "ami-03943441037953e69"
-    desired_capacity = 1
-    max_capacity     = 4
-    min_capacity     = 1
-    labels = {
-      nodegroup-type = "critical"
-      instance-size  = "medium"
-      workload-type  = "system"
-    }
   }
 }
 
