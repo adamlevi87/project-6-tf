@@ -532,7 +532,8 @@ module "monitoring" {
   depends_on = [
     module.eks,
     module.aws_load_balancer_controller.webhook_ready,
-    module.external_dns
+    module.external_dns,
+    module.ebs_csi_driver
   ]
 }
 
