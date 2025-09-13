@@ -49,11 +49,6 @@ locals {
   merged_map_roles = concat(local.existing_map_roles, local.new_roles)
   merged_map_users = concat(local.existing_map_users, local.new_users)
 }
-  
-  # Convert back to arrays (deduplicated)
-  merged_map_roles = values(local.roles_map)
-  merged_map_users = values(local.users_map)
-}
 
 resource "kubernetes_config_map_v1_data" "aws_auth_patch" {
   metadata {
