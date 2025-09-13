@@ -70,9 +70,6 @@ resource "helm_release" "kube_prometheus_stack" {
             }
           }
           
-          # Instructions to monitor select resources or all (no filters)
-          # Helm would mean- this chart's helm defaults
-
           # Service monitor selector (important for ArgoCD integration)
           serviceMonitorSelectorNilUsesHelmValues = false
           serviceMonitorSelector = {}
@@ -86,26 +83,30 @@ resource "helm_release" "kube_prometheus_stack" {
           podMonitorSelector = {}
         }
         
-        # Ingress for Prometheus (optional - mainly for debugging)
+        # Ingress for Prometheus
         ingress = {
-          enabled = var.prometheus_ingress_enabled
+          enabled = true
           ingressClassName = var.ingress_controller_class
+          hostname = var.prometheus_domain
+          path = "/"
+          pathType = "Prefix"
           annotations = {
             "alb.ingress.kubernetes.io/scheme"      = "internet-facing"
             "alb.ingress.kubernetes.io/target-type" = "ip"
-            "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTPS\":443}]"
+            "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
             "alb.ingress.kubernetes.io/ssl-redirect" = "443"
             "alb.ingress.kubernetes.io/group.name"  = var.alb_group_name
+            "alb.ingress.kubernetes.io/security-groups" = var.alb_security_groups
             "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
+            "external-dns.alpha.kubernetes.io/hostname" = var.prometheus_domain
             # Restrict access to specific IPs
-            "alb.ingress.kubernetes.io/conditions.prometheus" = jsonencode([{
+            "alb.ingress.kubernetes.io/conditions.${var.release_name}-prometheus" = jsonencode([{
               field = "source-ip"
               sourceIpConfig = {
                 values = var.allowed_cidrs
               }
             }])
           }
-          hosts = var.prometheus_ingress_enabled ? [var.prometheus_domain] : []
         }
       }
 

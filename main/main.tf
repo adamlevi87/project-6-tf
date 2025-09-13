@@ -126,9 +126,10 @@ module "security_groups" {
   vpc_id = module.vpc.vpc_id
 
   # Security
-  argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
-  eks_api_allowed_cidr_blocks   = var.eks_api_allowed_cidr_blocks
-  cluster_security_group_id     = module.eks.cluster_security_group_id
+  argocd_allowed_cidr_blocks      = var.argocd_allowed_cidr_blocks
+  eks_api_allowed_cidr_blocks     = var.eks_api_allowed_cidr_blocks
+  prometheus_allowed_cidr_blocks  = var.prometheus_allowed_cidr_blocks
+  cluster_security_group_id       = module.eks.cluster_security_group_id
   
   # Node group configuration
   node_groups = var.eks_node_groups
@@ -244,7 +245,7 @@ module "cluster_autoscaler" {
 
   chart_version        = var.cluster_autoscaler_chart_version
   service_account_name = "cluster-autoscaler-${var.environment}-service-account"
-  release_name         = "cluster-autoscaler"
+  release_name         = "cluster-autoscaler-${var.environment}"
   namespace            = var.eks_addons_namespace
   
   # EKS related variables
@@ -482,19 +483,20 @@ module "monitoring" {
   
   # Chart configuration
   chart_version = var.kube_prometheus_stack_chart_version
-  release_name  = var.monitoring_release_name
+  release_name  = "${var.monitoring_release_name}-${var.environment}"
   namespace     = var.monitoring_namespace
   
   # Domains
   domain_name       = var.domain_name
   grafana_domain    = "${var.grafana_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
-  prometheus_domain = var.prometheus_base_domain_name != "" ? "${var.prometheus_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}" : ""
+  prometheus_domain = "${var.prometheus_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
   
   # Ingress configuration
-  ingress_controller_class = var.ingress_controller_class
-  alb_group_name          = local.alb_group_name
-  acm_certificate_arn     = module.acm.this_certificate_arn
-  allowed_cidrs           = var.monitoring_allowed_cidr_blocks
+  alb_group_name            = local.alb_group_name
+  alb_security_groups       = module.security_groups.joined_security_group_ids
+  ingress_controller_class  = var.ingress_controller_class
+  acm_certificate_arn       = module.acm.this_certificate_arn
+  allowed_cidrs             = var.prometheus_allowed_cidr_blocks
   
   # Authentication
   grafana_admin_password = var.grafana_admin_password
@@ -510,7 +512,6 @@ module "monitoring" {
   prometheus_memory_requests = var.prometheus_memory_requests
   prometheus_cpu_limits     = var.prometheus_cpu_limits
   prometheus_memory_limits  = var.prometheus_memory_limits
-  prometheus_ingress_enabled = var.prometheus_ingress_enabled
   
   # Grafana configuration
   grafana_storage_size    = var.grafana_storage_size

@@ -138,15 +138,16 @@ frontend_helm_release_name = "frontend"
 gitops_target_branch = "main"
 
 # ================================
-# Monitoring Configurations
+# Monitoring Configurations  
 # ================================
-# Monitoring
 enable_monitoring = true
 monitoring_namespace = "monitoring"
+monitoring_release_name = "kube-prometheus-stack"
 kube_prometheus_stack_chart_version = "77.6.2"
 grafana_base_domain_name = "grafana"
+prometheus_base_domain_name = "prometheus"
 grafana_admin_password = "admin123"  # Change this!
-monitoring_allowed_cidr_blocks = ["85.65.167.191/32"]  # Your IP
+prometheus_allowed_cidr_blocks = ["85.65.167.191/32"]  # Your IP
 
 # Storage configuration
 monitoring_storage_class = "gp2"
@@ -159,7 +160,6 @@ prometheus_cpu_requests = "200m"
 prometheus_memory_requests = "400Mi"
 prometheus_cpu_limits = "1000m"
 prometheus_memory_limits = "2Gi"
-prometheus_ingress_enabled = true
 
 # Grafana configuration
 grafana_storage_size = "10Gi"

@@ -60,6 +60,11 @@ variable "allowed_cidrs" {
   type        = list(string)
 }
 
+variable "alb_security_groups" {
+  description = "Security groups for ALB (comma-separated)"
+  type        = string
+}
+
 variable "grafana_admin_password" {
   description = "Grafana admin password"
   type        = string
@@ -108,10 +113,7 @@ variable "prometheus_memory_limits" {
   type        = string
 }
 
-variable "prometheus_ingress_enabled" {
-  description = "Enable Prometheus ingress"
-  type        = bool
-}
+
 
 # Grafana configuration
 variable "grafana_storage_size" {
