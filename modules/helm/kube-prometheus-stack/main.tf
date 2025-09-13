@@ -254,9 +254,9 @@ resource "helm_release" "kube_prometheus_stack" {
       # Node Exporter
       nodeExporter = {
         enabled = true
-        affinity = {
-          nodeAffinity = null
-        }
+      }
+      "prometheus-node-exporter" = {
+        affinity = null
       }
 
       # Kube State Metrics
