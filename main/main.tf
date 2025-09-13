@@ -632,6 +632,23 @@ module "trigger_app_build" {
   ]
 }
 
+module "ebs_csi_driver" {
+  source = "../modules/helm/ebs-csi-driver"
+
+  project_tag        = var.project_tag
+  environment        = var.environment
+
+  chart_version        = "2.35.1"
+  service_account_name = "ebs-csi-controller-${var.environment}-sa"
+  release_name         = "aws-ebs-csi-driver-${var.environment}"
+  namespace            = var.eks_addons_namespace
+
+  oidc_provider_arn    = module.eks.oidc_provider_arn
+  oidc_provider_url    = module.eks.cluster_oidc_issuer_url
+
+  depends_on = [module.eks]
+}
+
 # main/main.tf (add this section at the end)
 
 # ====================================================================
@@ -658,7 +675,7 @@ module "eks_lockdown" {
     module.external_secrets_operator,
     module.monitoring,
     module.metrics_server,
-    
+    module.ebs_csi_driver,
     # Application modules
     module.frontend,
     
