@@ -73,7 +73,7 @@ eks_node_groups = {
 
 # List of cluster log types to enable. Available options: api, audit, authenticator, controllerManager, scheduler
 # to enable use cluster_enabled_log_types = ["api", "audit", "controllerManager", "scheduler"]
-cluster_enabled_log_types = ["api", "audit", "controllerManager", "scheduler"] # For dev - this might not be needed
+cluster_enabled_log_types = [] # For dev - this might not be needed
 
 # EKS Logging Configuration (minimal retention for cost)
 eks_log_retention_days = 7  # 1 week retention for dev environment
