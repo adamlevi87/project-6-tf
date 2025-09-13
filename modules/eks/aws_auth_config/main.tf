@@ -28,7 +28,7 @@ locals {
   
   # Merge existing roles with new roles (new roles take precedence)
   merged_map_roles = values({
-    for role in concat(local.existing_map_roles, var.map_roles) : role.rolearn => role
+    for role in concat(local.existing_map_roles, var.map_roles) : role.rolearn => role...
   })
   merged_map_users = values({
   for user in concat(local.existing_map_users, [
@@ -37,7 +37,7 @@ locals {
         username = user.username  
         groups   = user.groups
       }
-    ]) : user.userarn => user
+    ]) : user.userarn => user...
   })
 }
 
