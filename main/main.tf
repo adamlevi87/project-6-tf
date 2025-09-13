@@ -663,7 +663,7 @@ module "ebs_csi_driver" {
   oidc_provider_arn    = module.eks.oidc_provider_arn
   oidc_provider_url    = module.eks.cluster_oidc_issuer_url
 
-  depends_on = [module.eks]
+  depends_on = [module.eks,module.node_groups]
 }
 
 # main/main.tf (add this section at the end)
