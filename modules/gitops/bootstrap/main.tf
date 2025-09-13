@@ -71,28 +71,28 @@ if [ "${var.bootstrap_mode}" = "true" ]; then
   echo "=== Bootstrap Mode Files ==="
   
   # Project YAML (reference only)
-  update_file_if_changed \
-    "${local.project_yaml_path}" \
-    '${local.rendered_project}' \
-    "ArgoCD Project"
+  cat > /tmp/content1 << 'TERRAFORM_EOF'
+${local.rendered_project}
+TERRAFORM_EOF
+  update_file_if_changed "${local.project_yaml_path}" "$(cat /tmp/content1)" "ArgoCD Project"
   
   # App of Apps YAML (reference only)
-  update_file_if_changed \
-    "${local.app_of_apps_yaml_path}" \
-    '${local.rendered_app_of_apps}' \
-    "App of Apps"
+  cat > /tmp/content2 << 'TERRAFORM_EOF'
+${local.rendered_app_of_apps}
+TERRAFORM_EOF
+  update_file_if_changed "${local.app_of_apps_yaml_path}" "$(cat /tmp/content2)" "App of Apps"
   
   # Frontend Application YAML
-  update_file_if_changed \
-    "${local.frontend_app_path}" \
-    '${local.rendered_frontend_app}' \
-    "Frontend Application"
+  cat > /tmp/content3 << 'TERRAFORM_EOF'
+${local.rendered_frontend_app}
+TERRAFORM_EOF
+  update_file_if_changed "${local.frontend_app_path}" "$(cat /tmp/content3)" "Frontend Application"
   
   # Frontend App Values YAML
-  update_file_if_changed \
-    "${local.frontend_app_values_path}" \
-    '${local.rendered_frontend_app_values}' \
-    "Frontend App Values"
+  cat > /tmp/content4 << 'TERRAFORM_EOF'
+${local.rendered_frontend_app_values}
+TERRAFORM_EOF
+  update_file_if_changed "${local.frontend_app_values_path}" "$(cat /tmp/content4)" "Frontend App Values"
 fi
 
 # Infrastructure files (bootstrap OR update mode)
@@ -100,10 +100,10 @@ if [ "${var.bootstrap_mode}" = "true" ] || [ "${var.update_apps}" = "true" ]; th
   echo "=== Infrastructure Files ==="
   
   # Frontend Infrastructure Values
-  update_file_if_changed \
-    "${local.frontend_infra_values_path}" \
-    '${local.rendered_frontend_infra}' \
-    "Frontend Infrastructure Values"
+  cat > /tmp/content5 << 'TERRAFORM_EOF'
+${local.rendered_frontend_infra}
+TERRAFORM_EOF
+  update_file_if_changed "${local.frontend_infra_values_path}" "$(cat /tmp/content5)"
 fi
 
 # Check if any changes were made
