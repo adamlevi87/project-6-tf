@@ -12,7 +12,7 @@ terraform {
     }
   }
 }
-
+#
 # Read existing aws-auth configmap to preserve node group roles
 data "kubernetes_config_map_v1" "existing_aws_auth" {
   metadata {
