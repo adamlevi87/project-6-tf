@@ -14,7 +14,8 @@ resource "null_resource" "gitops_bootstrap" {
     interpreter = ["/bin/bash", "-c"]
     command = <<-EOT
       #!/bin/bash
-      set -e
+      echo "Script started - test echo" >&2
+      #set -e
       
       # Variables
       GITHUB_TOKEN="${var.github_token}"
