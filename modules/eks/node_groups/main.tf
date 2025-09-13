@@ -9,6 +9,11 @@ terraform {
   }
 }
 
+data "aws_launch_template" "latest" {
+  for_each = var.node_groups
+  id       = var.launch_template_ids[each.key]
+}
+
 # EKS Node Group IAM Role
 resource "aws_iam_role" "node_group_role" {
   name = "${var.project_tag}-${var.environment}-eks-node-group-role"
@@ -94,7 +99,7 @@ resource "aws_eks_node_group" "main" {
 
   launch_template {
     id      = var.launch_template_ids[each.key]
-    version = "$Latest"
+    version = data.aws_launch_template.latest[each.key].latest_version
   }
 
   scaling_config {
