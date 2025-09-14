@@ -192,7 +192,7 @@ prometheus_base_domain_name = "prometheus"
 prometheus_allowed_cidr_blocks = ["85.65.167.191/32"]  # Your IP
 grafana_allowed_cidr_blocks    = ["85.65.167.191/32"]
 enable_dex_metrics = true
-
+grafana_admin_password = "admin123"
 #  = "admin123"  # Change this!
 # Configuration for secrets
 secrets_config = {

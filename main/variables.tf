@@ -523,11 +523,11 @@ variable "prometheus_base_domain_name" {
   type        = string
 }
 
-# variable "grafana_admin_password" {
-#   description = "Grafana admin password"
-#   type        = string
-#   sensitive   = true
-# }
+variable "grafana_admin_password" {
+  description = "Grafana admin password"
+  type        = string
+  sensitive   = true
+}
 
 variable "prometheus_allowed_cidr_blocks" {
   description = "CIDR blocks allowed to access Prometheus/Grafana interfaces"
