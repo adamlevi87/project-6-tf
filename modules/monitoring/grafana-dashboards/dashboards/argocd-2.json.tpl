@@ -265,7 +265,7 @@
                   {
                     "targetBlank": true,
                     "title": "Go To Application",
-                    "url": "https://argocd.com/applications/$${__data.fields.Project}/${__value.raw}"
+                    "url": "https://argocd.com/applications/$${__data.fields.Project}/$${__value.raw}"
                   }
                 ]
               }
@@ -371,7 +371,7 @@
                   {
                     "targetBlank": true,
                     "title": "Go To Application",
-                    "url": "https://argocd.com/applications/$${__data.fields.Project}/${__value.raw}"
+                    "url": "https://argocd.com/applications/$${__data.fields.Project}/$${__value.raw}"
                   }
                 ]
               }
@@ -477,7 +477,7 @@
                   {
                     "targetBlank": true,
                     "title": "Go To Application",
-                    "url": "https://argocd.com/applications/$${__data.fields.Project}/${__value.raw}"
+                    "url": "https://argocd.com/applications/$${__data.fields.Project}/$${__value.raw}"
                   }
                 ]
               }
@@ -583,7 +583,7 @@
                   {
                     "targetBlank": true,
                     "title": "Go To Application",
-                    "url": "https://argocd.com/applications/$${__data.fields.Project}/${__value.raw}"
+                    "url": "https://argocd.com/applications/$${__data.fields.Project}/$${__value.raw}"
                   }
                 ]
               }
