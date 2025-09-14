@@ -35,12 +35,13 @@ resource "kubernetes_manifest" "aws_load_balancer_controller_servicemonitor" {
       }
       endpoints = [
         {
-          port     = "webhook"
+          port     = "webhook-server"
           interval = "30s"
           path     = "/metrics"
-          scheme   = "http"
-          # Target the webhook service which exposes metrics
-          targetPort = 8080
+          scheme   = "https"
+          tlsConfig = {
+            insecureSkipVerify = true
+          }
         }
       ]
     }
