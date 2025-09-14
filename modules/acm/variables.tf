@@ -19,8 +19,3 @@ variable "route53_zone_id" {
   type        = string
   description = "ID of the Route53 hosted zone used for DNS validation"
 }
-
-# variable "route53_depends_on" {
-#   description = "Used to enforce a dependency on Route53 zone creation"
-#   type        = string
-# }

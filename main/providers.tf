@@ -6,7 +6,6 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 6.12.0"
-      #version = "~> 6.6.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
@@ -36,11 +35,6 @@ data "aws_eks_cluster" "cluster" {
   name       = module.eks.cluster_name
   depends_on = [module.eks]
 }
-
-# data "aws_eks_cluster_auth" "cluster" {
-#   name       = module.eks.cluster_name
-#   depends_on = [module.eks]
-# }
 
 # Kubernetes provider configuration
 provider "kubernetes" {

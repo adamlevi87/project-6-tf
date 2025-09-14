@@ -21,7 +21,7 @@ locals {
       apiVersion = "external-secrets.io/v1beta1"
       kind       = "SecretStore"
       metadata   = {
-        name      = "aws-sm-argocd"       # name it however you like
+        name      = "aws-sm-argocd"
         namespace = "${var.argocd_namespace}"
         annotations = {
           "helm.sh/hook"            = "post-install,post-upgrade"
@@ -38,8 +38,7 @@ locals {
             auth    = {
               jwt = {
                 serviceAccountRef = {
-                  name      = "${var.argocd_service_account_name}"      # the SA you IRSA-bound
-                  #namespace = "${var.argocd_namespace}"
+                  name      = "${var.argocd_service_account_name}"
                 }
               }
             }
@@ -276,7 +275,6 @@ locals {
         annotations = {
           "helm.sh/hook"            = "post-install,post-upgrade"
           "helm.sh/hook-weight"     = "3"
-          #"helm.sh/hook-delete-policy" = "before-hook-creation"
         }
       }
       rules = [
@@ -303,7 +301,6 @@ locals {
         annotations = {
           "helm.sh/hook"            = "post-install,post-upgrade"
           "helm.sh/hook-weight"     = "4"
-          #"helm.sh/hook-delete-policy" = "before-hook-creation"
         }
       }
       subjects = [
@@ -321,13 +318,6 @@ locals {
     }
   ]
 }
-
-
-# resource "kubernetes_namespace" "this" {
-#   metadata {
-#     name = var.namespace
-#   }
-# }
 
 resource "helm_release" "this" {
   name       = "${var.release_name}"
@@ -368,74 +358,14 @@ resource "helm_release" "this" {
     })
   ]
 
-  # dynamic "set" {
-  #   for_each = var.set_values
-  #   content {
-  #     name  = set.value.name
-  #     value = set.value.value
-  #   }
-  # }
-
   depends_on = [
-    #aws_iam_role_policy_attachment.this,
-    kubernetes_service_account.this#,
-    #kubernetes_namespace.this
+    kubernetes_service_account.this
   ]
 }
 
-# resource "aws_iam_role" "this" {
-#   name = "${var.project_tag}-${var.environment}-eso"
-
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [{
-#       Action = "sts:AssumeRoleWithWebIdentity",
-#       Effect = "Allow",
-#       Principal = {
-#         Federated = var.oidc_provider_arn
-#       },
-#       Condition = {
-#         StringEquals = {
-#           "${replace(var.oidc_provider_url, "https://", "")}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
-#           "${replace(var.oidc_provider_url, "https://", "")}:aud" = "sts.amazonaws.com"
-#         }
-#       }
-#     }]
-#   })
-
-#   tags = {
-#     Name        = "${var.project_tag}-${var.environment}-eso-role"
-#     Environment = var.environment
-#     Project     = var.project_tag
-#     Purpose     = "eso-irsa"
-#   }
-# }
-
-# resource "aws_iam_policy" "this" {
-#   name        = "${var.project_tag}-${var.environment}-eso-policy"
-#   description = "Allow ESO to access Secrets Manager"
-
-#   policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [
-#       {
-#         Effect   = "Allow",
-#         Action   = [
-#           "secretsmanager:GetSecretValue",
-#           "secretsmanager:DescribeSecret",
-#           "secretsmanager:ListSecrets"
-#         ],
-#         Resource = "*"
-#       }
-#     ]
-#   })
-# }
-
-# resource "aws_iam_role_policy_attachment" "this" {
-#   role       = aws_iam_role.this.name
-#   policy_arn = aws_iam_policy.this.arn
-# }
-
+# in the locals block - ESO gets permissions over the 
+# namespace / Service account of argocd
+# authenticating to the secrets manager using that SA
 resource "kubernetes_service_account" "this" {
   metadata {
     name      = var.service_account_name

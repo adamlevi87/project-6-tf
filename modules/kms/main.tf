@@ -26,20 +26,7 @@ resource "aws_kms_key" "s3_key" {
         }
         Action = "kms:*"
         Resource = "*"
-      }#,
-      # # Temporary permissions for cloudfront(s) to use the key
-      # {
-      #   Sid    = "Allow CloudFront to use the key"
-      #   Effect = "Allow"
-      #   Principal = {
-      #     Service = "cloudfront.amazonaws.com"
-      #   }
-      #   Action = [
-      #     "kms:Decrypt",
-      #     "kms:GenerateDataKey*"
-      #   ]
-      #   Resource = "*"
-      # }
+      }
     ]
   })
 

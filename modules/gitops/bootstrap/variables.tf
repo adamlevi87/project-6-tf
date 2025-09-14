@@ -10,11 +10,6 @@ variable "environment" {
   type        = string
 }
 
-# variable "gitops_repo_owner" {
-#   description = "GitHub username/organization that owns the GitOps repository"
-#   type        = string
-# }
-
 variable "github_gitops_repo" {
   description = "Name of the GitOps repository"
   type        = string
@@ -30,27 +25,11 @@ variable "github_application_repo" {
   type        = string
 }
 
-# variable "app_name" {
-#   description = "Application name for project description"
-#   type        = string
-#   default     = "project-5"
-# }
-
-# variable "aws_region" {
-#   description = "AWS region"
-#   type        = string
-# }
-
 # ECR Repository URLs
 variable "ecr_frontend_repo_url" {
   description = "ECR repository URL for frontend"
   type        = string
 }
-
-# variable "ecr_backend_repo_url" {
-#   description = "ECR repository URL for backend"
-#   type        = string
-# }
 
 # Frontend Configuration
 variable "frontend_namespace" {
@@ -98,55 +77,6 @@ variable "argocd_app_of_apps_yaml" {
   default     = ""
 }
 
-# variable "frontend_external_secret_name" {
-#   description = "External secret name for frontend"
-#   type        = string
-# }
-
-# variable "frontend_aws_secret_key" {
-#   description = "AWS secret key for frontend environment variables"
-#   type        = string
-# }
-
-# # Backend Configuration
-# variable "backend_namespace" {
-#   description = "Kubernetes namespace for backend"
-#   type        = string
-#   default     = "backend"
-# }
-
-# variable "backend_service_account_name" {
-#   description = "Service account name for backend"
-#   type        = string
-#   default     = "backend-sa"
-# }
-
-# variable "backend_container_port" {
-#   description = "Container port for backend"
-#   type        = number
-#   default     = 3000
-# }
-
-# variable "backend_ingress_host" {
-#   description = "Ingress host for backend"
-#   type        = string
-# }
-
-# variable "backend_external_dns_hostname" {
-#   description = "External DNS hostname for backend"
-#   type        = string
-# }
-
-# variable "backend_external_secret_name" {
-#   description = "External secret name for backend"
-#   type        = string
-# }
-
-# variable "backend_aws_secret_key" {
-#   description = "AWS secret key for backend environment variables"
-#   type        = string
-# }
-
 # Shared ALB Configuration
 variable "alb_group_name" {
   description = "ALB group name for shared load balancer"
@@ -170,19 +100,6 @@ variable "argocd_namespace" {
   default     = "argocd"
 }
 
-# variable "argocd_project_name" {
-#   description = "ArgoCD project name (defaults to project_tag)"
-#   type        = string
-#   default     = ""
-# }
-
-# # Optional Configuration
-# variable "create_pr" {
-#   description = "Whether to create a pull request automatically"
-#   type        = bool
-#   default     = true
-# }
-
 variable "branch_name_prefix" {
   description = "Prefix for auto-generated branch names"
   type        = string
@@ -205,48 +122,17 @@ variable "frontend_helm_release_name" {
   type        = string
 }
 
-# Enable/disable which applications to update
-# variable "update_frontend" {
-#   description = "Whether to update frontend configuration"
-#   type        = bool
-#   default     = true
-# }
-
-# variable "update_backend" {
-#   description = "Whether to update backend configuration"
-#   type        = bool
-#   default     = true
-# }
-
 variable "bootstrap_mode" {
   description = "Whether to create all GitOps files (project + applications + values) - bootstrap mode"
   type        = bool
   default     = false
 }
 
-# variable "applications" {
-#   description = "List of applications to create (for bootstrap mode)"
-#   type        = list(string)
-# }
-
 variable "update_apps" {
   description = "Whether to update infrastructure values for both frontend and backend"
   type        = bool
   default     = false
 }
-
-# variable "current_files_data" {
-#   description = "Map of current file data from GitHub repository"
-#   type = map(object({
-#     content = string
-#     # Add other attributes as needed
-#   }))
-# }
-
-# variable "gitops_repo_name" {
-#   description = "GitHub repository name (from data source)"
-#   type        = string
-# }
 
 variable "github_token" {
   description = "GitHub PAT with access to manage secrets"

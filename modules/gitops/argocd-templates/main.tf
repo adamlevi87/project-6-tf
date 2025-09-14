@@ -1,7 +1,7 @@
 # modules/gitops/argocd-templates/main.tf
 
 locals {
-  # Template variables for both project and app-of-apps
+  # Template variables for project and app-of-apps
   template_vars = {
     project_tag                 = var.project_tag
     argocd_namespace            = var.argocd_namespace
