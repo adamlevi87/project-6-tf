@@ -514,6 +514,16 @@ module "argocd" {
   ]
 }
 
+module "save_grafana_password" {
+  source = "../modules/secrets-manager"
+
+  project_tag = var.project_tag
+  environment = var.environment
+  
+  secrets_config_with_passwords = local.secrets_config_with_passwords
+  app_secrets_config            = {}
+}
+
 module "monitoring" {
   count = var.enable_monitoring ? 1 : 0
   
@@ -541,7 +551,9 @@ module "monitoring" {
   grafana_allowed_cidr_blocks    = var.grafana_allowed_cidr_blocks
   
   # Authentication
-  grafana_admin_password = var.grafana_admin_password
+  #grafana_admin_password = var.grafana_admin_password
+  grafana_admin_password = local.secrets_config_with_passwords["grafana_admin_password"].secret_value
+  
   
   # Storage configuration
   storage_class = var.monitoring_storage_class

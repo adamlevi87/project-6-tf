@@ -27,14 +27,14 @@ variable "app_secrets_config" {
 }
 
 
-# variable "secrets_config_with_passwords" {
-#   description = "Map of Configurations of secrets to create"
-#   type = map(object({
-#     description        = string
-#     generate_password  = bool
-#     password_length    = optional(number, 16)
-#     password_special   = optional(bool, true)
-#     secret_value       = optional(string, "")
-#     password_override_special = optional(string, "")
-#   }))
-# }
+variable "secrets_config_with_passwords" {
+  description = "Map of Configurations of secrets to create"
+  type = map(object({
+    description        = string
+    generate_password  = bool
+    password_length    = optional(number, 16)
+    password_special   = optional(bool, true)
+    secret_value       = optional(string, "")
+    password_override_special = optional(string, "")
+  }))
+}

@@ -189,10 +189,25 @@ monitoring_release_name = "kube-prometheus-stack"
 kube_prometheus_stack_chart_version = "77.6.2"
 grafana_base_domain_name = "grafana"
 prometheus_base_domain_name = "prometheus"
-grafana_admin_password = "admin123"  # Change this!
 prometheus_allowed_cidr_blocks = ["85.65.167.191/32"]  # Your IP
 grafana_allowed_cidr_blocks    = ["85.65.167.191/32"]
 enable_dex_metrics = true
+
+#  = "admin123"  # Change this!
+# Configuration for secrets
+secrets_config = {
+    #dont change map names
+    grafana_admin_password = {
+        description        = "Admin Password for Grafana"
+        generate_password  = true
+        password_length    = 16
+        password_special   = true
+        password_override_special = "!#$%&*()-_=+[]{}|;:,.<>?"
+        #secret_value = "example"
+    }
+    # Future secrets go here
+}
+
 
 # Storage configuration
 monitoring_storage_class = "gp2"

@@ -127,13 +127,16 @@ locals {
         for principal in var.s3_allowed_principals :
             "arn:aws:iam::${local.account_id}:${principal}"
     ]
-    # # Merge generated passwords into the configuration
-    # secrets_config_with_passwords  = {
-    #   for name, config in var.secrets_config :
-    #     name => merge(config, {
-    #         secret_value = config.generate_password ? random_password.generated_passwords[name].result : config.secret_value
-    #     })
-    # }
+
+    # Merge generated passwords into the configuration
+    secrets_config_with_passwords  = {
+      for name, config in var.secrets_config :
+        name => merge(config, {
+            secret_value = config.generate_password ? random_password.generated_passwords[name].result : config.secret_value
+        })
+    }
+
+
 
     
     
