@@ -424,10 +424,10 @@ module "gitops_bootstrap" {
 
 # the initial app_of_apps sync has been automated
 # this option requires argoCD to be created only AFTER everything else is ready
-# we accept that the initial sync might fail (mainly due to missing images, until they are built)
+# we accept that the initial sync might fail (mainly due to missing ecr images, until they are built)
 # also, in this module the Project & App_of_apps will created (helm actually manages them both)
 #   the bootstrap module creates reference only copies of project/app of apps
-          ####### important: App_of_Apps is only setup during the helm install
+          ####### important: App_of_Apps will only be set-up during the helm install
 module "argocd" {
   source         = "../modules/helm/argocd"
 
@@ -448,7 +448,6 @@ module "argocd" {
   alb_group_name            = local.alb_group_name
   
   # Networking
-  #vpc_id = module.vpc.vpc_id
   argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
 
   # Certificate
@@ -457,26 +456,18 @@ module "argocd" {
 
   # Security Groups
   alb_security_groups    = module.security_groups.joined_security_group_ids
-  #node_group_security_groups    = module.eks.node_group_security_group_ids
   
   # Github Settings
   github_org                    = var.github_org
-  #github_application_repo       = var.github_application_repo
-  #github_gitops_repo            = var.github_gitops_repo
  
   # ArgoCD Setup
   argocd_project_yaml     = module.argocd_templates.project_yaml
   argocd_app_of_apps_yaml = module.argocd_templates.app_of_apps_yaml
-  #app_of_apps_path              = var.argocd_app_of_apps_path
-  #app_of_apps_target_revision   = var.argocd_app_of_apps_target_revision
   
   # Github SSO
   github_admin_team             = var.github_admin_team
   github_readonly_team          = var.github_readonly_team
   argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
-
-  # Security groups for alb creation (via an ingress resource [managed by AWS LBC])
-  #frontend_security_group_id    = module.frontend.security_group_id
 
   secret_arn = module.secrets_app_envs.app_secrets_arns["${var.argocd_aws_secret_key}"]
 

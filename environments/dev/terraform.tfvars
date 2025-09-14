@@ -108,10 +108,13 @@ github_org = "adamlevi87"
 github_application_repo = "project-6-app"
 github_gitops_repo  = "project-6-gitops"
 github_terraform_repo  = "project-6-tf"
+# Groups for SSO permissions (Github SSO for ArgoCD)
 github_admin_team = "devops"
 github_readonly_team = "developers"
 
-# ArgoCD
+# ================================
+# ArgoCD Configuration
+# ================================
 argocd_chart_version                = "8.3.6"
 argocd_namespace                    = "argocd"
 argocd_allowed_cidr_blocks          = ["85.65.167.191/32"]
@@ -119,6 +122,46 @@ argocd_base_domain_name             = "argocd"
 argocd_app_of_apps_path             = "apps"
 argocd_app_of_apps_target_revision  = "main"
 argocd_aws_secret_key               = "argocd-credentials"
+
+# ================================
+# ArgoCD Server Resources
+# ================================
+argocd_server_memory_requests = "256Mi"
+argocd_server_cpu_requests    = "100m"
+argocd_server_memory_limits   = "512Mi"
+argocd_server_cpu_limits      = "500m"
+
+# ================================
+# ArgoCD Application Controller Resources
+# ================================
+argocd_controller_memory_requests = "1Gi"
+argocd_controller_cpu_requests    = "250m"
+argocd_controller_memory_limits   = "2Gi"
+argocd_controller_cpu_limits      = "1000m"
+
+# ================================
+# ArgoCD Repo Server Resources
+# ================================
+argocd_repo_server_memory_requests = "256Mi"
+argocd_repo_server_cpu_requests    = "100m"
+argocd_repo_server_memory_limits   = "512Mi"
+argocd_repo_server_cpu_limits      = "500m"
+
+# ================================
+# ArgoCD Dex Server Resources
+# ================================
+argocd_dex_memory_requests = "64Mi"
+argocd_dex_cpu_requests    = "50m"
+argocd_dex_memory_limits   = "128Mi"
+argocd_dex_cpu_limits      = "100m"
+
+# ================================
+# ArgoCD Metrics Configuration
+# ================================
+argocd_server_metrics_enabled     = true
+argocd_controller_metrics_enabled = true
+argocd_repo_server_metrics_enabled = true
+argocd_dex_metrics_enabled        = true  # Usually not needed
 
 # ingress controller class
 ingress_controller_class = "alb"

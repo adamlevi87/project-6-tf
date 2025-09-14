@@ -312,6 +312,183 @@ variable "argocd_aws_secret_key" {
   type        = string
 }
 
+# ================================
+# ArgoCD Configuration
+# ================================
+variable "argocd_chart_version" {
+  type        = string
+  description = "ArgoCD Helm chart version"
+}
+
+variable "argocd_namespace" {
+  type        = string
+  description = "Kubernetes namespace for ArgoCD"
+  default     = "argocd"
+}
+
+variable "argocd_allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to access the cluster endpoint"
+  type        = list(string)
+  default     = []
+}
+
+variable "argocd_base_domain_name" {
+  type        = string
+  description = "Base domain name for ArgoCD"
+}
+
+variable "argocd_app_of_apps_path" {
+  description = "Path within the GitOps repository where ArgoCD should look for Application manifests."
+  type        = string
+  default     = "apps"
+}
+
+variable "argocd_app_of_apps_target_revision" {
+  description = "Branch or Git reference in the GitOps repository that ArgoCD should track."
+  type        = string
+  default     = "main"
+}
+
+variable "argocd_aws_secret_key" {
+  description = "AWS secret key name for ArgoCD credentials"
+  type        = string
+}
+
+# ================================
+# ArgoCD Server Resource Configuration
+# ================================
+variable "argocd_server_memory_requests" {
+  description = "ArgoCD server memory requests"
+  type        = string
+  default     = "256Mi"
+}
+
+variable "argocd_server_cpu_requests" {
+  description = "ArgoCD server CPU requests"
+  type        = string
+  default     = "100m"
+}
+
+variable "argocd_server_memory_limits" {
+  description = "ArgoCD server memory limits"
+  type        = string
+  default     = "512Mi"
+}
+
+variable "argocd_server_cpu_limits" {
+  description = "ArgoCD server CPU limits"
+  type        = string
+  default     = "500m"
+}
+
+# ================================
+# ArgoCD Application Controller Resource Configuration
+# ================================
+variable "argocd_controller_memory_requests" {
+  description = "ArgoCD application controller memory requests"
+  type        = string
+  default     = "1Gi"
+}
+
+variable "argocd_controller_cpu_requests" {
+  description = "ArgoCD application controller CPU requests"
+  type        = string
+  default     = "250m"
+}
+
+variable "argocd_controller_memory_limits" {
+  description = "ArgoCD application controller memory limits"
+  type        = string
+  default     = "2Gi"
+}
+
+variable "argocd_controller_cpu_limits" {
+  description = "ArgoCD application controller CPU limits"
+  type        = string
+  default     = "1000m"
+}
+
+# ================================
+# ArgoCD Repo Server Resource Configuration
+# ================================
+variable "argocd_repo_server_memory_requests" {
+  description = "ArgoCD repo server memory requests"
+  type        = string
+  default     = "256Mi"
+}
+
+variable "argocd_repo_server_cpu_requests" {
+  description = "ArgoCD repo server CPU requests"
+  type        = string
+  default     = "100m"
+}
+
+variable "argocd_repo_server_memory_limits" {
+  description = "ArgoCD repo server memory limits"
+  type        = string
+  default     = "512Mi"
+}
+
+variable "argocd_repo_server_cpu_limits" {
+  description = "ArgoCD repo server CPU limits"
+  type        = string
+  default     = "500m"
+}
+
+# ================================
+# ArgoCD Dex Server Resource Configuration
+# ================================
+variable "argocd_dex_memory_requests" {
+  description = "ArgoCD dex server memory requests"
+  type        = string
+  default     = "64Mi"
+}
+
+variable "argocd_dex_cpu_requests" {
+  description = "ArgoCD dex server CPU requests"
+  type        = string
+  default     = "50m"
+}
+
+variable "argocd_dex_memory_limits" {
+  description = "ArgoCD dex server memory limits"
+  type        = string
+  default     = "128Mi"
+}
+
+variable "argocd_dex_cpu_limits" {
+  description = "ArgoCD dex server CPU limits"
+  type        = string
+  default     = "100m"
+}
+
+# ================================
+# ArgoCD Metrics Configuration
+# ================================
+variable "argocd_server_metrics_enabled" {
+  description = "Enable metrics for ArgoCD server"
+  type        = bool
+  default     = true
+}
+
+variable "argocd_controller_metrics_enabled" {
+  description = "Enable metrics for ArgoCD application controller"
+  type        = bool
+  default     = true
+}
+
+variable "argocd_repo_server_metrics_enabled" {
+  description = "Enable metrics for ArgoCD repo server"
+  type        = bool
+  default     = true
+}
+
+variable "argocd_dex_metrics_enabled" {
+  description = "Enable metrics for ArgoCD dex server"
+  type        = bool
+  default     = false
+}
+
 variable "ingress_controller_class" {
   type        = string
   description = "Ingress Controller Class Resource Name"
