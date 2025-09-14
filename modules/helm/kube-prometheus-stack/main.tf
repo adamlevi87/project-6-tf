@@ -87,7 +87,7 @@ resource "helm_release" "kube_prometheus_stack" {
         ingress = {
           enabled = true
           ingressClassName = "${var.ingress_controller_class}"
-          hostname = "${var.prometheus_domain}"
+          hostname = ["${var.prometheus_domain}"]
           path = "/"
           pathType = "Prefix"
           annotations = {
@@ -150,7 +150,7 @@ resource "helm_release" "kube_prometheus_stack" {
         ingress = {
           enabled = true
           ingressClassName = "${var.ingress_controller_class}"
-          hostname = "${var.grafana_domain}"
+          hosts = ["${var.grafana_domain}"]
           path = "/"
           pathType = "Prefix"
           annotations = {
