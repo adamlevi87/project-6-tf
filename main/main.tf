@@ -567,7 +567,7 @@ module "service_monitors" {
   enable_dex_metrics = false  # Set to true if you want Dex metrics
   
   depends_on = [
-    module.kube_prometheus_stack,
+    module.monitoring,
     module.argocd,
     module.aws_load_balancer_controller
   ]
@@ -714,7 +714,7 @@ module "eks_lockdown" {
     module.monitoring,
     module.metrics_server,
     module.ebs_csi_driver,
-    service_monitors,
+    module.service_monitors,
     # Application modules
     module.frontend,
     
