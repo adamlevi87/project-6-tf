@@ -349,11 +349,6 @@ variable "argocd_app_of_apps_target_revision" {
   default     = "main"
 }
 
-variable "argocd_aws_secret_key" {
-  description = "AWS secret key name for ArgoCD credentials"
-  type        = string
-}
-
 # ================================
 # ArgoCD Server Resource Configuration
 # ================================
