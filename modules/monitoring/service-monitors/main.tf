@@ -35,7 +35,7 @@ resource "kubernetes_manifest" "aws_load_balancer_controller_podmonitor" {
       }
       podMetricsEndpoints = [
         {
-          port     = "8080"
+          port     = "metrics-server"
           interval = "30s"
           path     = "/metrics"
           scheme   = "http"
