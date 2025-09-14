@@ -50,44 +50,70 @@ server:
     # This tells ArgoCD what its external URL is
     url: "https://${domain_name}"
     # openID connect settings
+
   dex.server.strict.tls: "false"
+
+  # Resource configuration
+  resources:
+    requests:
+      memory: "${server_memory_requests}"
+      cpu: "${server_cpu_requests}"
+    limits:
+      memory: "${server_memory_limits}"
+      cpu: "${server_cpu_limits}"
+  
   # Enable metrics for ArgoCD server  
   metrics:
-    enabled: true
+    enabled: ${server_metrics_enabled}
     service:
       type: ClusterIP
-      port: 8083
-      portName: http-metrics
+      port: ${server_metrics_port}
+      portName: ${server_metrics_port_name}
       annotations: 
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8083"
-        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: "${server_metrics_scrape_enabled}"
+        prometheus.io/port: "${server_metrics_port}"
+        prometheus.io/path: "${server_metrics_path}"
       labels:
-        app.kubernetes.io/component: server
-        app.kubernetes.io/name: argocd-server-metrics
+%{ for key, value in server_metrics_labels ~}
+        ${key}: ${value}
+%{ endfor ~}
+
 
 # Global configuration
 global:
   # Ensure ArgoCD knows its domain
   domain: "${domain_name}"
 
+
 dex:
   extraArgs:
     - --disable-tls
+
+  # Resource configuration
+  resources:
+    requests:
+      memory: "${dex_memory_requests}"
+      cpu: "${dex_cpu_requests}"
+    limits:
+      memory: "${dex_memory_limits}"
+      cpu: "${dex_cpu_limits}"
+  
   # ArgoCD Dex Server metrics (optional, usually not as critical)
   metrics:
-    enabled: true
+    enabled: ${dex_metrics_enabled}
     service:
       type: ClusterIP
-      port: 5558
-      portName: http-metrics
+      port: ${dex_metrics_port}
+      portName: ${dex_metrics_port_name}
       annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "5558"
-        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: "${dex_metrics_scrape_enabled}"
+        prometheus.io/port: "${dex_metrics_port}"
+        prometheus.io/path: "${dex_metrics_path}"
       labels:
-        app.kubernetes.io/component: dex-server
-        app.kubernetes.io/name: argocd-dex-server-metrics
+%{ for key, value in dex_metrics_labels ~}
+        ${key}: ${value}
+%{ endfor ~}
+
 
 configs:
   params:
@@ -101,6 +127,7 @@ configs:
     create: true
     extra:
         server.secretkey: "${server_secretkey}"
+  
   # RBAC Policy Configuration
   rbac:
     create: true
@@ -118,6 +145,7 @@ configs:
       # Team to Role Mapping      
       g, ${github_org}-org:${github_admin_team}, role:admin
       g, ${github_org}-org:${github_readonly_team}, role:readonly
+  
   cm:
     url: "https://${domain_name}"
     users.anonymous.enabled: "false"
@@ -135,33 +163,53 @@ configs:
 
 # ArgoCD Application Controller metrics 
 controller:
+  # Resource configuration
+  resources:
+    requests:
+      memory: "${controller_memory_requests}"
+      cpu: "${controller_cpu_requests}"
+    limits:
+      memory: "${controller_memory_limits}"
+      cpu: "${controller_cpu_limits}"
+  
   metrics:
-    enabled: true
+    enabled: ${controller_metrics_enabled}
     service:
       type: ClusterIP
-      port: 8082
-      portName: http-metrics
+      port: ${controller_metrics_port}
+      portName: ${controller_metrics_port_name}
       annotations:
-        prometheus.io/scrape: "true" 
-        prometheus.io/port: "8082"
-        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: "${controller_metrics_scrape_enabled}"
+        prometheus.io/port: "${controller_metrics_port}"
+        prometheus.io/path: "${controller_metrics_path}"
       labels:
-        app.kubernetes.io/component: application-controller
-        app.kubernetes.io/name: argocd-application-controller-metrics
+%{ for key, value in controller_metrics_labels ~}
+        ${key}: ${value}
+%{ endfor ~}
 
 
 # ArgoCD Repo Server metrics
 repoServer:
+  # Resource configuration
+  resources:
+    requests:
+      memory: "${repo_server_memory_requests}"
+      cpu: "${repo_server_cpu_requests}"
+    limits:
+      memory: "${repo_server_memory_limits}"
+      cpu: "${repo_server_cpu_limits}"
+  
   metrics:
-    enabled: true
+    enabled: ${repo_server_metrics_enabled}
     service:
       type: ClusterIP
-      port: 8084
-      portName: http-metrics
+      port: ${repo_server_metrics_port}
+      portName: ${repo_server_metrics_port_name}
       annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8084" 
-        prometheus.io/path: "/metrics"
+        prometheus.io/scrape: "${repo_server_metrics_scrape_enabled}"
+        prometheus.io/port: "${repo_server_metrics_port}"
+        prometheus.io/path: "${repo_server_metrics_path}"
       labels:
-        app.kubernetes.io/component: repo-server
-        app.kubernetes.io/name: argocd-repo-server-metrics
+%{ for key, value in repo_server_metrics_labels ~}
+        ${key}: ${value}
+%{ endfor ~}
