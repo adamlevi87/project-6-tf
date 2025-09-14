@@ -23,7 +23,7 @@ resource "kubernetes_config_map" "argocd_dashboard-1" {
   }
   
   data = {
-    "argocd-dashboard.json" = templatefile("${path.module}/dashboards/argocd-1.json.tpl", {
+    "argocd-dashboard-1.json" = templatefile("${path.module}/dashboards/argocd-1.json.tpl", {
       datasource = var.prometheus_datasource_name
     })
   }
@@ -43,7 +43,7 @@ resource "kubernetes_config_map" "argocd_dashboard-2" {
   }
   
   data = {
-    "argocd-dashboard.json" = templatefile("${path.module}/dashboards/argocd-2.json.tpl", {
+    "argocd-dashboard-2.json" = templatefile("${path.module}/dashboards/argocd-2.json.tpl", {
       datasource = var.prometheus_datasource_name
     })
   }
@@ -88,7 +88,8 @@ resource "kubernetes_config_map" "eks_overview_dashboard" {
   
   data = {
     "eks-overview-dashboard.json" = templatefile("${path.module}/dashboards/eks-overview.json.tpl", {
-      datasource = var.prometheus_datasource_name
+      #datasource = var.prometheus_datasource_name
+      datasource = "Prometheus"
     })
   }
 }
