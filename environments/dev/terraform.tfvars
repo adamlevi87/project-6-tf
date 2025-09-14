@@ -58,11 +58,11 @@ eks_api_allowed_cidr_blocks    = ["85.65.167.191/32","0.0.0.0/0"]
 # EKS Node Groups Configuration - Multi-NodeGroup Setup
 eks_node_groups = {
   critical = {
-    instance_type     = "t3.medium"
+    instance_type     = "t3.small"
     ami_id           = "ami-03943441037953e69"
-    desired_capacity = 2
-    max_capacity     = 4
-    min_capacity     = 1
+    desired_capacity = 3
+    max_capacity     = 6
+    min_capacity     = 2
     labels = {
       nodegroup-type = "critical"
       instance-size  = "small"
