@@ -562,7 +562,7 @@ module "service_monitors" {
   aws_lb_controller_namespace = var.eks_addons_namespace
   
   # Optional features
-  enable_dex_metrics = false  # Set to true if you want Dex metrics
+  enable_dex_metrics = var.enable_dex_metrics
   
   depends_on = [
     module.eks,
