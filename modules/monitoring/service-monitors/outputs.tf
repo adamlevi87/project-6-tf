@@ -23,7 +23,8 @@ output "argocd_repo_server_servicemonitor_name" {
 output "servicemonitor_names" {
   description = "Map of all created ServiceMonitor names"
   value = {
-    aws_load_balancer_controller = kubernetes_manifest.aws_load_balancer_controller_servicemonitor.manifest.metadata.name
+    aws_load_balancer_controller = kubernetes_manifest.aws_load_balancer_controller_podmonitor.manifest.metadata.name
+    #aws_load_balancer_controller = kubernetes_manifest.aws_load_balancer_controller_servicemonitor.manifest.metadata.name
     argocd_server               = kubernetes_manifest.argocd_server_servicemonitor.manifest.metadata.name
     argocd_application_controller = kubernetes_manifest.argocd_application_controller_servicemonitor.manifest.metadata.name
     argocd_repo_server          = kubernetes_manifest.argocd_repo_server_servicemonitor.manifest.metadata.name
