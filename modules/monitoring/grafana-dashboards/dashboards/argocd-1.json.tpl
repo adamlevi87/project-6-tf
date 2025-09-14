@@ -324,7 +324,7 @@
                     "targetBlank": true,
                     "title": "Go To Application",
                     "type": "dashboard",
-                    "url": "/d/argo-cd-application-overview-kask/argocd-notifications-overview?&var-project=${__data.fields.Project}&var-application=${__value.raw}"
+                    "url": "/d/argo-cd-application-overview-kask/argocd-notifications-overview?&var-project=$${__data.fields.Project}&var-application=${__value.raw}"
                   }
                 ]
               }

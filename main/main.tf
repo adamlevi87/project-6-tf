@@ -606,7 +606,7 @@ module "grafana_dashboards" {
   environment   = var.environment
   
   monitoring_namespace       = var.monitoring_namespace
-  prometheus_datasource_name = "Prometheus"
+  prometheus_datasource_name = "prometheus"
   
   # Dashboard controls
   enable_aws_lbc_dashboard    = true
