@@ -14,18 +14,3 @@ output "bucket_policy_resource_id" {
   description = "Resource ID for the bucket policy that can be referenced by other modules"
   value       = aws_s3_bucket_policy.base_restrictive.id
 }
-
-# output "bucket_name" {
-#   description = "Name of the S3 bucket for application data"
-#   value       = aws_s3_bucket.app_data.bucket
-# }
-
-# output "bucket_domain_name" {
-#   description = "Domain name of the S3 bucket"
-#   value       = aws_s3_bucket.app_data.bucket_domain_name
-# }
-
-# output "bucket_regional_domain_name" {
-#   description = "Regional domain name of the S3 bucket"
-#   value       = aws_s3_bucket.app_data.bucket_regional_domain_name
-# }

@@ -1,10 +1,5 @@
 # modules/monitoring/service-monitors/outputs.tf
 
-# output "aws_lb_controller_servicemonitor_name" {
-#   description = "Name of the AWS Load Balancer Controller ServiceMonitor"
-#   value       = kubernetes_manifest.aws_load_balancer_controller_servicemonitor.manifest.metadata.name
-# }
-
 output "aws_lb_controller_podmonitor_name" {
   description = "Name of the AWS Load Balancer Controller PodMonitor"
   value       = kubernetes_manifest.aws_load_balancer_controller_podmonitor.manifest.metadata.name
@@ -29,7 +24,6 @@ output "servicemonitor_names" {
   description = "Map of all created ServiceMonitor names"
   value = {
     aws_load_balancer_controller = kubernetes_manifest.aws_load_balancer_controller_podmonitor.manifest.metadata.name
-    #aws_load_balancer_controller = kubernetes_manifest.aws_load_balancer_controller_servicemonitor.manifest.metadata.name
     argocd_server               = kubernetes_manifest.argocd_server_servicemonitor.manifest.metadata.name
     argocd_application_controller = kubernetes_manifest.argocd_application_controller_servicemonitor.manifest.metadata.name
     argocd_repo_server          = kubernetes_manifest.argocd_repo_server_servicemonitor.manifest.metadata.name

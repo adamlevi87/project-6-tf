@@ -21,11 +21,6 @@ variable "kms_key_arn" {
   type        = string
 }
 
-# variable "account_id" {
-#   description = "AWS Account ID"
-#   type        = string
-# }
-
 variable "s3_policy_deny_rule_name" {
   description = "Name of the S3 policy deny rule to modify"
   type        = string

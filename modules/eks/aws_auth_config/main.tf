@@ -65,39 +65,3 @@ resource "kubernetes_config_map_v1_data" "aws_auth_patch" {
   
   depends_on = [data.kubernetes_config_map_v1.existing_aws_auth]
 }
-
-# resource "null_resource" "aws_auth_patch" {
-#   # Triggers rerun the block only when the variable changes
-#   triggers = {
-#     merged_roles = yamlencode(local.merged_map_roles)
-#     merged_users = yamlencode(local.merged_map_users)
-#   }
-
-#   provisioner "local-exec" {
-#   command = <<EOT
-# # Wait for aws-auth configmap to exist (created by node groups)
-# #echo "Waiting for aws-auth configmap to be created by EKS node groups..."
-# # i=1
-# # while [ $i -le 30 ]; do
-# #   if kubectl get configmap aws-auth -n kube-system >/dev/null 2>&1; then
-# #     echo "aws-auth configmap found, proceeding with patch..."
-# #     break
-# #   fi
-# #   echo "Attempt $i: aws-auth configmap not found, waiting 10 seconds..."
-# #   sleep 10
-# # i=$((i + 1))
-# # done
-    
-# # Update kubeconfig for EKS
-# aws eks update-kubeconfig --region ${var.aws_region} --name ${var.cluster_name}
-
-# # Apply the merged configmap
-# kubectl patch configmap aws-auth -n kube-system --type merge -p '{
-#   "data": {
-#     "mapRoles": ${jsonencode(yamlencode(local.merged_map_roles))},
-#     "mapUsers": ${jsonencode(yamlencode(local.merged_map_users))}
-#   }
-# }'
-#   EOT
-#   }
-# }

@@ -6,29 +6,6 @@ data "aws_availability_zones" "available" {
 
 data "aws_caller_identity" "current" {}
 
-# # GitOps file data - pass to module for change detection
-# data "github_repository" "gitops_repo" {
-#   full_name = "${var.github_org}/${var.github_gitops_repo}"
-# }
-
-# # read files from the gitOps repo if bootstrap_mode or update_apps is true
-# # always read infra-values
-# # if bootstrap_mode is true , read the rest too
-# data "github_repository_file" "current_gitops_files" {
-#   for_each = var.bootstrap_mode || var.update_apps ? toset(concat(
-#     ["environments/${var.environment}/manifests/frontend/infra-values.yaml"],
-#     var.bootstrap_mode ? [
-#       "projects/${var.project_tag}.yaml",
-#       "environments/${var.environment}/apps/frontend/application.yaml", 
-#       "environments/${var.environment}/manifests/frontend/app-values.yaml"
-#     ] : []
-#   )) : toset([])
-  
-#   repository = data.github_repository.gitops_repo.name
-#   file       = each.value
-#   branch     = var.gitops_target_branch
-# }
-
 locals {
     # Calculate total AZs needed
     total_azs = var.primary_availability_zones + var.additional_availability_zones
@@ -135,16 +112,4 @@ locals {
             secret_value = config.generate_password ? random_password.generated_passwords[name].result : config.secret_value
         })
     }
-
-
-
-    
-    
-
-    
-
-    
-
-    
-    # json_view_base_domain_name      = "${var.json_view_base_domain_name}-${var.environment}"
 }

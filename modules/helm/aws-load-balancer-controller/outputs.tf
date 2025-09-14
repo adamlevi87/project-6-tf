@@ -12,9 +12,3 @@ output "webhook_ready" {
     null_resource.webhook_deployment_ready
   ]
 }
-
-# output "webhook_ready" {
-#   description = "Indicates AWS LBC webhook is deployed"
-#   value       = helm_release.this.status
-#   depends_on  = [helm_release.this]
-# }

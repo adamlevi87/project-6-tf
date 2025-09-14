@@ -79,13 +79,6 @@ module "route53" {
   environment  = var.environment
   
   domain_name    = var.domain_name
-  
-  #subdomain_name = var.subdomain_name
-  # cloudfront_domain_name = module.cloudfront.cloudfront_domain_name
-  # json_view_base_domain_name = local.json_view_base_domain_name
-
-  # alb_dns_name = 1
-  # alb_zone_id = 1
 }
 
 module "acm" {
@@ -296,20 +289,15 @@ module "frontend" {
   project_tag        = var.project_tag
   environment        = var.environment
 
-  #vpc_id  = module.vpc.vpc_id
-
   service_account_name      = var.frontend_service_account_name
   namespace                 = var.frontend_service_namespace
 
   kms_key_arn               = module.kms.kms_key_arn
   s3_bucket_arn             = module.s3.bucket_arn
-  #s3_bucket_id              = module.s3.bucket_id
-  #s3_policy_deny_rule_name  = var.s3_policy_deny_rule_name
 
   # EKS related variables
   oidc_provider_arn         = module.eks.oidc_provider_arn
   oidc_provider_url         = module.eks.cluster_oidc_issuer_url
-  #node_group_security_groups = module.eks.node_group_security_group_ids
   
   depends_on = [
     module.eks,
@@ -330,13 +318,9 @@ module "secrets_app_envs" {
   secrets_config_with_passwords = {}
   secret_keys                   = local.secret_keys
   app_secrets_config            = local.app_secrets_config
-  
-  #depends_on = [module.secrets_rds_password]
 }
 
-module "argocd_templates" {
-  # Only create if any of these conditions are true
-  
+module "argocd_templates" {  
   source = "../modules/gitops/argocd-templates"
   
   project_tag                 = var.project_tag
@@ -359,7 +343,6 @@ module "gitops_bootstrap" {
   # gitops_repo_name   = data.github_repository.gitops_repo.name
 
   # GitHub Configuration
-  #gitops_repo_owner       = var.github_org
   github_gitops_repo      = var.github_gitops_repo
   github_org              = var.github_org  
   github_application_repo = var.github_application_repo
@@ -367,14 +350,10 @@ module "gitops_bootstrap" {
 
   # Project Configuration
   project_tag   = var.project_tag
-  #app_name      = var.project_tag
   environment   = var.environment
-  #aws_region    = var.aws_region
   
   # ECR Repository URLs
   ecr_frontend_repo_url = module.ecr.ecr_repository_urls["welcome"]
-  # not needed
-  #ecr_backend_repo_url  = module.ecr.ecr_repository_urls["backend"]
   
   # Frontend Configuration
   frontend_namespace              = var.frontend_service_namespace
@@ -384,18 +363,6 @@ module "gitops_bootstrap" {
   frontend_external_dns_hostname  = "${var.frontend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
   frontend_argocd_app_name        = var.frontend_argocd_app_name
   frontend_helm_release_name      = var.frontend_helm_release_name
-
-  # frontend_external_secret_name   = "frontend-app-secrets"
-  # frontend_aws_secret_key         = var.frontend_aws_secret_key
-  
-  # Backend Configuration  
-  # backend_namespace               = var.backend_service_namespace
-  # backend_service_account_name    = var.backend_service_account_name
-  # backend_container_port          = 3000
-  # backend_ingress_host            = "${var.backend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
-  # backend_external_dns_hostname   = "${var.backend_base_domain_name}.${var.subdomain_name}.${var.domain_name}"
-  # backend_external_secret_name    = "backend-app-secrets"
-  # backend_aws_secret_key          = var.backend_aws_secret_key
   
   # Shared ALB Configuration
   alb_group_name         = local.alb_group_name
@@ -415,11 +382,6 @@ module "gitops_bootstrap" {
   # Branch details for PR creations
   branch_name_prefix  = var.branch_name_prefix
   target_branch       = var.gitops_target_branch
-  
-  # depends_on = [
-  #   data.github_repository.gitops_repo,
-  #   data.github_repository_file.current_gitops_files
-  # ]
 }
 
 # the initial app_of_apps sync has been automated
@@ -551,10 +513,7 @@ module "monitoring" {
   grafana_allowed_cidr_blocks    = var.grafana_allowed_cidr_blocks
   
   # Authentication
-  #grafana_admin_password = var.grafana_admin_password
   grafana_admin_password = random_password.generated_passwords["grafana_admin_password"].result
-  #grafana_admin_password = "zquSAmjZ4EAEs15"
-  
   
   # Storage configuration
   storage_class = var.monitoring_storage_class
@@ -641,10 +600,6 @@ module "external_secrets_operator" {
   service_account_name = "eso-${var.environment}-service-account"
   release_name       = "external-secrets-${var.environment}"
   namespace          = var.eks_addons_namespace
-
-  # EKS related variables
-  # oidc_provider_arn = module.eks.oidc_provider_arn
-  # oidc_provider_url  = module.eks.cluster_oidc_issuer_url
 
   # ArgoCD details
   argocd_namespace                = var.argocd_namespace
@@ -743,8 +698,6 @@ module "ebs_csi_driver" {
 
   depends_on = [module.eks,module.node_groups]
 }
-
-# main/main.tf (add this section at the end)
 
 # ====================================================================
 # EKS LOCKDOWN - Runs after ALL other modules complete
