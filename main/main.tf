@@ -553,7 +553,7 @@ module "monitoring" {
   # Authentication
   #grafana_admin_password = var.grafana_admin_password
   #grafana_admin_password = local.secrets_config_with_passwords["grafana_admin_password"].secret_value
-  grafana_admin_password = "zq$uSAm+jZ4EAEs<"
+  grafana_admin_password = "zquSAmjZ4EAEs"
   
   
   # Storage configuration
