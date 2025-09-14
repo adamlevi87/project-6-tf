@@ -10,10 +10,10 @@ terraform {
 }
 
 # ServiceMonitor for AWS Load Balancer Controller
-resource "kubernetes_manifest" "aws_load_balancer_controller_servicemonitor" {
+resource "kubernetes_manifest" "aws_load_balancer_controller_podmonitor" {
   manifest = {
     apiVersion = "monitoring.coreos.com/v1"
-    kind       = "ServiceMonitor"
+    kind       = "PodMonitor"
     metadata = {
       name      = "aws-load-balancer-controller"
       namespace = var.monitoring_namespace
@@ -33,7 +33,7 @@ resource "kubernetes_manifest" "aws_load_balancer_controller_servicemonitor" {
       namespaceSelector = {
         matchNames = [var.aws_lb_controller_namespace]
       }
-      endpoints = [
+      podMetricsEndpoints = [
         {
           port     = "8080"
           interval = "30s"
