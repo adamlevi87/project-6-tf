@@ -38,7 +38,7 @@ resource "kubernetes_manifest" "aws_load_balancer_controller_servicemonitor" {
           port     = "8080"
           interval = "30s"
           path     = "/metrics"
-          scheme   = "https"
+          scheme   = "http"
         }
       ]
     }
