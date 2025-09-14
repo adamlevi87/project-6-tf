@@ -599,6 +599,25 @@ module "service_monitors" {
   ]
 }
 
+module "grafana_dashboards" {
+  source = "../modules/monitoring/grafana-dashboards"
+  
+  project_tag   = var.project_tag
+  environment   = var.environment
+  
+  monitoring_namespace       = var.monitoring_namespace
+  prometheus_datasource_name = "Prometheus"
+  
+  # Dashboard controls
+  enable_aws_lbc_dashboard    = true
+  enable_eks_overview_dashboard = true
+  
+  depends_on = [
+    module.monitoring,
+    module.service_monitors
+  ]
+}
+
 module "external_secrets_operator" {
   source        = "../modules/helm/external-secrets-operator"
   
@@ -741,6 +760,7 @@ module "eks_lockdown" {
     module.metrics_server,
     module.ebs_csi_driver,
     module.service_monitors,
+    module.grafana_dashboards,
     # Application modules
     module.frontend,
     
