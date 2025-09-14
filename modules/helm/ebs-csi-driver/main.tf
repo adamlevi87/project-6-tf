@@ -36,7 +36,7 @@ resource "aws_iam_role" "ebs_csi_driver_role" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action = "sts:AssumeRole"
+        Action = "sts:AssumeRoleWithWebIdentity"
         Effect = "Allow"
         Principal = {
           Federated = var.oidc_provider_arn
