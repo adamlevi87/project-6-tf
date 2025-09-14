@@ -82,27 +82,96 @@ resource "helm_release" "this" {
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
   version    = var.chart_version
-  
   namespace  = var.namespace
+
   create_namespace = false
+  wait            = true
+  timeout         = 600
 
   values = [
     templatefile("${path.module}/values.yaml.tpl", {
+      # Core configuration
       service_account_name        = var.service_account_name
       environment                 = var.environment
       domain_name                 = var.domain_name
-      ingress_controller_class    = var.ingress_controller_class
-      alb_group_name              = var.alb_group_name
       release_name                = var.release_name
-      allowed_cidrs               = jsonencode(var.argocd_allowed_cidr_blocks)
-      security_group_id           = var.alb_security_groups
+
+      # ALB configuration
+      alb_group_name              = var.alb_group_name
+      security_group_ids          = var.alb_security_groups
       acm_cert_arn                = var.acm_cert_arn
-      server_secretkey            = random_password.argocd_server_secretkey.result
+      allowed_cidrs               = jsonencode(var.argocd_allowed_cidr_blocks)
+      ingress_controller_class    = var.ingress_controller_class
+
+      # GitHub SSO
       github_org                  = var.github_org
       github_admin_team           = var.github_admin_team
       github_readonly_team        = var.github_readonly_team
-      dollar                      = "$"
       argocd_github_sso_secret_name = var.argocd_github_sso_secret_name
+      dollar                      = "$"
+      server_secretkey            = random_password.argocd_server_secretkey.result
+
+      # ================================
+      # Resource Configuration
+      # ================================
+      # Server
+      server_memory_requests = var.server_memory_requests
+      server_cpu_requests    = var.server_cpu_requests
+      server_memory_limits   = var.server_memory_limits
+      server_cpu_limits      = var.server_cpu_limits
+      
+      # Controller
+      controller_memory_requests = var.controller_memory_requests
+      controller_cpu_requests    = var.controller_cpu_requests
+      controller_memory_limits   = var.controller_memory_limits
+      controller_cpu_limits      = var.controller_cpu_limits
+      
+      # Repo Server
+      repo_server_memory_requests = var.repo_server_memory_requests
+      repo_server_cpu_requests    = var.repo_server_cpu_requests
+      repo_server_memory_limits   = var.repo_server_memory_limits
+      repo_server_cpu_limits      = var.repo_server_cpu_limits
+      
+      # Dex Server
+      dex_memory_requests = var.dex_memory_requests
+      dex_cpu_requests    = var.dex_cpu_requests
+      dex_memory_limits   = var.dex_memory_limits
+      dex_cpu_limits      = var.dex_cpu_limits
+      
+      # ================================
+      # Metrics Configuration
+      # ================================
+      # Server metrics
+      server_metrics_enabled       = var.server_metrics_enabled
+      server_metrics_port          = var.server_metrics_port
+      server_metrics_port_name     = var.server_metrics_port_name
+      server_metrics_scrape_enabled = var.server_metrics_scrape_enabled
+      server_metrics_path          = var.server_metrics_path
+      server_metrics_labels        = var.server_metrics_labels
+      
+      # Controller metrics
+      controller_metrics_enabled       = var.controller_metrics_enabled
+      controller_metrics_port          = var.controller_metrics_port
+      controller_metrics_port_name     = var.controller_metrics_port_name
+      controller_metrics_scrape_enabled = var.controller_metrics_scrape_enabled
+      controller_metrics_path          = var.controller_metrics_path
+      controller_metrics_labels        = var.controller_metrics_labels
+      
+      # Repo Server metrics
+      repo_server_metrics_enabled       = var.repo_server_metrics_enabled
+      repo_server_metrics_port          = var.repo_server_metrics_port
+      repo_server_metrics_port_name     = var.repo_server_metrics_port_name
+      repo_server_metrics_scrape_enabled = var.repo_server_metrics_scrape_enabled
+      repo_server_metrics_path          = var.repo_server_metrics_path
+      repo_server_metrics_labels        = var.repo_server_metrics_labels
+      
+      # Dex Server metrics
+      dex_metrics_enabled       = var.dex_metrics_enabled
+      dex_metrics_port          = var.dex_metrics_port
+      dex_metrics_port_name     = var.dex_metrics_port_name
+      dex_metrics_scrape_enabled = var.dex_metrics_scrape_enabled
+      dex_metrics_path          = var.dex_metrics_path
+      dex_metrics_labels        = var.dex_metrics_labels
     }),
     yamlencode({
       extraObjects = local.argocd_additionalObjects

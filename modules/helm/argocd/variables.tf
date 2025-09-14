@@ -10,6 +10,21 @@ variable "environment" {
   type        = string
 }
 
+variable "namespace" {
+  type        = string
+  description = "The Kubernetes namespace to install the Helm release into"
+}
+
+variable "alb_security_groups" {
+  description = "Security groups for ALB (comma-separated)"
+  type        = string
+}
+
+variable "github_org" {
+  description = "GitHub organization"
+  type        = string
+}
+
 variable "release_name" {
   type        = string
   description = "The Helm release name"

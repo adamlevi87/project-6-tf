@@ -11,7 +11,7 @@ server:
   # Ingress configuration for AWS ALB
   ingress:
     enabled: true
-    ingressClassName: alb
+    ingressClassName: "${ingress_controller_class}"
     hostname: "${domain_name}"
     path: /
     pathType: Prefix
@@ -26,7 +26,7 @@ server:
       alb.ingress.kubernetes.io/ssl-redirect: "443"
       alb.ingress.kubernetes.io/group.name: "${alb_group_name}"
       alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=60
-      alb.ingress.kubernetes.io/security-groups: "${security_group_id}"
+      alb.ingress.kubernetes.io/security-groups: "${security_group_ids}"
       alb.ingress.kubernetes.io/certificate-arn: "${acm_cert_arn}"
       # External DNS annotation (optional - helps external-dns identify the record)
       external-dns.alpha.kubernetes.io/hostname: "${domain_name}"

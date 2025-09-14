@@ -443,39 +443,74 @@ module "argocd" {
   oidc_provider_arn     = module.eks.oidc_provider_arn
   oidc_provider_url     = module.eks.cluster_oidc_issuer_url
 
-  # ingress / ALB settings
-  ingress_controller_class  = var.ingress_controller_class
-  alb_group_name            = local.alb_group_name
-  
-  # Networking
-  argocd_allowed_cidr_blocks    = var.argocd_allowed_cidr_blocks
+  # ALB and networking
+  domain_name                 = "${var.argocd_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
+  ingress_controller_class    = var.ingress_controller_class
+  alb_group_name              = local.alb_group_name
+  acm_cert_arn                = module.acm.this_certificate_arn
+  argocd_allowed_cidr_blocks  = var.argocd_allowed_cidr_blocks
+  alb_security_groups         = module.security_groups.joined_security_group_ids
 
-  # Certificate
-  domain_name                   = "${var.argocd_base_domain_name}-${var.environment}.${var.subdomain_name}.${var.domain_name}"
-  acm_cert_arn                  = module.acm.this_certificate_arn
-
-  # Security Groups
-  alb_security_groups    = module.security_groups.joined_security_group_ids
-  
-  # Github Settings
-  github_org                    = var.github_org
- 
-  # ArgoCD Setup
-  argocd_project_yaml     = module.argocd_templates.project_yaml
-  argocd_app_of_apps_yaml = module.argocd_templates.app_of_apps_yaml
-  
   # Github SSO
   github_admin_team             = var.github_admin_team
   github_readonly_team          = var.github_readonly_team
   argocd_github_sso_secret_name = local.argocd_github_sso_secret_name
+  github_org                    = var.github_org
 
+  # ArgoCD Configuration
+  argocd_project_yaml     = module.argocd_templates.project_yaml
+  argocd_app_of_apps_yaml = module.argocd_templates.app_of_apps_yaml
+
+  # Secret configuration
   secret_arn = module.secrets_app_envs.app_secrets_arns["${var.argocd_aws_secret_key}"]
+
+  # ================================
+  # Resource Configuration - Server
+  # ================================
+  server_memory_requests = var.argocd_server_memory_requests
+  server_cpu_requests    = var.argocd_server_cpu_requests
+  server_memory_limits   = var.argocd_server_memory_limits
+  server_cpu_limits      = var.argocd_server_cpu_limits
+  
+  # ================================
+  # Resource Configuration - Controller
+  # ================================
+  controller_memory_requests = var.argocd_controller_memory_requests
+  controller_cpu_requests    = var.argocd_controller_cpu_requests
+  controller_memory_limits   = var.argocd_controller_memory_limits
+  controller_cpu_limits      = var.argocd_controller_cpu_limits
+  
+  # ================================
+  # Resource Configuration - Repo Server
+  # ================================
+  repo_server_memory_requests = var.argocd_repo_server_memory_requests
+  repo_server_cpu_requests    = var.argocd_repo_server_cpu_requests
+  repo_server_memory_limits   = var.argocd_repo_server_memory_limits
+  repo_server_cpu_limits      = var.argocd_repo_server_cpu_limits
+  
+  # ================================
+  # Resource Configuration - Dex Server
+  # ================================
+  dex_memory_requests = var.argocd_dex_memory_requests
+  dex_cpu_requests    = var.argocd_dex_cpu_requests
+  dex_memory_limits   = var.argocd_dex_memory_limits
+  dex_cpu_limits      = var.argocd_dex_cpu_limits
+  
+  # ================================
+  # Metrics Configuration
+  # ================================
+  server_metrics_enabled     = var.argocd_server_metrics_enabled
+  controller_metrics_enabled = var.argocd_controller_metrics_enabled
+  repo_server_metrics_enabled = var.argocd_repo_server_metrics_enabled
+  dex_metrics_enabled        = var.argocd_dex_metrics_enabled
 
   depends_on = [
     module.eks,
     module.node_groups,
     module.aws_load_balancer_controller.webhook_ready,
-    module.acm
+    module.acm,
+    module.external_dns,
+    module.secrets_app_envs
   ]
 }
 
