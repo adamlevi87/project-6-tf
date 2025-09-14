@@ -427,6 +427,12 @@ variable "grafana_allowed_cidr_blocks" {
   default     = []
 }
 
+variable "enable_dex_metrics" {
+  description = "Enable Dex server metrics monitoring"
+  type        = bool
+  default     = false
+}
+
 # Storage configuration
 variable "monitoring_storage_class" {
   description = "Storage class for persistent volumes"

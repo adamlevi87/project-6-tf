@@ -552,6 +552,27 @@ module "monitoring" {
   ]
 }
 
+module "service_monitors" {
+  source = "../modules/monitoring/service-monitors"
+  
+  project_tag   = var.project_tag
+  environment   = var.environment
+  
+  # Namespaces
+  monitoring_namespace         = var.monitoring_namespace
+  argocd_namespace            = var.argocd_namespace
+  aws_lb_controller_namespace = var.eks_addons_namespace
+  
+  # Optional features
+  enable_dex_metrics = false  # Set to true if you want Dex metrics
+  
+  depends_on = [
+    module.kube_prometheus_stack,
+    module.argocd,
+    module.aws_load_balancer_controller
+  ]
+}
+
 module "external_secrets_operator" {
   source        = "../modules/helm/external-secrets-operator"
   
@@ -693,6 +714,7 @@ module "eks_lockdown" {
     module.monitoring,
     module.metrics_server,
     module.ebs_csi_driver,
+    service_monitors,
     # Application modules
     module.frontend,
     

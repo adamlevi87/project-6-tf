@@ -51,6 +51,20 @@ server:
     url: "https://${domain_name}"
     # openID connect settings
   dex.server.strict.tls: "false"
+  # Enable metrics for ArgoCD server  
+  metrics:
+    enabled: true
+    service:
+      type: ClusterIP
+      port: 8083
+      portName: http-metrics
+      annotations: 
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8083"
+        prometheus.io/path: "/metrics"
+      labels:
+        app.kubernetes.io/component: server
+        app.kubernetes.io/name: argocd-server-metrics
 
 # Global configuration
 global:
@@ -60,6 +74,20 @@ global:
 dex:
   extraArgs:
     - --disable-tls
+  # ArgoCD Dex Server metrics (optional, usually not as critical)
+  metrics:
+    enabled: true
+    service:
+      type: ClusterIP
+      port: 5558
+      portName: http-metrics
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5558"
+        prometheus.io/path: "/metrics"
+      labels:
+        app.kubernetes.io/component: dex-server
+        app.kubernetes.io/name: argocd-dex-server-metrics
 
 configs:
   params:
@@ -104,3 +132,36 @@ configs:
             orgs:
               - name: ${github_org}-org
 
+
+# ArgoCD Application Controller metrics 
+controller:
+  metrics:
+    enabled: true
+    service:
+      type: ClusterIP
+      port: 8082
+      portName: http-metrics
+      annotations:
+        prometheus.io/scrape: "true" 
+        prometheus.io/port: "8082"
+        prometheus.io/path: "/metrics"
+      labels:
+        app.kubernetes.io/component: application-controller
+        app.kubernetes.io/name: argocd-application-controller-metrics
+
+
+# ArgoCD Repo Server metrics
+repoServer:
+  metrics:
+    enabled: true
+    service:
+      type: ClusterIP
+      port: 8084
+      portName: http-metrics
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8084" 
+        prometheus.io/path: "/metrics"
+      labels:
+        app.kubernetes.io/component: repo-server
+        app.kubernetes.io/name: argocd-repo-server-metrics

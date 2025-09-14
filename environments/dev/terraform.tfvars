@@ -149,6 +149,7 @@ prometheus_base_domain_name = "prometheus"
 grafana_admin_password = "admin123"  # Change this!
 prometheus_allowed_cidr_blocks = ["85.65.167.191/32"]  # Your IP
 grafana_allowed_cidr_blocks    = ["85.65.167.191/32"]
+enable_dex_metrics = true
 
 # Storage configuration
 monitoring_storage_class = "gp2"
