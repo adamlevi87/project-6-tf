@@ -565,6 +565,7 @@ module "service_monitors" {
   enable_dex_metrics = false  # Set to true if you want Dex metrics
   
   depends_on = [
+    module.eks,
     module.monitoring,
     module.argocd,
     module.aws_load_balancer_controller
