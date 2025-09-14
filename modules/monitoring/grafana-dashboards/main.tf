@@ -70,26 +70,3 @@ resource "kubernetes_config_map" "aws_lbc_dashboard" {
     })
   }
 }
-
-# EKS Cluster Overview Dashboard ConfigMap
-resource "kubernetes_config_map" "eks_overview_dashboard" {
-  count = var.enable_eks_overview_dashboard ? 1 : 0
-  
-  metadata {
-    name      = "eks-overview-dashboard"
-    namespace = var.monitoring_namespace
-    labels = {
-      "grafana_dashboard" = "1"
-    }
-    annotations = {
-      "grafana-folder" = "EKS"
-    }
-  }
-  
-  data = {
-    "eks-overview-dashboard.json" = templatefile("${path.module}/dashboards/eks-overview.json.tpl", {
-      #datasource = var.prometheus_datasource_name
-      datasource = "Prometheus"
-    })
-  }
-}

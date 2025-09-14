@@ -610,7 +610,6 @@ module "grafana_dashboards" {
   
   # Dashboard controls
   enable_aws_lbc_dashboard    = true
-  enable_eks_overview_dashboard = true
   
   depends_on = [
     module.monitoring,

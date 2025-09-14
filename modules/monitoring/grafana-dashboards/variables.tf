@@ -25,9 +25,3 @@ variable "enable_aws_lbc_dashboard" {
   type        = bool
   default     = true
 }
-
-variable "enable_eks_overview_dashboard" {
-  description = "Enable EKS cluster overview dashboard"
-  type        = bool
-  default     = true
-}
