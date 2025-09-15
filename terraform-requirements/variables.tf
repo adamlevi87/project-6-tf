@@ -39,3 +39,8 @@ variable "github_repo" {
   type        = string
   description = "GitHub repository name"
 }
+
+variable "kms_allowed_users" {
+  description = "List of IAM users allowed to assume the GitHub Actions role"
+  type        = list(string)
+}

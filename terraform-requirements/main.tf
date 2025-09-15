@@ -37,7 +37,7 @@ resource "aws_iam_role" "github_actions" {
       {
         Effect = "Allow",
         Principal = {
-          AWS = "arn:aws:iam::864546685796:user/adam.local"
+          AWS = [for user in var.allowed_users : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/${user}"]
         },
         Action = "sts:AssumeRole"
       }
