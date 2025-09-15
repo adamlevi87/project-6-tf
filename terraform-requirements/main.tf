@@ -1,4 +1,4 @@
-# .requirements/main.tf
+# terraform-requirements/main.tf
 
 provider "aws" {
   region = var.aws_region

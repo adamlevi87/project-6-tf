@@ -1,4 +1,4 @@
-# .requirements/outputs.tf
+# terraform-requirements/outputs.tf
 
 # bypassing sensitive - only for testing
 output "aws_iam_openid_connect_provider_github_arn" {
