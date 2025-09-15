@@ -553,10 +553,6 @@ module "monitoring" {
   ]
 }
 
-# commenting due to kubernetes_manifest block cannot run
-# before the EKS is ready - will be moving away from this block 
-# tomorrow - also restore the dependency eks_lockdown, grafana_dashboards
-
 module "service_monitors" {
   source = "../modules/monitoring/service-monitors"
   
@@ -707,45 +703,45 @@ module "ebs_csi_driver" {
   depends_on = [module.eks,module.node_groups]
 }
 
-# ====================================================================
-# EKS LOCKDOWN - Runs after ALL other modules complete
-# ====================================================================
-# IMPORTANT: When adding new modules to main.tf, that use: 
-# kubectl, helm, or kubernetes provider, ADD THEM to the depends_on 
-# list below to ensure EKS lockdown happens after they complete.
-# ====================================================================
+# # ====================================================================
+# # EKS LOCKDOWN - Runs after ALL other modules complete
+# # ====================================================================
+# # IMPORTANT: When adding new modules to main.tf, that use: 
+# # kubectl, helm, or kubernetes provider, ADD THEM to the depends_on 
+# # list below to ensure EKS lockdown happens after they complete.
+# # ====================================================================
 
-module "eks_lockdown" {
-  source = "../modules/eks/lockdown"
+# module "eks_lockdown" {
+#   source = "../modules/eks/lockdown"
   
-  # EXPLICIT DEPENDENCIES - Add ALL modules here!
-  # This ensures lockdown runs LAST, after all k8s operations complete
-  depends_on = [  
-    # Kubernetes/Helm modules (CRITICAL - these need EKS API access)
-    module.aws_auth_config,
-    module.eks,
-    module.argocd,
-    module.aws_load_balancer_controller,
-    module.cluster_autoscaler,
-    module.external_dns,
-    module.external_secrets_operator,
-    module.monitoring,
-    module.metrics_server,
-    module.ebs_csi_driver,
-    module.service_monitors,
-    module.grafana_dashboards,
-    # Application modules
-    module.frontend,
+#   # EXPLICIT DEPENDENCIES - Add ALL modules here!
+#   # This ensures lockdown runs LAST, after all k8s operations complete
+#   depends_on = [  
+#     # Kubernetes/Helm modules (CRITICAL - these need EKS API access)
+#     module.aws_auth_config,
+#     module.eks,
+#     module.argocd,
+#     module.aws_load_balancer_controller,
+#     module.cluster_autoscaler,
+#     module.external_dns,
+#     module.external_secrets_operator,
+#     module.monitoring,
+#     module.metrics_server,
+#     module.ebs_csi_driver,
+#     module.service_monitors,
+#     module.grafana_dashboards,
+#     # Application modules
+#     module.frontend,
     
-    # ADD NEW MODULES HERE ↑
-    # Template: module.your_new_module,
-  ]
+#     # ADD NEW MODULES HERE ↑
+#     # Template: module.your_new_module,
+#   ]
   
-  # Pass required variables to trigger workflow
-  github_token              = var.github_token
-  github_org                = var.github_org
-  github_repo               = var.github_terraform_repo
-  cluster_security_group_id = module.eks.cluster_security_group_id
-  aws_region                = var.aws_region
-  environment               = var.environment
-}
+#   # Pass required variables to trigger workflow
+#   github_token              = var.github_token
+#   github_org                = var.github_org
+#   github_repo               = var.github_terraform_repo
+#   cluster_security_group_id = module.eks.cluster_security_group_id
+#   aws_region                = var.aws_region
+#   environment               = var.environment
+# }
