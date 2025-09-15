@@ -148,6 +148,11 @@ variable "cluster_name" {
   default     = ""
 }
 
+variable "runners_per_instance" {
+  description = "Number of runner processes per EC2 instance"
+  type        = number
+}
+
 # ================================
 # SSH Access Configuration
 # ================================

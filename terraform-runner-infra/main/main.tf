@@ -41,6 +41,7 @@ module "github_runner" {
 
   # Runner configuration
   runner_labels = var.runner_labels
+  runners_per_instance = var.runners_per_instance
 
   # SSH access (for debugging)
   enable_ssh_access       = var.enable_ssh_access

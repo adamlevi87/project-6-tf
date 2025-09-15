@@ -35,6 +35,7 @@ locals {
     runner_labels      = join(",", var.runner_labels)
     aws_region         = var.aws_region
     cluster_name       = var.cluster_name
+    runners_per_instance = var.runners_per_instance
   }))
 }
 
@@ -88,6 +89,15 @@ resource "aws_iam_role" "github_runner_instance" {
         Effect = "Allow"
         Principal = {
           Service = "ec2.amazonaws.com"
+        }
+        Condition = {
+          StringEquals = {
+            "aws:RequestedRegion" = var.aws_region
+          }
+          "ForAllValues:StringEquals" = {
+            "aws:PrincipalTag/Purpose" = "github-runner"
+            "aws:PrincipalTag/Project" = var.project_tag
+          }
         }
       }
     ]

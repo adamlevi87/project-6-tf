@@ -114,3 +114,14 @@ variable "ssh_allowed_cidr_blocks" {
   type        = list(string)
   default     = []
 }
+
+variable "runners_per_instance" {
+  description = "Number of runner processes per EC2 instance"
+  type        = number
+  default     = 2
+  
+  validation {
+    condition     = var.runners_per_instance >= 1 && var.runners_per_instance <= 5
+    error_message = "Runners per instance must be between 1 and 5."
+  }
+}

@@ -30,7 +30,7 @@ runner_instance_type     = "t3.small"    # Free tier friendly option
 runner_ami_id           = null           # Will use latest Ubuntu 22.04
 key_pair_name           = null           # Set if you want SSH access
 runner_root_volume_size = 30             # GB - enough for Terraform ops
-
+runners_per_instance = 2
 # ================================
 # Runner Scaling Configuration
 # ================================
