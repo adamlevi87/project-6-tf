@@ -60,7 +60,6 @@ module "vpc_peering" {
   # Source VPC (runner infrastructure)
   source_vpc_id              = module.vpc.vpc_id
   source_route_table_id      = module.vpc.private_route_table_id
-  source_public_route_table_id = module.vpc.public_route_table_id
 
   # Peer VPC (main project)
   peer_vpc_id   = var.main_vpc_id
