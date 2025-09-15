@@ -50,9 +50,22 @@ module "github_runner" {
   depends_on = [module.vpc]
 }
 
-# vpc_peering Module
 module "vpc_peering" {
   count  = var.enable_vpc_peering && var.main_vpc_id != "" ? 1 : 0
   source = "../modules/vpc_peering"
-  # ... all the config I showed
+
+  project_tag = var.project_tag
+  environment = var.environment
+
+  # Source VPC (runner infrastructure)
+  source_vpc_id              = module.vpc.vpc_id
+  source_route_table_id      = module.vpc.private_route_table_id
+  source_public_route_table_id = module.vpc.public_route_table_id
+
+  # Peer VPC (main project)
+  peer_vpc_id   = var.main_vpc_id
+  peer_vpc_cidr = var.main_vpc_cidr
+  peer_region   = var.aws_region
+
+  depends_on = [module.vpc]
 }

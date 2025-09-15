@@ -97,3 +97,28 @@ output "github_info" {
   }
   sensitive = false
 }
+
+# ================================
+# VPC Peering Outputs
+# ================================
+output "vpc_peering_connection_id" {
+  description = "ID of the VPC peering connection (if created)"
+  value       = var.enable_vpc_peering && var.main_vpc_id != "" ? module.vpc_peering[0].vpc_peering_connection_id : null
+}
+
+output "vpc_peering_status" {
+  description = "Status of the VPC peering connection"
+  value       = var.enable_vpc_peering && var.main_vpc_id != "" ? module.vpc_peering[0].vpc_peering_connection_status : "not-created"
+}
+
+output "peering_info" {
+  description = "VPC peering connection information"
+  value = var.enable_vpc_peering && var.main_vpc_id != "" ? {
+    connection_id     = module.vpc_peering[0].vpc_peering_connection_id
+    status           = module.vpc_peering[0].vpc_peering_connection_status
+    runner_vpc_id    = module.vpc.vpc_id
+    runner_vpc_cidr  = module.vpc.vpc_cidr_block
+    main_vpc_id      = var.main_vpc_id
+    main_vpc_cidr    = var.main_vpc_cidr
+  } : null
+}
