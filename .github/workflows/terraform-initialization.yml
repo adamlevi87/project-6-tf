@@ -49,7 +49,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Step 1 - Full Infrastructure run
+      - name: Step 1 - Full terraform-runner-infra run
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
@@ -60,7 +60,7 @@ jobs:
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "================================================"
           
-          cd terraform-main/main/
+          cd terraform-runner-infra/main/
           
           terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
           
@@ -156,28 +156,28 @@ jobs:
       #         ;;
       #     esac
 
-      - name: Step 3 - Full Infrastructure run (Final)
-        if: github.event.inputs.action != 'plan'
-        env:
-          AWS_REGION: ${{ env.AWS_REGION }}
-          PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        run: |
-          echo "================================================"
-          echo "STEP 3: Full Infrastructure Apply (Final)"
-          echo "Environment: ${{ github.event.inputs.env }}"
-          echo "================================================"
+      # - name: Step 3 - Full Infrastructure run (Final)
+      #   if: github.event.inputs.action != 'plan'
+      #   env:
+      #     AWS_REGION: ${{ env.AWS_REGION }}
+      #     PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
+      #     AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      #   run: |
+      #     echo "================================================"
+      #     echo "STEP 3: Full Infrastructure Apply (Final)"
+      #     echo "Environment: ${{ github.event.inputs.env }}"
+      #     echo "================================================"
           
-          cd terraform-main/main/
+      #     cd terraform-runner-infra/main/
           
-          COMMON_VARS=(
-            -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
-            -var="aws_region=$AWS_REGION"
-            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
-            -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
-          )
+      #     COMMON_VARS=(
+      #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+      #       -var="aws_region=$AWS_REGION"
+      #       -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+      #       -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+      #     )
           
-          terraform apply -auto-approve "${COMMON_VARS[@]}"
+      #     terraform apply -auto-approve "${COMMON_VARS[@]}"
 
       # - name: Step 4 - Trigger Full Main Workflow on Runner
       #   env:
