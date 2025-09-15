@@ -82,6 +82,20 @@ resource "aws_eks_cluster" "main" {
   }
 }
 
+# Resource that only exists when 0.0.0.0/0 is present ANYWHERE in the CIDR list
+resource "null_resource" "kubectl_access_ready" {
+  count = contains(aws_eks_cluster.main.vpc_config[0].public_access_cidrs, "0.0.0.0/0") ? 1 : 0
+  
+  provisioner "local-exec" {
+    command = "echo '✅ EKS cluster has 0.0.0.0/0 access - kubectl operations can proceed'"
+  }
+  
+  triggers = {
+    cluster_name = aws_eks_cluster.main.name
+    vpc_config_hash = jsonencode(aws_eks_cluster.main.vpc_config[0].public_access_cidrs)
+  }
+}
+
 # Get OIDC issuer certificate
 data "tls_certificate" "cluster" {
   url = aws_eks_cluster.main.identity[0].oidc[0].issuer
