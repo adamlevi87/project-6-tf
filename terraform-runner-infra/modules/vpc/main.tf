@@ -54,7 +54,7 @@ resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = local.public_cidr
   availability_zone       = local.primary_az
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
   
   tags = {
     Name        = "${var.project_tag}-${var.environment}-runner-public-subnet"
@@ -84,6 +84,7 @@ resource "aws_subnet" "private" {
 # Create EIP for NAT Gateway
 resource "aws_eip" "nat" {
   domain = "vpc"
+
   depends_on = [aws_internet_gateway.igw]
   
   tags = {
@@ -98,6 +99,7 @@ resource "aws_eip" "nat" {
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public.id
+  
   depends_on    = [aws_internet_gateway.igw]
   
   tags = {

@@ -16,8 +16,8 @@ vpc_cidr_block = "10.1.0.0/16"  # Main project uses 10.0.0.0/16
 # ================================
 # GitHub Configuration
 # ================================
-github_org              = "your-github-org"           # Replace with your GitHub org
-github_terraform_repo   = "project-6"                 # Replace with your repo name
+github_org              = "adamlevi87"
+github_terraform_repo   = "project-6-tf"
 
 # GitHub token will be provided via environment variable:
 # export TF_VAR_github_token="your-github-pat-token"

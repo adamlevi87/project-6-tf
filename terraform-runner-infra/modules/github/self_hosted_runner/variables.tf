@@ -102,6 +102,11 @@ variable "enable_ssh_access" {
   description = "Enable SSH access to runner instances"
   type        = bool
   default     = false
+  
+  validation {
+    condition = !var.enable_ssh_access || length(var.ssh_allowed_cidr_blocks) > 0
+    error_message = "SSH allowed CIDR blocks must be specified when SSH access is enabled."
+  }
 }
 
 variable "ssh_allowed_cidr_blocks" {

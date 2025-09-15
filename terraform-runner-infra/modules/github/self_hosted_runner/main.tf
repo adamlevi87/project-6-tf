@@ -25,6 +25,19 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+# User data script to setup GitHub runner
+locals {
+  user_data = base64encode(templatefile("${path.module}/user-data.sh", {
+    github_org         = var.github_org
+    github_repo        = var.github_repo
+    github_token       = var.github_token
+    runner_name        = "${var.project_tag}-${var.environment}-runner"
+    runner_labels      = join(",", var.runner_labels)
+    aws_region         = var.aws_region
+    cluster_name       = var.cluster_name
+  }))
+}
+
 # Security Group for GitHub Runner
 resource "aws_security_group" "github_runner" {
   name        = "${var.project_tag}-${var.environment}-github-runner-sg"
@@ -126,19 +139,6 @@ resource "aws_iam_instance_profile" "github_runner" {
     Environment = var.environment
     Purpose     = "github-runner-instance-profile"
   }
-}
-
-# User data script to setup GitHub runner
-locals {
-  user_data = base64encode(templatefile("${path.module}/user-data.sh", {
-    github_org         = var.github_org
-    github_repo        = var.github_repo
-    github_token       = var.github_token
-    runner_name        = "${var.project_tag}-${var.environment}-runner"
-    runner_labels      = join(",", var.runner_labels)
-    aws_region         = var.aws_region
-    cluster_name       = var.cluster_name
-  }))
 }
 
 # Launch Template for GitHub Runner

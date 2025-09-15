@@ -1,14 +1,12 @@
 # terraform-runner-infra/main/main.tf
 
-# Data sources
-data "aws_caller_identity" "current" {}
-
 # VPC Module - Simple single AZ setup
 module "vpc" {
   source = "../modules/vpc"
 
   project_tag    = var.project_tag
   environment    = var.environment
+  
   vpc_cidr_block = var.vpc_cidr_block
 }
 
