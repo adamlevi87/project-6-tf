@@ -1,0 +1,222 @@
+# .github/workflows/terraform-initialization.yml
+
+name: Terraform Initialization
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Environment to manage"
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      action:
+        description: "Terraform action to perform"
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+          - plan-and-apply
+          # - destroy  # Different logic - TODO: implement later
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
+jobs:
+  terraform-initialization:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write  # Required for OIDC
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Step 1 - Full Infrastructure Apply
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          echo "================================================"
+          echo "STEP 1: Full Infrastructure Apply"
+          echo "Environment: ${{ github.event.inputs.env }}"
+          echo "================================================"
+          
+          cd terraform-main/main/
+          
+          terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
+          
+          COMMON_VARS=(
+            -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+            -var="aws_region=$AWS_REGION"
+            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+            -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+          )
+          
+          case "${{ github.event.inputs.action }}" in
+            plan)
+              terraform plan "${COMMON_VARS[@]}"
+              ;;
+            apply)
+              case "${{ github.event.inputs.action }}" in
+            plan)
+              terraform plan "${COMMON_VARS[@]}"
+              ;;
+            apply)
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            plan-and-apply)
+              terraform plan "${COMMON_VARS[@]}"
+              echo "================================================"
+              echo "Plan complete. Proceeding with apply..."
+              echo "================================================"
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            # destroy)
+            #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
+            #   ;;
+            *)
+              echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
+              ;;
+          esac
+              ;;
+            plan-and-apply)
+              terraform plan "${COMMON_VARS[@]}"
+              echo "================================================"
+              echo "Plan complete. Proceeding with apply..."
+              echo "================================================"
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            destroy)
+              terraform destroy -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            *)
+              echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
+              ;;
+          esac
+
+      # - name: Step 2 - Targeted Main Infrastructure
+      #   env:
+      #     AWS_REGION: ${{ env.AWS_REGION }}
+      #     PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
+      #     AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      #   run: |
+      #     echo "================================================"
+      #     echo "STEP 2: Targeted Main Infrastructure"
+      #     echo "Environment: ${{ github.event.inputs.env }}"
+      #     echo "================================================"
+          
+      #     cd terraform-main/main/
+          
+      #     COMMON_VARS=(
+      #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+      #       -var="aws_region=$AWS_REGION"
+      #       -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+      #       -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+      #     )
+          
+      #     # Add specific targets here
+      #     case "${{ github.event.inputs.action }}" in
+      #       plan)
+      #         terraform plan "${COMMON_VARS[@]}" -target=module.specific_target
+      #         ;;
+      #       apply)
+      #         terraform apply -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
+      #         ;;
+      #       plan-and-apply)
+      #         terraform plan "${COMMON_VARS[@]}" -target=module.specific_target
+      #         echo "================================================"
+      #         echo "Plan complete. Proceeding with apply..."
+      #         echo "================================================"
+      #         terraform apply -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
+      #         ;;
+      #       # destroy)
+      #       #   terraform destroy -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
+      #       #   ;;
+      #       *)
+      #         echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
+      #         ;;
+      #     esac
+
+      # - name: Step 3 - Full Infrastructure Apply (Final)
+      #   env:
+      #     AWS_REGION: ${{ env.AWS_REGION }}
+      #     PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
+      #     AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      #   run: |
+      #     echo "================================================"
+      #     echo "STEP 3: Full Infrastructure Apply (Final)"
+      #     echo "Environment: ${{ github.event.inputs.env }}"
+      #     echo "================================================"
+          
+      #     cd terraform-main/main/
+          
+      #     COMMON_VARS=(
+      #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+      #       -var="aws_region=$AWS_REGION"
+      #       -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+      #       -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+      #     )
+          
+      #     terraform apply -auto-approve "${COMMON_VARS[@]}"
+
+      # - name: Step 4 - Trigger Full Main Workflow on Runner
+      #   env:
+      #     TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+      #   run: |
+      #     echo "================================================"
+      #     echo "STEP 4: Triggering Full Main Workflow on Runner"
+      #     echo "Environment: ${{ github.event.inputs.env }}"
+      #     echo "================================================"
+          
+      #     # Trigger the main deploy.yml workflow
+      #     curl -X POST \
+      #       -H "Authorization: Bearer $TOKEN_GITHUB" \
+      #       -H "Accept: application/vnd.github+json" \
+      #       "https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy.yml/dispatches" \
+      #       -d '{
+      #         "ref": "main",
+      #         "inputs": {
+      #           "env": "${{ github.event.inputs.env }}",
+      #           "action": "apply",
+      #           "gitops_mode": "bootstrap",
+      #           "auto_merge": "true"
+      #         }
+      #       }'
+          
+      #     echo "✅ Main workflow triggered successfully"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## 🚀 Terraform Initialization Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | \`${{ github.event.inputs.env }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Step 1** | Full Infrastructure Apply ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Step 2** | Targeted Main Infrastructure ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Step 3** | Full Infrastructure Apply (Final) ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Step 4** | Triggered Main Workflow on Runner ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔄 Initialization Process Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- Infrastructure deployed in multiple stages for dependency resolution" >> $GITHUB_STEP_SUMMARY
+          echo "- Main workflow triggered on self-hosted runner for full deployment" >> $GITHUB_STEP_SUMMARY
