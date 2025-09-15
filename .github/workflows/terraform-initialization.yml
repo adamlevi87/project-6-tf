@@ -67,8 +67,7 @@ jobs:
           COMMON_VARS=(
             -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
             -var="aws_region=$AWS_REGION"
-            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
-            -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+            -var="github_token=$TOKEN_GITHUB"
           )
           
           case "${{ github.event.inputs.action }}" in
@@ -173,8 +172,7 @@ jobs:
       #     COMMON_VARS=(
       #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
       #       -var="aws_region=$AWS_REGION"
-      #       -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
-      #       -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+      #       -var="github_token=$TOKEN_GITHUB"
       #     )
           
       #     terraform apply -auto-approve "${COMMON_VARS[@]}"
