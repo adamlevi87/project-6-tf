@@ -44,33 +44,36 @@ resource "aws_security_group" "github_runner" {
   description = "Security group for GitHub self-hosted runner"
   vpc_id      = var.vpc_id
 
-  # Outbound internet access (required for GitHub API, Docker pulls, etc.)
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "All outbound traffic"
-  }
-
-  # SSH access (optional, for debugging)
-  dynamic "ingress" {
-    for_each = var.enable_ssh_access ? [1] : []
-    content {
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = var.ssh_allowed_cidr_blocks
-      description = "SSH access for debugging"
-    }
-  }
-
   tags = {
     Name        = "${var.project_tag}-${var.environment}-github-runner-sg"
     Project     = var.project_tag
     Environment = var.environment
     Purpose     = "github-runner"
   }
+}
+
+# Egress rule - Allow all outbound traffic
+resource "aws_security_group_rule" "egress_all" {
+  type              = "egress"
+  security_group_id = aws_security_group.github_runner.id
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "All outbound traffic (GitHub API, Docker pulls, AWS APIs, etc.)"
+}
+
+# Ingress rule - SSH access (conditional)
+resource "aws_security_group_rule" "ingress_ssh" {
+  for_each = var.enable_ssh_access ? toset(["ssh"]) : toset([])
+
+  type              = "ingress"
+  security_group_id = aws_security_group.github_runner.id
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = var.ssh_allowed_cidr_blocks
+  description       = "SSH access for debugging"
 }
 
 # IAM Role for GitHub Runner EC2 instance
