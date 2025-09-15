@@ -554,27 +554,27 @@ module "monitoring" {
 # before the EKS is ready - will be moving away from this block 
 # tomorrow - also restore the dependency eks_lockdown, grafana_dashboards
 
-# module "service_monitors" {
-#   source = "../modules/monitoring/service-monitors"
+module "service_monitors" {
+  source = "../modules/monitoring/service-monitors"
   
-#   project_tag   = var.project_tag
-#   environment   = var.environment
+  project_tag   = var.project_tag
+  environment   = var.environment
   
-#   # Namespaces
-#   monitoring_namespace         = var.monitoring_namespace
-#   argocd_namespace            = var.argocd_namespace
-#   aws_lb_controller_namespace = var.eks_addons_namespace
+  # Namespaces
+  monitoring_namespace         = var.monitoring_namespace
+  argocd_namespace            = var.argocd_namespace
+  aws_lb_controller_namespace = var.eks_addons_namespace
   
-#   # Optional features
-#   enable_dex_metrics = var.enable_dex_metrics
+  # Optional features
+  enable_dex_metrics = var.enable_dex_metrics
   
-#   depends_on = [
-#     module.eks,
-#     module.monitoring,
-#     module.argocd,
-#     module.aws_load_balancer_controller
-#   ]
-# }
+  depends_on = [
+    module.eks,
+    module.monitoring,
+    module.argocd,
+    module.aws_load_balancer_controller
+  ]
+}
 
 module "grafana_dashboards" {
   source = "../modules/monitoring/grafana-dashboards"
@@ -589,8 +589,8 @@ module "grafana_dashboards" {
   enable_aws_lbc_dashboard    = true
   
   depends_on = [
-    module.monitoring#,
-    #module.service_monitors
+    module.monitoring,
+    module.service_monitors
   ]
 }
 
@@ -729,7 +729,7 @@ module "eks_lockdown" {
     module.monitoring,
     module.metrics_server,
     module.ebs_csi_driver,
-    #module.service_monitors,
+    module.service_monitors,
     module.grafana_dashboards,
     # Application modules
     module.frontend,

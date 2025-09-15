@@ -2,16 +2,16 @@
 
 terraform {
   required_providers {
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.38.0"
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "~> 1.19.0"
     }
   }
 }
 
 # ServiceMonitor for AWS Load Balancer Controller
-resource "kubernetes_manifest" "aws_load_balancer_controller_podmonitor" {
-  manifest = {
+resource "kubectl_manifest" "aws_load_balancer_controller_podmonitor" {
+  yaml_body = yamlencode({
     apiVersion = "monitoring.coreos.com/v1"
     kind       = "PodMonitor"
     metadata = {
@@ -42,12 +42,12 @@ resource "kubernetes_manifest" "aws_load_balancer_controller_podmonitor" {
         }
       ]
     }
-  }
+  })
 }
 
 # ServiceMonitor for ArgoCD Server
-resource "kubernetes_manifest" "argocd_server_servicemonitor" {
-  manifest = {
+resource "kubectl_manifest" "argocd_server_servicemonitor" {
+  yaml_body = yamlencode({
     apiVersion = "monitoring.coreos.com/v1"
     kind       = "ServiceMonitor"
     metadata = {
@@ -79,12 +79,12 @@ resource "kubernetes_manifest" "argocd_server_servicemonitor" {
         }
       ]
     }
-  }
+  })
 }
 
 # ServiceMonitor for ArgoCD Application Controller
-resource "kubernetes_manifest" "argocd_application_controller_servicemonitor" {
-  manifest = {
+resource "kubectl_manifest" "argocd_application_controller_servicemonitor" {
+  yaml_body = yamlencode({
     apiVersion = "monitoring.coreos.com/v1"
     kind       = "ServiceMonitor"
     metadata = {
@@ -116,12 +116,12 @@ resource "kubernetes_manifest" "argocd_application_controller_servicemonitor" {
         }
       ]
     }
-  }
+  })
 }
 
 # ServiceMonitor for ArgoCD Repo Server
-resource "kubernetes_manifest" "argocd_repo_server_servicemonitor" {
-  manifest = {
+resource "kubectl_manifest" "argocd_repo_server_servicemonitor" {
+  yaml_body = yamlencode({
     apiVersion = "monitoring.coreos.com/v1"
     kind       = "ServiceMonitor"
     metadata = {
@@ -153,14 +153,14 @@ resource "kubernetes_manifest" "argocd_repo_server_servicemonitor" {
         }
       ]
     }
-  }
+  })
 }
 
-# ServiceMonitor for ArgoCD Dex Server (Optional)
-resource "kubernetes_manifest" "argocd_dex_server_servicemonitor" {
+# Optional: ServiceMonitor for ArgoCD Dex Server (if enabled)
+resource "kubectl_manifest" "argocd_dex_server_servicemonitor" {
   count = var.enable_dex_metrics ? 1 : 0
   
-  manifest = {
+  yaml_body = yamlencode({
     apiVersion = "monitoring.coreos.com/v1"
     kind       = "ServiceMonitor"
     metadata = {
@@ -192,5 +192,5 @@ resource "kubernetes_manifest" "argocd_dex_server_servicemonitor" {
         }
       ]
     }
-  }
+  })
 }

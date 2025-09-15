@@ -2,31 +2,31 @@
 
 output "aws_lb_controller_podmonitor_name" {
   description = "Name of the AWS Load Balancer Controller PodMonitor"
-  value       = kubernetes_manifest.aws_load_balancer_controller_podmonitor.manifest.metadata.name
+  value       = "aws-load-balancer-controller"
 }
 
 output "argocd_server_servicemonitor_name" {
   description = "Name of the ArgoCD Server ServiceMonitor"
-  value       = kubernetes_manifest.argocd_server_servicemonitor.manifest.metadata.name
+  value       = "argocd-server-metrics"
 }
 
 output "argocd_application_controller_servicemonitor_name" {
   description = "Name of the ArgoCD Application Controller ServiceMonitor"
-  value       = kubernetes_manifest.argocd_application_controller_servicemonitor.manifest.metadata.name
+  value       = "argocd-application-controller-metrics"
 }
 
 output "argocd_repo_server_servicemonitor_name" {
   description = "Name of the ArgoCD Repo Server ServiceMonitor"  
-  value       = kubernetes_manifest.argocd_repo_server_servicemonitor.manifest.metadata.name
+  value       = "argocd-repo-server-metrics"
 }
 
 output "servicemonitor_names" {
   description = "Map of all created ServiceMonitor names"
   value = {
-    aws_load_balancer_controller = kubernetes_manifest.aws_load_balancer_controller_podmonitor.manifest.metadata.name
-    argocd_server               = kubernetes_manifest.argocd_server_servicemonitor.manifest.metadata.name
-    argocd_application_controller = kubernetes_manifest.argocd_application_controller_servicemonitor.manifest.metadata.name
-    argocd_repo_server          = kubernetes_manifest.argocd_repo_server_servicemonitor.manifest.metadata.name
-    argocd_dex_server           = var.enable_dex_metrics ? kubernetes_manifest.argocd_dex_server_servicemonitor[0].manifest.metadata.name : null
+    aws_load_balancer_controller = "aws-load-balancer-controller"
+    argocd_server               = "argocd-server-metrics"
+    argocd_application_controller = "argocd-application-controller-metrics"
+    argocd_repo_server          = "argocd-repo-server-metrics"
+    argocd_dex_server           = var.enable_dex_metrics ? "argocd-dex-server-metrics" : null
   }
 }
