@@ -33,14 +33,3 @@ resource "aws_route" "runner_to_main" {
   
   depends_on = [aws_vpc_peering_connection.to_main]
 }
-
-# Optional: Add route for public subnet if needed
-resource "aws_route" "runner_public_to_main" {
-  count = var.source_public_route_table_id != null ? 1 : 0
-  
-  route_table_id            = var.source_public_route_table_id
-  destination_cidr_block    = var.peer_vpc_cidr
-  vpc_peering_connection_id = aws_vpc_peering_connection.to_main.id
-  
-  depends_on = [aws_vpc_peering_connection.to_main]
-}

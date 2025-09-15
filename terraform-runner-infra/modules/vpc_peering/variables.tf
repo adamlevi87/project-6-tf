@@ -34,9 +34,3 @@ variable "source_route_table_id" {
   description = "Route table ID of the source VPC private subnet"
   type        = string
 }
-
-variable "source_public_route_table_id" {
-  description = "Route table ID of the source VPC public subnet (optional)"
-  type        = string
-  default     = null
-}

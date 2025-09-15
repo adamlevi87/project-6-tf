@@ -16,7 +16,6 @@ variable "environment" {
 variable "aws_region" {
   description = "AWS region"
   type        = string
-  default     = "us-east-1"
 }
 
 # ================================
@@ -25,12 +24,29 @@ variable "aws_region" {
 variable "vpc_cidr_block" {
   description = "CIDR block for the runner VPC"
   type        = string
-  default     = "10.1.0.0/16"
   
   validation {
     condition     = can(cidrhost(var.vpc_cidr_block, 0))
     error_message = "VPC CIDR block must be a valid IPv4 CIDR."
   }
+}
+
+# ================================
+# VPC Peering Configuration
+# ================================
+variable "main_vpc_id" {
+  description = "VPC ID of the main project (for peering)"
+  type        = string
+}
+
+variable "main_vpc_cidr" {
+  description = "CIDR block of the main project VPC (for peering routes)"
+  type        = string
+}
+
+variable "enable_vpc_peering" {
+  description = "Enable VPC peering to main project VPC"
+  type        = bool
 }
 
 # ================================
@@ -58,7 +74,6 @@ variable "github_token" {
 variable "runner_instance_type" {
   description = "EC2 instance type for GitHub runner"
   type        = string
-  default     = "t3.small"
   
   validation {
     condition = contains([
@@ -72,19 +87,16 @@ variable "runner_instance_type" {
 variable "runner_ami_id" {
   description = "AMI ID for GitHub runner (if null, uses latest Ubuntu 22.04)"
   type        = string
-  default     = null
 }
 
 variable "key_pair_name" {
   description = "EC2 Key Pair name for SSH access to runner instances"
   type        = string
-  default     = null
 }
 
 variable "runner_root_volume_size" {
   description = "Size of runner root EBS volume in GB"
   type        = number
-  default     = 30
   
   validation {
     condition     = var.runner_root_volume_size >= 20 && var.runner_root_volume_size <= 100
@@ -98,7 +110,6 @@ variable "runner_root_volume_size" {
 variable "min_runners" {
   description = "Minimum number of runner instances"
   type        = number
-  default     = 1
   
   validation {
     condition     = var.min_runners >= 0 && var.min_runners <= 5
@@ -109,7 +120,6 @@ variable "min_runners" {
 variable "max_runners" {
   description = "Maximum number of runner instances"
   type        = number
-  default     = 2
   
   validation {
     condition     = var.max_runners >= 1 && var.max_runners <= 10
@@ -120,7 +130,6 @@ variable "max_runners" {
 variable "desired_runners" {
   description = "Desired number of runner instances"
   type        = number
-  default     = 1
   
   validation {
     condition     = var.desired_runners >= 0 && var.desired_runners <= 5
@@ -134,7 +143,6 @@ variable "desired_runners" {
 variable "runner_labels" {
   description = "Labels to assign to GitHub runners"
   type        = list(string)
-  default     = ["self-hosted", "terraform", "aws", "runner-infra"]
   
   validation {
     condition     = length(var.runner_labels) > 0
@@ -142,15 +150,19 @@ variable "runner_labels" {
   }
 }
 
-variable "cluster_name" {
-  description = "EKS cluster name from main project (for kubectl configuration)"
-  type        = string
-  default     = ""
-}
-
 variable "runners_per_instance" {
   description = "Number of runner processes per EC2 instance"
   type        = number
+  
+  validation {
+    condition     = var.runners_per_instance >= 1 && var.runners_per_instance <= 5
+    error_message = "Runners per instance must be between 1 and 5."
+  }
+}
+
+variable "cluster_name" {
+  description = "EKS cluster name from main project (for kubectl configuration)"
+  type        = string
 }
 
 # ================================
@@ -159,13 +171,16 @@ variable "runners_per_instance" {
 variable "enable_ssh_access" {
   description = "Enable SSH access to runner instances"
   type        = bool
-  default     = false
+  
+  validation {
+    condition = !var.enable_ssh_access || length(var.ssh_allowed_cidr_blocks) > 0
+    error_message = "SSH allowed CIDR blocks must be specified when SSH access is enabled."
+  }
 }
 
 variable "ssh_allowed_cidr_blocks" {
   description = "CIDR blocks allowed for SSH access to runner instances"
   type        = list(string)
-  default     = []
   
   validation {
     condition = alltrue([
