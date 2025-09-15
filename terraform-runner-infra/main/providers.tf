@@ -1,7 +1,8 @@
 # terraform-runner-infra/main/providers.tf
 
 terraform {
-  # latest versions of each provider for 09/2025
+  required_version = ">= 1.5"
+  
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -10,6 +11,16 @@ terraform {
   }
 }
 
+# Configure the AWS Provider
 provider "aws" {
   region = var.aws_region
+  
+  default_tags {
+    tags = {
+      Project     = var.project_tag
+      Environment = var.environment
+      ManagedBy   = "terraform"
+      Repository  = "terraform-runner-infra"
+    }
+  }
 }

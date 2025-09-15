@@ -1,0 +1,62 @@
+# terraform-runner-infra/environments/dev/terraform.tfvars
+
+# ================================
+# General Configuration
+# ================================
+project_tag = "project-6"
+environment = "dev"
+aws_region  = "us-east-1"
+
+# ================================
+# VPC Configuration
+# ================================
+# Use different CIDR from main project to avoid conflicts
+vpc_cidr_block = "10.1.0.0/16"  # Main project uses 10.0.0.0/16
+
+# ================================
+# GitHub Configuration
+# ================================
+github_org              = "your-github-org"           # Replace with your GitHub org
+github_terraform_repo   = "project-6"                 # Replace with your repo name
+
+# GitHub token will be provided via environment variable:
+# export TF_VAR_github_token="your-github-pat-token"
+# Or via terraform.tfvars.local (not committed to git)
+
+# ================================
+# Runner Instance Configuration
+# ================================
+runner_instance_type     = "t3.small"    # Free tier friendly option
+runner_ami_id           = null           # Will use latest Ubuntu 22.04
+key_pair_name           = null           # Set if you want SSH access
+runner_root_volume_size = 30             # GB - enough for Terraform ops
+
+# ================================
+# Runner Scaling Configuration
+# ================================
+min_runners     = 1
+max_runners     = 2
+desired_runners = 1
+
+# ================================
+# Runner Configuration
+# ================================
+runner_labels = [
+  "self-hosted",
+  "terraform", 
+  "aws",
+  "runner-infra",
+  "project-6",
+  "dev"
+]
+
+# Initially empty - will be updated after main project creates EKS cluster
+cluster_name = ""
+
+# ================================
+# SSH Access Configuration
+# ================================
+enable_ssh_access = false  # Set to true if you need to debug runner instances
+ssh_allowed_cidr_blocks = [
+  # "your.home.ip.address/32"  # Uncomment and add your IP if enabling SSH
+]
