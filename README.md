@@ -12,9 +12,9 @@ This project deploys an EKS cluster with ArgoCD, a sample application, and GitOp
 
 ### 1. AWS Infrastructure Prerequisites
 
-Navigate to the `.requirements` folder and run:
+Navigate to the `terraform-requirements` folder and run:
 ```bash
-cd .requirements
+cd terraform-requirements
 terraform init
 terraform apply
 ```
