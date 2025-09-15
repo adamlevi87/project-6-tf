@@ -35,8 +35,8 @@ output "cluster_cidr" {
   value       = aws_eks_cluster.main.kubernetes_network_config[0].service_ipv4_cidr
 }
 
-# output for eks readyness (for providers: kubectl/helm/kubernetes)
-output "kubectl_access_ready_resource" {
-  description = "Resource that only exists when 0.0.0.0/0 is present in public_access_cidrs (position independent)"
-  value = length(null_resource.kubectl_access_ready) > 0 ? null_resource.kubectl_access_ready[0] : null
-}
+# # output for eks readyness (for providers: kubectl/helm/kubernetes)
+# output "kubectl_access_ready_resource" {
+#   description = "Resource that only exists when 0.0.0.0/0 is present in public_access_cidrs (position independent)"
+#   value = length(null_resource.kubectl_access_ready) > 0 ? null_resource.kubectl_access_ready[0] : null
+# }

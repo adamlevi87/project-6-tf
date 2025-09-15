@@ -185,8 +185,7 @@ module "aws_auth_config" {
 
   depends_on = [
     module.eks,
-    module.node_groups,
-    module.eks.kubectl_access_ready_resource
+    module.node_groups
   ]
 }
 
@@ -208,11 +207,7 @@ module "aws_load_balancer_controller" {
   oidc_provider_arn    = module.eks.oidc_provider_arn
   oidc_provider_url    = module.eks.cluster_oidc_issuer_url
 
-  depends_on = [
-    module.eks,
-    module.node_groups,
-    module.eks.kubectl_access_ready_resource
-  ]
+  depends_on = [module.eks, module.node_groups]
 }
 
 module "external_dns" {
@@ -239,7 +234,6 @@ module "external_dns" {
   depends_on = [
     module.eks, 
     module.node_groups,
-    module.eks.kubectl_access_ready_resource,
     module.aws_load_balancer_controller
   ]
 }
@@ -264,8 +258,7 @@ module "cluster_autoscaler" {
   depends_on = [
     module.eks,
     module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready,
-    module.eks.kubectl_access_ready_resource
+    module.aws_load_balancer_controller.webhook_ready
   ]
 }
 
@@ -289,8 +282,7 @@ module "metrics_server" {
   depends_on = [
     module.eks,
     module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready,
-    module.eks.kubectl_access_ready_resource
+    module.aws_load_balancer_controller.webhook_ready
   ]
 }
 
@@ -313,8 +305,7 @@ module "frontend" {
   depends_on = [
     module.eks,
     module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready,
-    module.eks.kubectl_access_ready_resource
+    module.aws_load_balancer_controller.webhook_ready
   ]
 }
 
@@ -480,7 +471,6 @@ module "argocd" {
 
   depends_on = [
     module.eks,
-    module.eks.kubectl_access_ready_resource,
     module.node_groups,
     module.aws_load_balancer_controller.webhook_ready,
     module.acm,
@@ -559,8 +549,7 @@ module "monitoring" {
     module.node_groups,
     module.aws_load_balancer_controller.webhook_ready,
     module.external_dns,
-    module.ebs_csi_driver,
-    module.eks.kubectl_access_ready_resource
+    module.ebs_csi_driver
   ]
 }
 
@@ -586,8 +575,7 @@ module "service_monitors" {
     module.eks,
     module.monitoring,
     module.argocd,
-    module.aws_load_balancer_controller,
-    module.eks.kubectl_access_ready_resource
+    module.aws_load_balancer_controller
   ]
 }
 
@@ -604,11 +592,8 @@ module "grafana_dashboards" {
   enable_aws_lbc_dashboard    = true
   
   depends_on = [
-    module.eks,
-    module.node_groups,
     module.monitoring,
-    module.service_monitors,
-    module.eks.kubectl_access_ready_resource
+    module.service_monitors
   ]
 }
 
@@ -643,8 +628,7 @@ module "external_secrets_operator" {
     module.aws_auth_config,
     module.argocd,
     module.secrets_app_envs,
-    module.aws_load_balancer_controller.webhook_ready,
-    module.eks.kubectl_access_ready_resource
+    module.aws_load_balancer_controller.webhook_ready
   ]
 }
 
@@ -720,11 +704,7 @@ module "ebs_csi_driver" {
   oidc_provider_arn    = module.eks.oidc_provider_arn
   oidc_provider_url    = module.eks.cluster_oidc_issuer_url
 
-  depends_on = [
-    module.eks,
-    module.node_groups,
-    module.aws_load_balancer_controller.webhook_ready
-  ]
+  depends_on = [module.eks,module.node_groups]
 }
 
 # ====================================================================
