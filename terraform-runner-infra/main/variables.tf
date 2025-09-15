@@ -63,7 +63,7 @@ variable "github_terraform_repo" {
 }
 
 variable "github_token" {
-  description = "GitHub Personal Access Token with repo and admin:org permissions"
+  description = "GitHub Personal Access Token with TF repo permissions"
   type        = string
   sensitive   = true
 }
