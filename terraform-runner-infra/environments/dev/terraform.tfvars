@@ -12,7 +12,10 @@ aws_region  = "us-east-1"
 # ================================
 # Use different CIDR from main project to avoid conflicts
 vpc_cidr_block = "10.1.0.0/16"  # Main project uses 10.0.0.0/16
-
+# Enabling VPC peering to the main's VPC
+enable_vpc_peering = true
+main_vpc_id = ""
+main_vpc_cidr = "10.0.0.0/16"
 # ================================
 # GitHub Configuration
 # ================================

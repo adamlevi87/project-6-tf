@@ -49,3 +49,10 @@ module "github_runner" {
 
   depends_on = [module.vpc]
 }
+
+# vpc_peering Module
+module "vpc_peering" {
+  count  = var.enable_vpc_peering && var.main_vpc_id != "" ? 1 : 0
+  source = "../modules/vpc_peering"
+  # ... all the config I showed
+}
