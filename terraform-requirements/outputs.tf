@@ -12,3 +12,18 @@ output "github_oidc_role_arn" {
   value       = aws_iam_role.github_actions.arn
   #sensitive   = true
 }
+
+output "terraform_backend_bucket" {
+  description = "S3 bucket name for Terraform backend"
+  value       = aws_s3_bucket.tf_state.bucket
+}
+
+output "terraform_backend_dynamodb_table" {
+  description = "DynamoDB table name for Terraform state locking"
+  value       = aws_dynamodb_table.tf_lock.name
+}
+
+output "terraform_backend_kms_key_alias" {
+  description = "KMS key alias for Terraform state encryption"
+  value       = aws_kms_alias.tf_state_key_alias.name
+}
