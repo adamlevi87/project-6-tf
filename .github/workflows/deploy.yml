@@ -50,7 +50,7 @@ jobs:
       
     defaults:
       run:
-        working-directory: main/
+        working-directory: terraform-main/main/
 
     steps:
       - name: Checkout repo
