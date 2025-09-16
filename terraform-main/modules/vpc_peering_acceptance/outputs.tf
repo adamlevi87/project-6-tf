@@ -10,16 +10,16 @@ output "peering_connection_status" {
   value       = length(local.peering_accepter) > 0 ? local.peering_accepter[0].accept_status : "not-found"
 }
 
-output "accepted_connection_info" {
-  description = "Information about the accepted peering connection"
-  value = length(local.peering_accepter) > 0 ? {
-    id               = local.peering_accepter[0].vpc_peering_connection_id
-    status           = local.peering_accepter[0].accept_status
-    accepter_vpc_id  = var.vpc_id
-    runner_vpc_cidr  = var.runner_vpc_cidr
-    routes_created   = length(aws_route.main_to_runner_private)
-  } : {}
-}
+# output "accepted_connection_info" {
+#   description = "Information about the accepted peering connection"
+#   value = length(local.peering_accepter) > 0 ? {
+#     id               = local.peering_accepter[0].vpc_peering_connection_id
+#     status           = local.peering_accepter[0].accept_status
+#     accepter_vpc_id  = var.vpc_id
+#     runner_vpc_cidr  = var.runner_vpc_cidr
+#     routes_created   = length(aws_route.main_to_runner_private)
+#   } : {}
+# }
 
 # Output main VPC information for runner infrastructure to use
 output "main_vpc_info" {

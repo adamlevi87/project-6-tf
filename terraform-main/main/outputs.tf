@@ -17,19 +17,6 @@ output "main_vpc_info" {
 }
 
 # ================================
-# VPC Peering Information
-# ================================
-output "vpc_peering_info" {
-  description = "VPC peering connection information"
-  value = {
-    peering_connection_id     = module.vpc_peering_acceptance.peering_connection_id
-    peering_connection_status = module.vpc_peering_acceptance.peering_connection_status
-    accepted_connection_info  = module.vpc_peering_acceptance.accepted_connection_info
-  }
-  sensitive = false
-}
-
-# ================================
 # EKS Cluster Information (for runner kubectl configuration)
 # ================================
 output "eks_cluster_info" {
@@ -42,3 +29,17 @@ output "eks_cluster_info" {
   }
   sensitive = false
 }
+
+# # ================================
+# # VPC Peering Information
+# # ================================
+# output "vpc_peering_info" {
+#   description = "VPC peering connection information"
+#   value = {
+#     peering_connection_id     = module.vpc_peering_acceptance.peering_connection_id
+#     peering_connection_status = module.vpc_peering_acceptance.peering_connection_status
+#     accepted_connection_info  = module.vpc_peering_acceptance.accepted_connection_info
+#   }
+#   sensitive = false
+# }
+
