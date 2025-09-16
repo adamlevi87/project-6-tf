@@ -49,11 +49,37 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
+      - name: Set Environment Suffix
+        id: env_suffix
+        run: |
+          case "${{ github.event.inputs.env }}" in
+            dev)
+              echo "suffix=DEV" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "suffix=STAGING" >> $GITHUB_OUTPUT
+              ;;
+            prod)
+              echo "suffix=PROD" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "❌ ERROR: Invalid environment '${{ github.event.inputs.env }}'"
+              echo "Must be one of: dev, staging, prod"
+              exit 1
+              ;;
+          esac
+
       - name: Step 1 - Full terraform-runner-infra run
         env:
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
           AWS_REGION: ${{ env.AWS_REGION }}
           PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          ARGOCD_APP_ID: ${{ secrets[format('ARGOCD_APP_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_INSTALLATION_ID: ${{ secrets[format('ARGOCD_INSTALLATION_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_PRIVATE_KEY_B64: ${{ secrets[format('ARGOCD_PRIVATE_KEY_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_ID: ${{ secrets[format('OAUTH_GITHUB_CLIENT_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets[format('OAUTH_GITHUB_CLIENT_SECRET_TF_{0}', steps.env_suffix.outputs.suffix)] }}
         run: |
           echo "================================================"
           echo "STEP 1: Full Infrastructure Apply"
@@ -112,48 +138,57 @@ jobs:
               ;;
           esac
 
-      # - name: Step 2 - Targeted Main Infrastructure
-      #   env:
-      #     AWS_REGION: ${{ env.AWS_REGION }}
-      #     PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
-      #     AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-      #   run: |
-      #     echo "================================================"
-      #     echo "STEP 2: Targeted Main Infrastructure"
-      #     echo "Environment: ${{ github.event.inputs.env }}"
-      #     echo "================================================"
+      - name: Step 2 - Targeted Main Infrastructure
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          echo "================================================"
+          echo "STEP 2: Targeted Main Infrastructure"
+          echo "Environment: ${{ github.event.inputs.env }}"
+          echo "================================================"
           
-      #     cd terraform-main/main/
+          cd terraform-main/main/
           
-      #     COMMON_VARS=(
-      #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
-      #       -var="aws_region=$AWS_REGION"
-      #       -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
-      #       -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
-      #     )
+          COMMON_VARS=(
+            -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+            -var="github_token=$TOKEN_GITHUB"
+            -var="aws_region=$AWS_REGION"
+            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+            -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+            -var="argocd_app_id=$ARGOCD_APP_ID"
+            -var="argocd_installation_id=$ARGOCD_INSTALLATION_ID"
+            -var="argocd_private_key_b64=$ARGOCD_PRIVATE_KEY_B64"
+            -var="github_oauth_client_id=$OAUTH_GITHUB_CLIENT_ID"
+            -var="github_oauth_client_secret=$OAUTH_GITHUB_CLIENT_SECRET"
+            -var="bootstrap_mode=${{ steps.gitops_vars.outputs.bootstrap_mode }}"
+            -var="update_apps=${{ steps.gitops_vars.outputs.update_apps }}"
+            -var="auto_merge_pr=${{ github.event.inputs.auto_merge }}"
+          )
           
-      #     # Add specific targets here
-      #     case "${{ github.event.inputs.action }}" in
-      #       plan)
-      #         terraform plan "${COMMON_VARS[@]}" -target=module.specific_target
-      #         ;;
-      #       apply)
-      #         terraform apply -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
-      #         ;;
-      #       plan-and-apply)
-      #         terraform plan "${COMMON_VARS[@]}" -target=module.specific_target
-      #         echo "================================================"
-      #         echo "Plan complete. Proceeding with apply..."
-      #         echo "================================================"
-      #         terraform apply -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
-      #         ;;
-      #       # destroy)
-      #       #   terraform destroy -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
-      #       #   ;;
-      #       *)
-      #         echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
-      #         ;;
-      #     esac
+          # Add specific targets here
+          case "${{ github.event.inputs.action }}" in
+            plan)
+              terraform plan "${COMMON_VARS[@]}" -target=module.specific_target
+              ;;
+            apply)
+              terraform apply -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
+              ;;
+            plan-and-apply)
+              terraform plan "${COMMON_VARS[@]}" -target=module.specific_target
+              echo "================================================"
+              echo "Plan complete. Proceeding with apply..."
+              echo "================================================"
+              terraform apply -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
+              ;;
+            # destroy)
+            #   terraform destroy -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
+            #   ;;
+            *)
+              echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
+              ;;
+          esac
 
       # - name: Step 3 - Full Infrastructure run (Final)
       #   if: github.event.inputs.action != 'plan'
