@@ -8,10 +8,19 @@
 #   value       = module.vpc.vpc_id
 # }
 
-# output "vpc_cidr_block" {
-#   description = "CIDR block of the runner VPC"
-#   value       = module.vpc.vpc_cidr_block
-# }
+output "vpc_cidr_block" {
+  description = "CIDR block of the runner VPC"
+  value       = module.vpc.vpc_cidr_block
+}
+
+# ================================
+# VPC Peering Outputs
+# ================================
+output "vpc_peering_connection_id" {
+  description = "ID of the VPC peering connection (if created)"
+  #value       = var.enable_vpc_peering && var.main_vpc_id != "" ? module.vpc_peering[0].vpc_peering_connection_id : null
+  value       = module.vpc_peering.vpc_peering_connection_id
+}
 
 # output "private_subnet_ids" {
 #   description = "List of private subnet IDs"
@@ -96,14 +105,6 @@
 #     runner_labels = var.runner_labels
 #   }
 #   sensitive = false
-# }
-
-# # ================================
-# # VPC Peering Outputs
-# # ================================
-# output "vpc_peering_connection_id" {
-#   description = "ID of the VPC peering connection (if created)"
-#   value       = var.enable_vpc_peering && var.main_vpc_id != "" ? module.vpc_peering[0].vpc_peering_connection_id : null
 # }
 
 # output "vpc_peering_status" {
