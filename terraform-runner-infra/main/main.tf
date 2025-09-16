@@ -69,7 +69,7 @@ module "vpc_peering" {
   # Peer VPC (main project)
   #peer_vpc_id   = var.main_vpc_id
   #peer_vpc_cidr = var.main_vpc_cidr
-  peer_region   = var.aws_region
+  #peer_region   = var.aws_region
 
   depends_on = [module.vpc]
 }

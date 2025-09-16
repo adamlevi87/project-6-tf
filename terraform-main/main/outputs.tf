@@ -11,6 +11,7 @@ output "main_vpc_info" {
     private_subnet_ids        = module.vpc.private_subnet_ids
     private_route_table_ids   = module.vpc.private_route_table_ids
     availability_zones        = keys(local.private_subnet_cidrs)
+    region                    = var.aws_region
   }
   sensitive = false
 }

@@ -25,10 +25,10 @@ variable "source_vpc_id" {
 #   type        = string
 # }
 
-variable "peer_region" {
-  description = "AWS region of the peer VPC"
-  type        = string
-}
+# variable "peer_region" {
+#   description = "AWS region of the peer VPC"
+#   type        = string
+# }
 
 variable "source_route_table_id" {
   description = "Route table ID of the source VPC private subnet"
