@@ -20,10 +20,10 @@ variable "source_vpc_id" {
   type        = string
 }
 
-# variable "initialize_run" {
-#   description = "Whether this is an initialization run (true = deploy basics only, false = deploy everything)"
-#   type        = bool
-# }
+variable "initialize_run" {
+  description = "Whether this is an initialization run (true = deploy basics only, false = deploy everything)"
+  type        = bool
+}
 
 # variable "peer_vpc_id" {
 #   description = "VPC ID of the peer VPC (main project VPC)"

@@ -10,10 +10,10 @@ variable "environment" {
   type        = string
 }
 
-# variable "initialize_run" {
-#   description = "Whether this is an initialization run (true = deploy basics only, false = deploy everything)"
-#   type        = bool
-# }
+variable "initialize_run" {
+  description = "Whether this is an initialization run (true = deploy basics only, false = deploy everything)"
+  type        = bool
+}
 
 variable "vpc_id" {
   description = "VPC ID where runner will be deployed"
