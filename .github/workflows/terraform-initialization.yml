@@ -144,9 +144,9 @@ jobs:
             -var="argocd_private_key_b64=$ARGOCD_PRIVATE_KEY_B64"
             -var="github_oauth_client_id=$OAUTH_GITHUB_CLIENT_ID"
             -var="github_oauth_client_secret=$OAUTH_GITHUB_CLIENT_SECRET"
-            -var="bootstrap_mode=${{ steps.gitops_vars.outputs.bootstrap_mode }}"
-            -var="update_apps=${{ steps.gitops_vars.outputs.update_apps }}"
-            -var="auto_merge_pr=${{ github.event.inputs.auto_merge }}"
+            -var="bootstrap_mode=false"
+            -var="update_apps=false"
+            -var="auto_merge_pr=false"
           )
           
           case "${{ github.event.inputs.action }}" in
