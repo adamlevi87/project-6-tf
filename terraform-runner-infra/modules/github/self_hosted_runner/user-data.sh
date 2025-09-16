@@ -21,6 +21,12 @@ echo "🚀 Starting GitHub Runner setup..."
 echo "Runner: $RUNNER_NAME"
 echo "Labels: $RUNNER_LABELS"
 echo "Region: $AWS_REGION"
+#### debug echo
+echo "GITHUB_ORG = $GITHUB_ORG"
+echo "GITHUB_REPO = $GITHUB_REPO"
+echo "RUNNER_NAME = $RUNNER_NAME"
+echo "RUNNER_LABELS = $RUNNER_LABELS"
+echo "GITHUB_TOKEN = $GITHUB_TOKEN"
 
 # Update system
 apt-get update
@@ -106,19 +112,6 @@ curl -o actions-runner-linux-x64-$RUNNER_VERSION.tar.gz -L https://github.com/ac
 # Extract runner
 tar xzf actions-runner-linux-x64-$RUNNER_VERSION.tar.gz
 rm actions-runner-linux-x64-$RUNNER_VERSION.tar.gz
-
-#### debug echo
-echo "GITHUB_ORG = ${GITHUB_ORG}"
-echo "GITHUB_REPO = ${GITHUB_REPO}"
-echo "RUNNER_NAME = ${RUNNER_NAME}"
-echo "RUNNER_LABELS = ${RUNNER_LABELS}"
-echo "GITHUB_TOKEN = ${GITHUB_TOKEN}"
-
-
-
-
-
-
 
 # Get registration token
 echo "🔑 Getting registration token..."
