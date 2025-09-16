@@ -1,5 +1,16 @@
 # terraform-main/main/main.tf
 
+data "terraform_remote_state" "runner_infra" {
+  count = var.initialize_run ? 0 : 1
+  
+  backend = "s3"
+  config = {
+    bucket = "project-6-tf-state"
+    key    = "project-6-runner-infra/${var.environment}/terraform.tfstate"
+    region = var.aws_region
+  }
+}
+
 module "vpc" {
     source = "../modules/vpc"
 
@@ -23,14 +34,17 @@ module "vpc" {
 }
 
 module "vpc_peering_acceptance" {
+  count  = var.initialize_run ? 0 : 1
+
   source = "../modules/vpc_peering_acceptance"
 
   project_tag = var.project_tag
   environment = var.environment
-  aws_region = var.aws_region
+  initialize_run = var.initialize_run
   
-  # Main VPC information
-  vpc_id = module.vpc.vpc_id
+  # Route table IDs for creating routes 
+  peering_connection_id = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_peering_connection_id, "fake-placeholder")
+  runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_cidr_block, "fake-placeholder")
   
   # Route table IDs for creating routes
   private_route_table_ids = module.vpc.private_route_table_ids

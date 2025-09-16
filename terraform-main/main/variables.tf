@@ -660,3 +660,8 @@ variable "secrets_config" {
     error_message = "Each secret must either have generate_password=true or provide a secret_value."
   }
 }
+
+variable "initialize_run" {
+  description = "Whether this is an initialization run (true = deploy basics only, false = deploy everything)"
+  type        = bool
+}

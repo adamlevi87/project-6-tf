@@ -74,32 +74,37 @@ jobs:
               ;;
           esac
 
-      - name: Step 1 - Full terraform-runner-infra run
+      - name: Step 1 - Targeted Main Infrastructure
         env:
-          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
           AWS_REGION: ${{ env.AWS_REGION }}
           PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          ARGOCD_APP_ID: ${{ secrets[format('ARGOCD_APP_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
-          ARGOCD_INSTALLATION_ID: ${{ secrets[format('ARGOCD_INSTALLATION_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
-          ARGOCD_PRIVATE_KEY_B64: ${{ secrets[format('ARGOCD_PRIVATE_KEY_TF_{0}', steps.env_suffix.outputs.suffix)] }}
-          OAUTH_GITHUB_CLIENT_ID: ${{ secrets[format('OAUTH_GITHUB_CLIENT_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
-          OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets[format('OAUTH_GITHUB_CLIENT_SECRET_TF_{0}', steps.env_suffix.outputs.suffix)] }}
         run: |
           echo "================================================"
-          echo "STEP 1: Full Infrastructure Apply"
+          echo "STEP 1: Targeted Main Infrastructure"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "================================================"
-          
-          cd terraform-runner-infra/main/
+
+          cd terraform-main/main/
           
           terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
-          
+
           COMMON_VARS=(
             -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
-            -var="aws_region=$AWS_REGION"
             -var="github_token=$TOKEN_GITHUB"
+            -var="aws_region=$AWS_REGION"
+            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+            -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+            -var="argocd_app_id=$ARGOCD_APP_ID"
+            -var="argocd_installation_id=$ARGOCD_INSTALLATION_ID"
+            -var="argocd_private_key_b64=$ARGOCD_PRIVATE_KEY_B64"
+            -var="github_oauth_client_id=$OAUTH_GITHUB_CLIENT_ID"
+            -var="github_oauth_client_secret=$OAUTH_GITHUB_CLIENT_SECRET"
+            -var="bootstrap_mode=false"
+            -var="update_apps=false"
+            -var="auto_merge_pr=false"
             -target=module.vpc
+            -target=module.eks
             -var="initialize_run=true"
           )
           
@@ -125,38 +130,33 @@ jobs:
               ;;
           esac
 
-      - name: Step 2 - Targeted Main Infrastructure
+      - name: Step 2 - Full terraform-runner-infra run
         env:
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
           AWS_REGION: ${{ env.AWS_REGION }}
           PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          ARGOCD_APP_ID: ${{ secrets[format('ARGOCD_APP_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_INSTALLATION_ID: ${{ secrets[format('ARGOCD_INSTALLATION_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          ARGOCD_PRIVATE_KEY_B64: ${{ secrets[format('ARGOCD_PRIVATE_KEY_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_ID: ${{ secrets[format('OAUTH_GITHUB_CLIENT_ID_TF_{0}', steps.env_suffix.outputs.suffix)] }}
+          OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets[format('OAUTH_GITHUB_CLIENT_SECRET_TF_{0}', steps.env_suffix.outputs.suffix)] }}
         run: |
           echo "================================================"
-          echo "STEP 2: Targeted Main Infrastructure"
+          echo "STEP 2: Full Infrastructure Apply"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "================================================"
-
-          cd terraform-main/main/
+          
+          cd terraform-runner-infra/main/
           
           terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
-
+          
           COMMON_VARS=(
             -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
-            -var="github_token=$TOKEN_GITHUB"
             -var="aws_region=$AWS_REGION"
-            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
-            -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
-            -var="argocd_app_id=$ARGOCD_APP_ID"
-            -var="argocd_installation_id=$ARGOCD_INSTALLATION_ID"
-            -var="argocd_private_key_b64=$ARGOCD_PRIVATE_KEY_B64"
-            -var="github_oauth_client_id=$OAUTH_GITHUB_CLIENT_ID"
-            -var="github_oauth_client_secret=$OAUTH_GITHUB_CLIENT_SECRET"
-            -var="bootstrap_mode=false"
-            -var="update_apps=false"
-            -var="auto_merge_pr=false"
-            -target=module.vpc
-            -target=module.eks
-            # -target=module.vpc_peering_acceptance
+            -var="github_token=$TOKEN_GITHUB"
+            #-target=module.vpc
+            #-var="initialize_run=true"
           )
           
           case "${{ github.event.inputs.action }}" in
@@ -181,50 +181,50 @@ jobs:
               ;;
           esac
 
-      - name: Step 3 - Full Infrastructure Run (Final)
-        # cannot run a full PLAN, an apply on step 1+2 is a must
-        #if: github.event.inputs.action != 'plan'
-        env:
-          AWS_REGION: ${{ env.AWS_REGION }}
-          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
-        run: |
-          echo "================================================"
-          echo "STEP 3: Full Infrastructure Run (Final)"
-          echo "Environment: ${{ github.event.inputs.env }}"
-          echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
-          echo "================================================"
+      # - name: Step 3 - Full Infrastructure Run (Final)
+      #   # cannot run a full PLAN, an apply on step 1+2 is a must
+      #   #if: github.event.inputs.action != 'plan'
+      #   env:
+      #     AWS_REGION: ${{ env.AWS_REGION }}
+      #     TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+      #   run: |
+      #     echo "================================================"
+      #     echo "STEP 3: Full Infrastructure Run (Final)"
+      #     echo "Environment: ${{ github.event.inputs.env }}"
+      #     echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
+      #     echo "================================================"
         
-          cd terraform-runner-infra/main/
+      #     cd terraform-runner-infra/main/
         
-          COMMON_VARS=(
-            -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
-            -var="aws_region=$AWS_REGION"
-            -var="github_token=$TOKEN_GITHUB"
-          )
+      #     COMMON_VARS=(
+      #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+      #       -var="aws_region=$AWS_REGION"
+      #       -var="github_token=$TOKEN_GITHUB"
+      #     )
         
-          case "${{ github.event.inputs.plan_full_runs }}" in
-            true)
-              echo "Planning full infrastructure..."
-              terraform plan "${COMMON_VARS[@]}"
-              ;;
-            false)
-              echo "Applying full infrastructure..."
-              terraform apply -auto-approve "${COMMON_VARS[@]}"
-              ;;
-            *)
-              echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
-              exit 1
-              ;;
-          esac
+      #     case "${{ github.event.inputs.plan_full_runs }}" in
+      #       true)
+      #         echo "Planning full infrastructure..."
+      #         terraform plan "${COMMON_VARS[@]}"
+      #         ;;
+      #       false)
+      #         echo "Applying full infrastructure..."
+      #         terraform apply -auto-approve "${COMMON_VARS[@]}"
+      #         ;;
+      #       *)
+      #         echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
+      #         exit 1
+      #         ;;
+      #     esac
 
-      - name: Step 4 - Trigger Full Main Workflow on Runner
+      - name: Step 3 - Trigger Full Main Workflow on Runner
         # cannot run a full PLAN, an apply on step 1+2 is a must
         #if: github.event.inputs.action != 'plan'
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         run: |
           echo "================================================"
-          echo "STEP 4: Triggering Full Main Workflow on Runner"
+          echo "STEP 3: Triggering Full Main Workflow on Runner"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
           echo "================================================"
@@ -283,3 +283,4 @@ jobs:
           echo "### 🔄 Initialization Process Complete" >> $GITHUB_STEP_SUMMARY
           echo "- Infrastructure deployed in multiple stages for dependency resolution" >> $GITHUB_STEP_SUMMARY
           echo "- Main workflow triggered on self-hosted runner for full deployment" >> $GITHUB_STEP_SUMMARY
+

@@ -1,0 +1,90 @@
+# .github/workflows/lockdown-eks.yml
+# This workflow sits in the TERRAFORM repo
+# It gets triggered by the eks-lockdown module after all TF operations complete
+
+name: Lockdown EKS API Access
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster_security_group_id:
+        description: 'EKS cluster security group ID'
+        required: true
+        type: string
+      trigger_source:
+        description: 'What triggered this lockdown'
+        required: false
+        type: string
+        default: 'manual'
+
+jobs:
+  lockdown:
+    name: Remove Open EKS Access
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write  # Required for OIDC
+    
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Check current security group rules
+        id: check_rules
+        run: |
+          echo "🔍 Checking current EKS security group rules..."
+          
+          # Check if 0.0.0.0/0 rule exists
+          OPEN_RULES=$(aws ec2 describe-security-groups \
+            --group-ids "${{ github.event.inputs.cluster_security_group_id }}" \
+            --query 'SecurityGroups[0].IpPermissions[?IpRanges[?CidrIp==`0.0.0.0/0`] && FromPort==`443`]' \
+            --output json)
+          
+          if [ "$OPEN_RULES" != "[]" ]; then
+            echo "found_open_rule=true" >> $GITHUB_OUTPUT
+            echo "⚠️  Found open EKS API access (0.0.0.0/0:443)"
+          else
+            echo "found_open_rule=false" >> $GITHUB_OUTPUT
+            echo "✅ No open EKS API access found"
+          fi
+
+      - name: Remove open EKS access
+        if: steps.check_rules.outputs.found_open_rule == 'true'
+        run: |
+          echo "🔒 Removing open EKS API access..."
+          
+          # Remove the 0.0.0.0/0 ingress rule
+          aws ec2 revoke-security-group-ingress \
+            --group-id "${{ github.event.inputs.cluster_security_group_id }}" \
+            --protocol tcp \
+            --port 443 \
+            --cidr 0.0.0.0/0
+          
+          echo "✅ Successfully removed open EKS API access"
+          echo "🔒 EKS cluster is now locked down to specific IPs only"
+
+      - name: Verify lockdown
+        run: |
+          echo "🔍 Verifying EKS lockdown..."
+          
+          # List remaining ingress rules for port 443
+          echo "Remaining EKS API access rules:"
+          aws ec2 describe-security-groups \
+            --group-ids "${{ github.event.inputs.cluster_security_group_id }}" \
+            --query 'SecurityGroups[0].IpPermissions[?FromPort==`443`]' \
+            --output table
+          
+          echo "✅ EKS lockdown verification complete"
+
+      - name: Summary
+        run: |
+          echo "## EKS Lockdown Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Group**: ${{ github.event.inputs.cluster_security_group_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger Source**: ${{ github.event.inputs.trigger_source }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: EKS API access locked down ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_This workflow was triggered automatically after Terraform completed all infrastructure deployments._" >> $GITHUB_STEP_SUMMARY

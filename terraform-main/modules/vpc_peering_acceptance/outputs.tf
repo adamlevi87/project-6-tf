@@ -28,3 +28,18 @@ output "main_vpc_info" {
     private_route_table_ids = var.private_route_table_ids
   }
 }
+
+# output "peering_connection_id" {
+#   description = "VPC peering connection ID"
+#   value       = var.initialize_run ? null : try(aws_vpc_peering_connection_accepter.main[0].vpc_peering_connection_id, null)
+# }
+
+# output "peering_connection_status" {
+#   description = "VPC peering connection status"  
+#   value       = var.initialize_run ? "not-initialized" : try(aws_vpc_peering_connection_accepter.main[0].accept_status, null)
+# }
+
+# output "routes_created" {
+#   description = "Number of routes created for peering"
+#   value       = var.initialize_run ? 0 : (length(aws_route.main_to_runner_private) + length(aws_route.main_to_runner_public))
+# }
