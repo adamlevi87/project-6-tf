@@ -61,6 +61,7 @@ module "vpc_peering" {
 
   project_tag = var.project_tag
   environment = var.environment
+  aws_region = var.aws_region
 
   # Source VPC (runner infrastructure)
   source_vpc_id              = module.vpc.vpc_id
