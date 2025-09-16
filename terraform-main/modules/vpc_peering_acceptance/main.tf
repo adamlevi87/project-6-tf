@@ -36,7 +36,7 @@ data "terraform_remote_state" "runner_infra" {
   backend = "s3"
   config = {
     bucket = "${var.project_tag}-tf-state"
-    key    = "${var.project_tag}/${var.environment}/runner-infra/terraform.tfstate"
+    key    = "${var.project_tag}-tf/${var.environment}/runner-infra/terraform.tfstate"
     region = "${var.aws_region}"
   }
 }

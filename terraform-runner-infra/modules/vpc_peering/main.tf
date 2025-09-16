@@ -13,7 +13,7 @@ data "terraform_remote_state" "main" {
   backend = "s3"
   config = {
     bucket = "${var.project_tag}-tf-state"
-    key    = "${var.project_tag}/${var.environment}/main/terraform.tfstate"
+    key    = "${var.project_tag}-tf/${var.environment}/main/terraform.tfstate"
     region = "${var.aws_region}"
   }
 }
