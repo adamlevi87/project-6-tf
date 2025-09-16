@@ -96,7 +96,7 @@ sudo -u github-runner bash << 'EOF'
 set -e
 
 RUNNER_DIR="/opt/actions-runner"
-cd $RUNNER_DIR
+cd "$RUNNER_DIR"
 
 # Download GitHub Actions runner
 echo "📥 Downloading GitHub Actions runner..."
@@ -106,6 +106,19 @@ curl -o actions-runner-linux-x64-$RUNNER_VERSION.tar.gz -L https://github.com/ac
 # Extract runner
 tar xzf actions-runner-linux-x64-$RUNNER_VERSION.tar.gz
 rm actions-runner-linux-x64-$RUNNER_VERSION.tar.gz
+
+#### debug echo
+echo "GITHUB_ORG = ${GITHUB_ORG}"
+echo "GITHUB_REPO = ${GITHUB_REPO}"
+echo "RUNNER_NAME = ${RUNNER_NAME}"
+echo "RUNNER_LABELS = ${RUNNER_LABELS}"
+echo "GITHUB_TOKEN = ${GITHUB_TOKEN}"
+
+
+
+
+
+
 
 # Get registration token
 echo "🔑 Getting registration token..."
