@@ -1,7 +1,6 @@
-# terraform-main/modules/github/self_hosted_runner/user-data.sh
-
 #!/bin/bash
 
+# terraform-main/modules/github/self_hosted_runner/user-data.sh
 
 set -e
 
