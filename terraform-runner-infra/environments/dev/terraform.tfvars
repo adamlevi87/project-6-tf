@@ -31,7 +31,7 @@ github_terraform_repo   = "project-6-tf"
 # ================================
 runner_instance_type     = "t3.small"    # Free tier friendly option
 runner_ami_id           = "ami-0bbdd8c17ed981ef9"           # Canonical ubuntu 22.04
-key_pair_name           = null           # Set if you want SSH access
+key_pair_name           = "temp-manual"           # Set if you want SSH access
 runner_root_volume_size = 30             # GB - enough for Terraform ops
 runners_per_instance = 2
 # ================================
@@ -59,7 +59,6 @@ cluster_name = ""
 # ================================
 # SSH Access Configuration
 # ================================
-enable_ssh_access = false  # Set to true if you need to debug runner instances
-ssh_allowed_cidr_blocks = [
-  # "your.home.ip.address/32"  # Uncomment and add your IP if enabling SSH
-]
+enable_ssh_access = true  # Set to true if you need to debug runner instances
+ssh_allowed_cidr_blocks = ["85.65.159.200/32"]  # Uncomment and add your IP if enabling SSH
+
