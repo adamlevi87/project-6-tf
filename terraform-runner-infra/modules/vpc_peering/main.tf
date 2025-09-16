@@ -19,18 +19,6 @@ data "terraform_remote_state" "main" {
   }
 }
 
-output "main_vpc_info" {
-  description = "Main VPC information for runner infrastructure"
-  value = {
-    vpc_id                     = module.vpc.vpc_id
-    vpc_cidr_block            = module.vpc.vpc_cidr_block
-    private_subnet_ids        = module.vpc.private_subnet_ids
-    private_route_table_ids   = module.vpc.private_route_table_ids
-    availability_zones        = keys(local.private_subnet_cidrs)
-  }
-  sensitive = false
-}
-
 # Create VPC Peering Connection Request
 resource "aws_vpc_peering_connection" "to_main" {
   count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
