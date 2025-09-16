@@ -9,7 +9,7 @@ aws_region = "us-east-1"
 # Project configuration
 environment = "dev"
 project_tag = "project-6"
-
+initialize_run = false
 # ================================
 # VPC Configurations
 # ================================
