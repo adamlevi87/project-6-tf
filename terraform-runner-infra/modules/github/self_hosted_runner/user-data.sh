@@ -128,12 +128,6 @@ echo "⚙️ Configuring runner..."
 
 EOF
 
-# Install runner as service
-echo "🔧 Installing runner service..."
-cd $RUNNER_DIR
-./svc.sh install github-runner
-./svc.sh start
-
 # Configure automatic runner cleanup on shutdown
 cat > /etc/systemd/system/github-runner-cleanup.service << 'EOF'
 [Unit]
