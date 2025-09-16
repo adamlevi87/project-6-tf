@@ -181,84 +181,86 @@ jobs:
               ;;
           esac
 
-      # - name: Step 3 - Full Infrastructure Run (Final)
-      #   if: github.event.inputs.action != 'plan'
-      #   env:
-      #     AWS_REGION: ${{ env.AWS_REGION }}
-      #     TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
-      #   run: |
-      #     echo "================================================"
-      #     echo "STEP 3: Full Infrastructure Run (Final)"
-      #     echo "Environment: ${{ github.event.inputs.env }}"
-      #     echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
-      #     echo "================================================"
+      - name: Step 3 - Full Infrastructure Run (Final)
+        # cannot run a full PLAN, an apply on step 1+2 is a must
+        if: github.event.inputs.action != 'plan'
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+        run: |
+          echo "================================================"
+          echo "STEP 3: Full Infrastructure Run (Final)"
+          echo "Environment: ${{ github.event.inputs.env }}"
+          echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
+          echo "================================================"
         
-      #     cd terraform-runner-infra/main/
+          cd terraform-runner-infra/main/
         
-      #     COMMON_VARS=(
-      #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
-      #       -var="aws_region=$AWS_REGION"
-      #       -var="github_token=$TOKEN_GITHUB"
-      #     )
+          COMMON_VARS=(
+            -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+            -var="aws_region=$AWS_REGION"
+            -var="github_token=$TOKEN_GITHUB"
+          )
         
-      #     case "${{ github.event.inputs.plan_full_runs }}" in
-      #       true)
-      #         echo "Planning full infrastructure..."
-      #         terraform plan "${COMMON_VARS[@]}"
-      #         ;;
-      #       false)
-      #         echo "Applying full infrastructure..."
-      #         terraform apply -auto-approve "${COMMON_VARS[@]}"
-      #         ;;
-      #       *)
-      #         echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
-      #         exit 1
-      #         ;;
-      #     esac
+          case "${{ github.event.inputs.plan_full_runs }}" in
+            true)
+              echo "Planning full infrastructure..."
+              terraform plan "${COMMON_VARS[@]}"
+              ;;
+            false)
+              echo "Applying full infrastructure..."
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            *)
+              echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
+              exit 1
+              ;;
+          esac
 
-      # - name: Step 4 - Trigger Full Main Workflow on Runner
-      #   if: github.event.inputs.action != 'plan'
-      #   env:
-      #     TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
-      #   run: |
-      #     echo "================================================"
-      #     echo "STEP 4: Triggering Full Main Workflow on Runner"
-      #     echo "Environment: ${{ github.event.inputs.env }}"
-      #     echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
-      #     echo "================================================"
+      - name: Step 4 - Trigger Full Main Workflow on Runner
+        # cannot run a full PLAN, an apply on step 1+2 is a must
+        if: github.event.inputs.action != 'plan'
+        env:
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+        run: |
+          echo "================================================"
+          echo "STEP 4: Triggering Full Main Workflow on Runner"
+          echo "Environment: ${{ github.event.inputs.env }}"
+          echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
+          echo "================================================"
           
-      #     # Determine action based on plan_full_runs
-      #     case "${{ github.event.inputs.plan_full_runs }}" in
-      #       true)
-      #         ACTION="plan"
-      #         echo "Triggering main workflow with PLAN action..."
-      #         ;;
-      #       false)
-      #         ACTION="apply"
-      #         echo "Triggering main workflow with APPLY action..."
-      #         ;;
-      #       *)
-      #         echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
-      #         exit 1
-      #         ;;
-      #     esac
+          # Determine action based on plan_full_runs
+          case "${{ github.event.inputs.plan_full_runs }}" in
+            true)
+              ACTION="plan"
+              echo "Triggering main workflow with PLAN action..."
+              ;;
+            false)
+              ACTION="apply"
+              echo "Triggering main workflow with APPLY action..."
+              ;;
+            *)
+              echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
+              exit 1
+              ;;
+          esac
           
-      #     # Trigger the main deploy.yml workflow
-      #     curl -X POST \
-      #       -H "Authorization: Bearer $TOKEN_GITHUB" \
-      #       -H "Accept: application/vnd.github+json" \
-      #       "https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy.yml/dispatches" \
-      #       -d "{
-      #         \"ref\": \"main\",
-      #         \"inputs\": {
-      #           \"env\": \"${{ github.event.inputs.env }}\",
-      #           \"action\": \"$ACTION\",
-      #           \"gitops_mode\": \"bootstrap\",
-      #           \"auto_merge\": \"true\"
-      #         }
-      #       }"
+          # Trigger the main deploy.yml workflow
+          curl -X POST \
+            -H "Authorization: Bearer $TOKEN_GITHUB" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy.yml/dispatches" \
+            -d "{
+              \"ref\": \"main\",
+              \"inputs\": {
+                \"env\": \"${{ github.event.inputs.env }}\",
+                \"action\": \"$ACTION\",
+                \"gitops_mode\": \"bootstrap\",
+                \"auto_merge\": \"true\"
+              }
+            }"
           
-      #     echo "✅ Main workflow triggered successfully with action: $ACTION"
+          echo "✅ Main workflow triggered successfully with action: $ACTION"
 
       - name: Summary
         if: always()
