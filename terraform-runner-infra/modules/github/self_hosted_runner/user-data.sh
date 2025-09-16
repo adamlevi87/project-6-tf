@@ -113,21 +113,18 @@ REG_TOKEN=$(curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
     -H "Accept: application/vnd.github.v3+json" \
     "https://api.github.com/repos/$GITHUB_ORG/$GITHUB_REPO/actions/runners/registration-token" | jq -r .token)
 
-# Configure runner
-echo "⚙️ Configuring runners..."
-for i in $(seq 1 ${runners_per_instance}); do
-  ./config.sh \
-      --url "https://github.com/$GITHUB_ORG/$GITHUB_REPO" \
-      --token "$REG_TOKEN" \
-      --name "$RUNNER_NAME-$i" \
-      --labels "$RUNNER_LABELS" \
-      --work "_work$i" \
-      --unattended \
-      --replace
-  
-  ./svc.sh install github-runner-$i
-  ./svc.sh start github-runner-$i
-done
+# Configure runner (single runner per instance)
+echo "⚙️ Configuring runner..."
+./config.sh \
+    --url "https://github.com/$GITHUB_ORG/$GITHUB_REPO" \
+    --token "$REG_TOKEN" \
+    --name "$RUNNER_NAME" \
+    --labels "$RUNNER_LABELS" \
+    --unattended \
+    --replace
+
+./svc.sh install github-runner
+./svc.sh start github-runner
 
 EOF
 
@@ -180,14 +177,7 @@ systemctl enable github-runner-cleanup.service
 systemctl start github-runner-cleanup.service
 
 echo "✅ GitHub Runner setup complete!"
-RUNNER_LIST=""
-for i in $(seq 1 ${runners_per_instance}); do
-  if [ $i -eq 1 ]; then
-    RUNNER_LIST="$RUNNER_NAME-$i"
-  else
-    RUNNER_LIST="$RUNNER_LIST and $RUNNER_NAME-$i"
-  fi
-done
+RUNNER_LIST="$RUNNER_NAME"
 echo "Runners '$RUNNER_LIST' are now registered and running"
 
 # Test basic connectivity (kubectl will be configured later when main project is deployed)
