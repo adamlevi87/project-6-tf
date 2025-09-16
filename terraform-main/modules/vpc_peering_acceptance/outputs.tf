@@ -1,14 +1,14 @@
 # terraform-main/modules/vpc_peering_acceptance/outputs.tf
 
-output "peering_connection_id" {
-  description = "ID of the accepted peering connection"
-  value       = length(local.peering_accepter) > 0 ? local.peering_accepter[0].vpc_peering_connection_id : ""
-}
+# output "peering_connection_id" {
+#   description = "ID of the accepted peering connection"
+#   value       = length(local.peering_accepter) > 0 ? local.peering_accepter[0].vpc_peering_connection_id : ""
+# }
 
-output "peering_connection_status" {
-  description = "Status of the peering connection"
-  value       = length(local.peering_accepter) > 0 ? local.peering_accepter[0].accept_status : "not-found"
-}
+# output "peering_connection_status" {
+#   description = "Status of the peering connection"
+#   value       = length(local.peering_accepter) > 0 ? local.peering_accepter[0].accept_status : "not-found"
+# }
 
 # output "accepted_connection_info" {
 #   description = "Information about the accepted peering connection"
