@@ -11,47 +11,47 @@ module "vpc" {
 }
 
 # GitHub Self-Hosted Runner Module
-module "github_runner" {
-  # False = normal run
-  # True = minimal run- dont create
-  count = var.initialize_run ? 0 : 1
-  source = "../modules/github/self_hosted_runner"
+# module "github_runner" {
+#   # False = normal run
+#   # True = minimal run- dont create
+#   count = var.initialize_run ? 0 : 1
+#   source = "../modules/github/self_hosted_runner"
 
-  project_tag = var.project_tag
-  environment = var.environment
+#   project_tag = var.project_tag
+#   environment = var.environment
 
-  # Network configuration
-  vpc_id             = module.vpc.vpc_id
-  private_subnet_ids = module.vpc.private_subnet_ids
+#   # Network configuration
+#   vpc_id             = module.vpc.vpc_id
+#   private_subnet_ids = module.vpc.private_subnet_ids
 
-  # GitHub configuration
-  github_org   = var.github_org
-  github_repo  = var.github_terraform_repo
-  github_token = var.github_token
-  aws_region   = var.aws_region
-  #cluster_name = var.cluster_name # Will be empty initially, updated after main project deploys
+#   # GitHub configuration
+#   github_org   = var.github_org
+#   github_repo  = var.github_terraform_repo
+#   github_token = var.github_token
+#   aws_region   = var.aws_region
+#   #cluster_name = var.cluster_name # Will be empty initially, updated after main project deploys
 
-  # Instance configuration
-  instance_type    = var.runner_instance_type
-  ami_id          = var.runner_ami_id
-  key_pair_name   = var.key_pair_name
-  root_volume_size = var.runner_root_volume_size
+#   # Instance configuration
+#   instance_type    = var.runner_instance_type
+#   ami_id          = var.runner_ami_id
+#   key_pair_name   = var.key_pair_name
+#   root_volume_size = var.runner_root_volume_size
 
-  # Scaling configuration
-  min_runners     = var.min_runners
-  max_runners     = var.max_runners
-  desired_runners = var.desired_runners
+#   # Scaling configuration
+#   min_runners     = var.min_runners
+#   max_runners     = var.max_runners
+#   desired_runners = var.desired_runners
 
-  # Runner configuration
-  runner_labels = var.runner_labels
-  runners_per_instance = var.runners_per_instance
+#   # Runner configuration
+#   runner_labels = var.runner_labels
+#   runners_per_instance = var.runners_per_instance
 
-  # SSH access (for debugging)
-  enable_ssh_access       = var.enable_ssh_access
-  ssh_allowed_cidr_blocks = var.ssh_allowed_cidr_blocks
+#   # SSH access (for debugging)
+#   enable_ssh_access       = var.enable_ssh_access
+#   ssh_allowed_cidr_blocks = var.ssh_allowed_cidr_blocks
 
-  depends_on = [module.vpc]
-}
+#   depends_on = [module.vpc]
+# }
 
 module "vpc_peering" {
   # False = normal run
