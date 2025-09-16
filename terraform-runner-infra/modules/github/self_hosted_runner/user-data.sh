@@ -44,6 +44,15 @@ apt-get install -y \
     lsb-release \
     software-properties-common
 
+# Install Node.js (required for GitHub Actions runtime)
+echo "📦 Installing Node.js..."
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+apt-get install -y nodejs
+
+# Verify Node.js installation
+echo "Node.js version: $(node --version)"
+echo "npm version: $(npm --version)"
+
 # Install Docker
 echo "🐳 Installing Docker..."
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
