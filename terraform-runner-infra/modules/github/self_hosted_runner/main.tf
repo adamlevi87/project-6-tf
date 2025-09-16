@@ -25,6 +25,15 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+data "terraform_remote_state" "runner_infra" {
+  backend = "s3"
+  config = {
+    bucket = "${var.project_tag}-tf-state"
+    key    = "${var.project_tag}/${var.environment}/main/terraform.tfstate"
+    region = "${var.aws_region}"
+  }
+}
+
 # User data script to setup GitHub runner
 locals {
   user_data = base64encode(templatefile("${path.module}/user-data.sh", {
@@ -34,7 +43,8 @@ locals {
     runner_name        = "${var.project_tag}-${var.environment}-runner"
     runner_labels      = join(",", var.runner_labels)
     aws_region         = var.aws_region
-    cluster_name       = var.cluster_name
+    #cluster_name       = var.cluster_name
+    cluster_name       = terraform_remote_state.runner_infra.outputs.eks_cluster_info.cluster_name
     runners_per_instance = var.runners_per_instance
   }))
 }

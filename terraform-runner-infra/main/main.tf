@@ -26,7 +26,7 @@ module "github_runner" {
   github_repo  = var.github_terraform_repo
   github_token = var.github_token
   aws_region   = var.aws_region
-  cluster_name = var.cluster_name # Will be empty initially, updated after main project deploys
+  #cluster_name = var.cluster_name # Will be empty initially, updated after main project deploys
 
   # Instance configuration
   instance_type    = var.runner_instance_type
@@ -51,7 +51,7 @@ module "github_runner" {
 }
 
 module "vpc_peering" {
-  count  = var.enable_vpc_peering && var.main_vpc_id != "" ? 1 : 0
+  count  = var.enable_vpc_peering ? 1 : 0
   source = "../modules/vpc_peering"
 
   project_tag = var.project_tag
@@ -62,8 +62,8 @@ module "vpc_peering" {
   source_route_table_id      = module.vpc.private_route_table_id
 
   # Peer VPC (main project)
-  peer_vpc_id   = var.main_vpc_id
-  peer_vpc_cidr = var.main_vpc_cidr
+  #peer_vpc_id   = var.main_vpc_id
+  #peer_vpc_cidr = var.main_vpc_cidr
   peer_region   = var.aws_region
 
   depends_on = [module.vpc]

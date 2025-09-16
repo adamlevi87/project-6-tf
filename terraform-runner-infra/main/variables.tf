@@ -34,15 +34,15 @@ variable "vpc_cidr_block" {
 # ================================
 # VPC Peering Configuration
 # ================================
-variable "main_vpc_id" {
-  description = "VPC ID of the main project (for peering)"
-  type        = string
-}
+# variable "main_vpc_id" {
+#   description = "VPC ID of the main project (for peering)"
+#   type        = string
+# }
 
-variable "main_vpc_cidr" {
-  description = "CIDR block of the main project VPC (for peering routes)"
-  type        = string
-}
+# variable "main_vpc_cidr" {
+#   description = "CIDR block of the main project VPC (for peering routes)"
+#   type        = string
+# }
 
 variable "enable_vpc_peering" {
   description = "Enable VPC peering to main project VPC"

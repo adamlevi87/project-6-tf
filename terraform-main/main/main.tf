@@ -22,6 +22,25 @@ module "vpc" {
     private_subnet_cidrs = local.private_subnet_cidrs
 }
 
+module "vpc_peering_acceptance" {
+  source = "../modules/vpc_peering_acceptance"
+
+  project_tag = var.project_tag
+  environment = var.environment
+
+  # Main VPC information
+  vpc_id = module.vpc.vpc_id
+  
+  # Route table IDs for creating routes
+  private_route_table_ids = module.vpc.private_route_table_ids
+  public_route_table_ids  = module.vpc.public_route_table_ids
+  
+  # Get runner VPC CIDR from remote state
+  #runner_vpc_cidr = data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block
+
+  depends_on = [module.vpc]
+}
+
 module "kms" {
   source = "../modules/kms"
 

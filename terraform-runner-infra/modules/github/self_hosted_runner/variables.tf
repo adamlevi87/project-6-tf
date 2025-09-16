@@ -41,10 +41,10 @@ variable "aws_region" {
   type        = string
 }
 
-variable "cluster_name" {
-  description = "EKS cluster name for kubectl configuration (from main project)"
-  type        = string
-}
+# variable "cluster_name" {
+#   description = "EKS cluster name for kubectl configuration (from main project)"
+#   type        = string
+# }
 
 variable "instance_type" {
   description = "EC2 instance type for GitHub runner"
