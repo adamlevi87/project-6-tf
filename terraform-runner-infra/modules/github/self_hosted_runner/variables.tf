@@ -20,10 +20,10 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "runner_ami_id" {
-  description = "AMI ID for GitHub runner (if null, uses latest Ubuntu 22.04)"
-  type        = string
-}
+# variable "runner_ami_id" {
+#   description = "AMI ID for GitHub runner (if null, uses latest Ubuntu 22.04)"
+#   type        = string
+# }
 
 
 variable "private_subnet_ids" {
@@ -62,10 +62,10 @@ variable "instance_type" {
   type        = string
 }
 
-# variable "ami_id" {
-#   description = "AMI ID for GitHub runner (Ubuntu 22.04 recommended)"
-#   type        = string
-# }
+variable "ami_id" {
+  description = "AMI ID for GitHub runner (Ubuntu 22.04 recommended)"
+  type        = string
+}
 
 variable "key_pair_name" {
   description = "EC2 Key Pair name for SSH access"
