@@ -1,4 +1,4 @@
-# modules/vpc_peering/variables.tf
+# terraform-main/modules/vpc_peering/variables.tf
 
 variable "project_tag" {
   description = "Project tag for resource naming"

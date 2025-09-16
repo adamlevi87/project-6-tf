@@ -53,7 +53,7 @@ resource "aws_vpc_peering_connection_accepter" "runner_peering" {
   #count = local.has_peering_request ? 1 : 0
   
   #vpc_peering_connection_id = data.aws_vpc_peering_connections.runner_requests.ids[0]
-  vpc_peering_connection_id = data.terraform_remote_state.runner_infra.outputs.peering_connection_id
+  vpc_peering_connection_id = data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id
   auto_accept              = true
 
   tags = {
@@ -74,5 +74,5 @@ resource "aws_route" "main_to_runner_private" {
   #destination_cidr_block    = var.runner_vpc_cidr
   destination_cidr_block    = data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block
   #vpc_peering_connection_id = local.peering_connection_id
-  vpc_peering_connection_id = data.terraform_remote_state.runner_infra.outputs.peering_connection_id
+  vpc_peering_connection_id = data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id
 }

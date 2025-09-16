@@ -1,4 +1,4 @@
-# modules/vpc/main.tf
+# terraform-main/modules/vpc/main.tf
 
 terraform {
   required_providers {

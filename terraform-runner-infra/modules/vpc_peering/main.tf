@@ -1,4 +1,4 @@
-# modules/vpc_peering/main.tf
+# terraform-main/modules/vpc_peering/main.tf
 
 terraform {
   required_providers {

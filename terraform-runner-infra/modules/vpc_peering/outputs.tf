@@ -1,4 +1,4 @@
-# # modules/vpc_peering/outputs.tf
+# # terraform-main/modules/vpc_peering/outputs.tf
 
 output "vpc_peering_connection_id" {
   description = "ID of the VPC peering connection"

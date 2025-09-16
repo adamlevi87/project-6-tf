@@ -1,4 +1,4 @@
-# modules/github/self_hosted_runner/variables.tf
+# terraform-main/modules/github/self_hosted_runner/variables.tf
 
 variable "project_tag" {
   description = "Project tag for resource naming"

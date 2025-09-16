@@ -1,4 +1,4 @@
-# modules/vpc/outputs.tf
+# terraform-main/modules/vpc/outputs.tf
 
 output "vpc_id" {
   description = "ID of the VPC"

@@ -1,4 +1,4 @@
-# # modules/github/self_hosted_runner/outputs.tf
+# # terraform-main/modules/github/self_hosted_runner/outputs.tf
 
 # output "runner_security_group_id" {
 #   description = "Security group ID for GitHub runners"

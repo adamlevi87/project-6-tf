@@ -1,4 +1,4 @@
-# modules/github/self_hosted_runner/main.tf
+# terraform-main/modules/github/self_hosted_runner/main.tf
 
 terraform {
   required_providers {
