@@ -88,7 +88,7 @@ usermod -aG docker github-runner
 
 # Create runner directory
 RUNNER_DIR="/opt/actions-runner"
-mkdir -p $RUNNER_DIR
+mkdir -p "$RUNNER_DIR"
 chown github-runner:github-runner $RUNNER_DIR
 
 # Switch to github-runner user for runner setup
