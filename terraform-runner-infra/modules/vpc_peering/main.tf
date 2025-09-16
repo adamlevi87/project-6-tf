@@ -15,7 +15,8 @@ data "terraform_remote_state" "main" {
   config = {
     bucket = "${var.project_tag}-tf-state"
     key    = "${var.project_tag}/${var.environment}/main/terraform.tfstate"
-    region = "${var.aws_region}"
+    #region = "${var.aws_region}"
+    region = "east-us-1"
   }
 }
 
