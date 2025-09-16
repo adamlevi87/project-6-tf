@@ -10,13 +10,12 @@ terraform {
 }
 
 data "terraform_remote_state" "main" {
-  count = 0
+  count = var.initialize_run ? 0 : 1
   backend = "s3"
   config = {
     bucket = "${var.project_tag}-tf-state"
     key    = "${var.project_tag}/${var.environment}/main/terraform.tfstate"
-    #region = "${var.aws_region}"
-    region = "east-us-1"
+    region = "${var.aws_region}"
   }
 }
 

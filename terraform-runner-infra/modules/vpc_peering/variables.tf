@@ -10,9 +10,19 @@ variable "environment" {
   type        = string
 }
 
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+}
+
 variable "source_vpc_id" {
   description = "VPC ID of the source VPC (runner VPC)"
   type        = string
+}
+
+variable "initialize_run" {
+  description = "Whether this is an initialization run (true = deploy basics only, false = deploy everything)"
+  type        = bool
 }
 
 # variable "peer_vpc_id" {
