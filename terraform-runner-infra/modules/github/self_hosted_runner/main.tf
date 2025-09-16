@@ -9,21 +9,21 @@ terraform {
   }
 }
 
-# Data source for Ubuntu AMI
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
+# # Data source for Ubuntu AMI
+# data "aws_ami" "ubuntu" {
+#   most_recent = true
+#   owners      = ["099720109477"] # Canonical
 
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-22.04-amd64-server-*"]
-  }
+#   filter {
+#     name   = "name"
+#     values = ["ubuntu/images/hvm-ssd/ubuntu-22.04-amd64-server-*"]
+#   }
 
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
+#   filter {
+#     name   = "virtualization-type"
+#     values = ["hvm"]
+#   }
+# }
 
 data "terraform_remote_state" "main" {
   #count = var.initialize_run ? 0 : 1
@@ -169,7 +169,7 @@ resource "aws_iam_instance_profile" "github_runner" {
 # Launch Template for GitHub Runner
 resource "aws_launch_template" "github_runner" {
   name_prefix   = "${var.project_tag}-${var.environment}-github-runner-"
-  image_id      = var.ami_id != null ? var.ami_id : data.aws_ami.ubuntu.id
+  image_id      = var.ami_id #!= null ? var.ami_id : data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   key_name      = var.key_pair_name
 

@@ -30,7 +30,7 @@ github_terraform_repo   = "project-6-tf"
 # Runner Instance Configuration
 # ================================
 runner_instance_type     = "t3.small"    # Free tier friendly option
-runner_ami_id           = null           # Will use latest Ubuntu 22.04
+runner_ami_id           = "ami-0bbdd8c17ed981ef9"           # Canonical ubuntu 22.04
 key_pair_name           = null           # Set if you want SSH access
 runner_root_volume_size = 30             # GB - enough for Terraform ops
 runners_per_instance = 2

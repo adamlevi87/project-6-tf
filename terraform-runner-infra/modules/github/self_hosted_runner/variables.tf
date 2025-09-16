@@ -20,6 +20,12 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "runner_ami_id" {
+  description = "AMI ID for GitHub runner (if null, uses latest Ubuntu 22.04)"
+  type        = string
+}
+
+
 variable "private_subnet_ids" {
   description = "Private subnet IDs for runner placement"
   type        = list(string)
