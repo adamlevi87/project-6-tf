@@ -273,6 +273,8 @@ jobs:
           echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| **Environment** | \`${{ github.event.inputs.env }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **action** | \`${{ github.event.inputs.action }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **plan_full_runs** | \`${{ github.event.inputs.plan_full_runs }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Step 1** | Full Infrastructure Apply ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| **Step 2** | Targeted Main Infrastructure ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| **Step 3** | Full Infrastructure Apply (Final) ✅ |" >> $GITHUB_STEP_SUMMARY
