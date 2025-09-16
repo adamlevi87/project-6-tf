@@ -101,27 +101,7 @@ jobs:
               terraform plan "${COMMON_VARS[@]}"
               ;;
             apply)
-              case "${{ github.event.inputs.action }}" in
-            plan)
-              terraform plan "${COMMON_VARS[@]}"
-              ;;
-            apply)
               terraform apply -auto-approve "${COMMON_VARS[@]}"
-              ;;
-            plan-and-apply)
-              terraform plan "${COMMON_VARS[@]}"
-              echo "================================================"
-              echo "Plan complete. Proceeding with apply..."
-              echo "================================================"
-              terraform apply -auto-approve "${COMMON_VARS[@]}"
-              ;;
-            # destroy)
-            #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
-            #   ;;
-            *)
-              echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
-              ;;
-          esac
               ;;
             plan-and-apply)
               terraform plan "${COMMON_VARS[@]}"
@@ -167,50 +147,71 @@ jobs:
             -var="auto_merge_pr=${{ github.event.inputs.auto_merge }}"
           )
           
-          # Add specific targets here
           case "${{ github.event.inputs.action }}" in
             plan)
-              terraform plan "${COMMON_VARS[@]}" -target=module.specific_target
+              terraform plan "${COMMON_VARS[@]}"
               ;;
             apply)
-              terraform apply -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
             plan-and-apply)
-              terraform plan "${COMMON_VARS[@]}" -target=module.specific_target
+              terraform plan "${COMMON_VARS[@]}"
               echo "================================================"
               echo "Plan complete. Proceeding with apply..."
               echo "================================================"
-              terraform apply -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
-            # destroy)
-            #   terraform destroy -auto-approve "${COMMON_VARS[@]}" -target=module.specific_target
-            #   ;;
+            destroy)
+              terraform destroy -auto-approve "${COMMON_VARS[@]}"
+              ;;
             *)
               echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
               ;;
           esac
 
-      # - name: Step 3 - Full Infrastructure run (Final)
-      #   if: github.event.inputs.action != 'plan'
-      #   env:
-      #     AWS_REGION: ${{ env.AWS_REGION }}
-      #     PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
-      #     AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-      #   run: |
-      #     echo "================================================"
-      #     echo "STEP 3: Full Infrastructure Apply (Final)"
-      #     echo "Environment: ${{ github.event.inputs.env }}"
-      #     echo "================================================"
+      - name: Step 3 - Full Infrastructure run (Final)
+        if: github.event.inputs.action != 'plan'
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          echo "================================================"
+          echo "STEP 3: Full Infrastructure Apply (Final)"
+          echo "Environment: ${{ github.event.inputs.env }}"
+          echo "================================================"
           
-      #     cd terraform-runner-infra/main/
+          cd terraform-runner-infra/main/
           
-      #     COMMON_VARS=(
-      #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
-      #       -var="aws_region=$AWS_REGION"
-      #       -var="github_token=$TOKEN_GITHUB"
-      #     )
+          terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
           
-      #     terraform apply -auto-approve "${COMMON_VARS[@]}"
+          COMMON_VARS=(
+            -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+            -var="aws_region=$AWS_REGION"
+            -var="github_token=$TOKEN_GITHUB"
+          )
+          
+          case "${{ github.event.inputs.action }}" in
+            plan)
+              terraform plan "${COMMON_VARS[@]}"
+              ;;
+            apply)
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            plan-and-apply)
+              terraform plan "${COMMON_VARS[@]}"
+              echo "================================================"
+              echo "Plan complete. Proceeding with apply..."
+              echo "================================================"
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            destroy)
+              terraform destroy -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            *)
+              echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
+              ;;
+          esac
 
       # - name: Step 4 - Trigger Full Main Workflow on Runner
       #   env:
