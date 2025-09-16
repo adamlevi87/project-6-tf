@@ -45,7 +45,7 @@ resource "aws_route" "runner_to_main" {
 
   route_table_id            = var.source_route_table_id
   destination_cidr_block = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.main_vpc_info.vpc_cidr_block : null
-  vpc_peering_connection_id = aws_vpc_peering_connection[0].to_main.id
+  vpc_peering_connection_id = length(aws_vpc_peering_connection.to_main) > 0 ? aws_vpc_peering_connection.to_main[0].id : null
   
   depends_on = [aws_vpc_peering_connection[0].to_main]
 }
