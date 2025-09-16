@@ -88,7 +88,7 @@ usermod -aG docker github-runner
 
 # Create runner directory
 RUNNER_DIR="/opt/actions-runner"
-mkdir -p $RUNNER_DIR
+mkdir -p $RUNNER_DIRT
 chown github-runner:github-runner $RUNNER_DIR
 
 # Switch to github-runner user for runner setup
@@ -123,10 +123,12 @@ echo "⚙️ Configuring runner..."
     --unattended \
     --replace
 
+EOF
+
+
+cd $RUNNER_DIR
 ./svc.sh install github-runner
 ./svc.sh start github-runner
-
-EOF
 
 # Configure automatic runner cleanup on shutdown
 cat > /etc/systemd/system/github-runner-cleanup.service << 'EOF'
