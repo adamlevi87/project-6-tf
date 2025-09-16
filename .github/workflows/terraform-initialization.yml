@@ -105,6 +105,7 @@ jobs:
             -var="auto_merge_pr=false"
             -target=module.vpc
             -target=module.eks
+            -target=module.aws_auth_config
             -var="initialize_run=true"
           )
           
