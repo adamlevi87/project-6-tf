@@ -48,7 +48,7 @@ resource "aws_vpc_peering_connection" "to_main" {
   count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
 
   vpc_id      = var.source_vpc_id
-  peer_vpc_id = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.main_vpc_info.vpc_id : null
+  peer_vpc_id = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.vpc_id : null
   peer_region = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.main_vpc_info.region : null
   #peer_region = var.peer_region
   auto_accept = false  # Will be accepted by the main project
