@@ -34,6 +34,27 @@ data "terraform_remote_state" "main" {
     region = "${var.aws_region}"
   }
 }
+resource "null_resource" "validate_outputs_or_fail" {
+  count = var.initialize_run ? 0 : 1
+
+  provisioner "local-exec" {
+    command = <<-EOF
+      # Check all required outputs for VPC peering
+      CLUSTER_NAME="${try(data.terraform_remote_state.main[0].outputs.eks_cluster_info.cluster_name, "")}"
+
+      if [ -z "$CLUSTER_NAME" ] ; then
+        echo "ERROR: Required EKS outputs missing from main terraform state:"
+        echo "Cluster Name: $CLUSTER_NAME"
+        exit 1
+      fi
+      
+      echo "Validation passed - all required outputs present"
+      echo "Cluster Name: $CLUSTER_NAME"
+    EOF
+  }
+}
+
+
 
 # User data script to setup GitHub runner
 locals {
@@ -46,7 +67,7 @@ locals {
     aws_region         = var.aws_region
     #cluster_name       = var.cluster_name
     #cluster_name       = data.terraform_remote_state.main.outputs.eks_cluster_info.cluster_name
-    cluster_name       = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.eks_cluster_info.cluster_name : ""
+    cluster_name        = try(data.terraform_remote_state.main[0].outputs.eks_cluster_info.cluster_name, "cluster-not-configured") #cluster-not-configured will not be set, local exec should protect this
     runners_per_instance = var.runners_per_instance
   }))
 }
@@ -168,6 +189,7 @@ resource "aws_iam_instance_profile" "github_runner" {
 
 # Launch Template for GitHub Runner
 resource "aws_launch_template" "github_runner" {
+  count = var.initialize_run ? 0 : 1
   name_prefix   = "${var.project_tag}-${var.environment}-github-runner-"
   image_id      = var.ami_id #!= null ? var.ami_id : data.aws_ami.ubuntu.id
   instance_type = var.instance_type
@@ -206,6 +228,8 @@ resource "aws_launch_template" "github_runner" {
     Environment = var.environment
     Purpose     = "github-runner-launch-template"
   }
+
+  depends_on = [null_resource.validate_outputs_or_fail]
 }
 
 # Auto Scaling Group for GitHub Runner
