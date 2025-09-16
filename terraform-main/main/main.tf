@@ -33,7 +33,7 @@ module "vpc_peering_acceptance" {
   
   # Route table IDs for creating routes
   private_route_table_ids = module.vpc.private_route_table_ids
-  public_route_table_ids  = module.vpc.public_route_table_ids
+  #public_route_table_ids  = module.vpc.public_route_table_ids
   
   # Get runner VPC CIDR from remote state
   #runner_vpc_cidr = data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block
