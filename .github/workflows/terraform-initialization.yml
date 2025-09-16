@@ -234,10 +234,12 @@ jobs:
             true)
               ACTION="plan"
               echo "Triggering main workflow with PLAN action..."
+              RUNNER_TYPE="ubuntu-latest"  # Plans can run anywhere
               ;;
             false)
               ACTION="apply"
               echo "Triggering main workflow with APPLY action..."
+              RUNNER_TYPE="self-hosted"    # Apply runs on your runners
               ;;
             *)
               echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
@@ -256,7 +258,8 @@ jobs:
                 \"env\": \"${{ github.event.inputs.env }}\",
                 \"action\": \"$ACTION\",
                 \"gitops_mode\": \"bootstrap\",
-                \"auto_merge\": \"true\"
+                \"auto_merge\": \"true\",
+                \"runner_type\": \"$RUNNER_TYPE\"
               }
             }"
           

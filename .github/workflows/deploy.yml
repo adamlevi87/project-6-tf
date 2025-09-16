@@ -36,6 +36,16 @@ on:
         required: false
         default: false
         type: boolean
+      runner_type:
+        description: "Runner type to use"
+        required: false
+        default: "ubuntu-latest"
+        type: choice
+        options:
+          - ubuntu-latest
+          # self hosted is a custom label that our runner gets
+          # (user-data.sh config.sh part)
+          - self-hosted
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
