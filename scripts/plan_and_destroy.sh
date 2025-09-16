@@ -28,7 +28,7 @@ DEBUG="${5:-normal}"
 [[ "$DEBUG" == "-" ]] && DEBUG="normal"
 
 VAR_FILE="../environments/${ENV}/terraform.tfvars"
-VAR_FILE_2="../../sensitive_variables.tfvars"
+VAR_FILE_2="../../../sensitive_variables.tfvars"
 TF_WORK_DIR="../main"
 
 show_help() {
