@@ -57,8 +57,10 @@ module "vpc_peering" {
   # False = normal run
   # True = minimal run- dont create
   count = var.initialize_run ? 0 : 1
+  
   source = "../modules/vpc_peering"
 
+  initialize_run = var.initialize_run
   project_tag = var.project_tag
   environment = var.environment
   aws_region = var.aws_region
