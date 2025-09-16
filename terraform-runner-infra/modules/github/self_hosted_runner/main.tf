@@ -26,7 +26,7 @@ data "aws_ami" "ubuntu" {
 }
 
 data "terraform_remote_state" "main" {
-  count = 0
+  count = var.initialize_run ? 0 : 1
   backend = "s3"
   config = {
     bucket = "${var.project_tag}-tf-state"
