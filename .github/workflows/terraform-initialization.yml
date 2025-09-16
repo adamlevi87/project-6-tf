@@ -110,9 +110,9 @@ jobs:
               echo "================================================"
               terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
-            destroy)
-              terraform destroy -auto-approve "${COMMON_VARS[@]}"
-              ;;
+            # destroy)
+            #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
+            #   ;;
             *)
               echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
               ;;
@@ -151,21 +151,21 @@ jobs:
           
           case "${{ github.event.inputs.action }}" in
             plan)
-              terraform plan "${COMMON_VARS[@]}"
+              terraform plan "${COMMON_VARS[@]}" -target=module.vpc -target=module.eks -target=module.vpc_peering_acceptance
               ;;
             apply)
-              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              terraform apply -auto-approve "${COMMON_VARS[@]}" -target=module.vpc -target=module.eks -target=module.vpc_peering_acceptance
               ;;
             plan-and-apply)
-              terraform plan "${COMMON_VARS[@]}"
+              terraform plan "${COMMON_VARS[@]}" -target=module.vpc -target=module.eks -target=module.vpc_peering_acceptance
               echo "================================================"
               echo "Plan complete. Proceeding with apply..."
               echo "================================================"
-              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              terraform apply -auto-approve "${COMMON_VARS[@]}" -target=module.vpc -target=module.eks -target=module.vpc_peering_acceptance
               ;;
-            destroy)
-              terraform destroy -auto-approve "${COMMON_VARS[@]}"
-              ;;
+            # destroy)
+            #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
+            #   ;;
             *)
               echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
               ;;
@@ -205,9 +205,9 @@ jobs:
               echo "================================================"
               terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
-            destroy)
-              terraform destroy -auto-approve "${COMMON_VARS[@]}"
-              ;;
+            # destroy)
+            #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
+            #   ;;
             *)
               echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
               ;;
