@@ -181,50 +181,69 @@ jobs:
               ;;
           esac
 
-      # - name: Step 3 - Full Infrastructure Run (Final)
-      #   # cannot run a full PLAN, an apply on step 1+2 is a must
-      #   #if: github.event.inputs.action != 'plan'
-      #   env:
-      #     AWS_REGION: ${{ env.AWS_REGION }}
-      #     TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
-      #   run: |
-      #     echo "================================================"
-      #     echo "STEP 3: Full Infrastructure Run (Final)"
-      #     echo "Environment: ${{ github.event.inputs.env }}"
-      #     echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
-      #     echo "================================================"
-        
-      #     cd terraform-runner-infra/main/
-        
-      #     COMMON_VARS=(
-      #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
-      #       -var="aws_region=$AWS_REGION"
-      #       -var="github_token=$TOKEN_GITHUB"
-      #     )
-        
-      #     case "${{ github.event.inputs.plan_full_runs }}" in
-      #       true)
-      #         echo "Planning full infrastructure..."
-      #         terraform plan "${COMMON_VARS[@]}"
-      #         ;;
-      #       false)
-      #         echo "Applying full infrastructure..."
-      #         terraform apply -auto-approve "${COMMON_VARS[@]}"
-      #         ;;
-      #       *)
-      #         echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
-      #         exit 1
-      #         ;;
-      #     esac
+      - name: Step 3 - Targeted Main Infrastructure - accept peering
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          echo "================================================"
+          echo "STEP 3: Targeted Main Infrastructure accept peering"
+          echo "Environment: ${{ github.event.inputs.env }}"
+          echo "================================================"
 
-      - name: Step 3 - Trigger Full Main Workflow on Runner
+          cd terraform-main/main/
+          
+          terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
+
+          COMMON_VARS=(
+            -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+            -var="github_token=$TOKEN_GITHUB"
+            -var="aws_region=$AWS_REGION"
+            -var="aws_iam_openid_connect_provider_github_arn=$PROVIDER_GITHUB_ARN"
+            -var="github_oidc_role_arn=$AWS_ROLE_TO_ASSUME"
+            -var="argocd_app_id=$ARGOCD_APP_ID"
+            -var="argocd_installation_id=$ARGOCD_INSTALLATION_ID"
+            -var="argocd_private_key_b64=$ARGOCD_PRIVATE_KEY_B64"
+            -var="github_oauth_client_id=$OAUTH_GITHUB_CLIENT_ID"
+            -var="github_oauth_client_secret=$OAUTH_GITHUB_CLIENT_SECRET"
+            -var="bootstrap_mode=false"
+            -var="update_apps=false"
+            -var="auto_merge_pr=false"
+            -target=module.vpc_peering_acceptance
+            -var="initialize_run=false"
+          )
+          
+          case "${{ github.event.inputs.action }}" in
+            plan)
+              terraform plan "${COMMON_VARS[@]}"
+              ;;
+            apply)
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            plan-and-apply)
+              terraform plan "${COMMON_VARS[@]}"
+              echo "================================================"
+              echo "Plan complete. Proceeding with apply..."
+              echo "================================================"
+              terraform apply -auto-approve "${COMMON_VARS[@]}"
+              ;;
+            # destroy)
+            #   terraform destroy -auto-approve "${COMMON_VARS[@]}"
+            #   ;;
+            *)
+              echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
+              ;;
+          esac
+
+      - name: Step 4 - Trigger Full Main Workflow on Runner
         # cannot run a full PLAN, an apply on step 1+2 is a must
         #if: github.event.inputs.action != 'plan'
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         run: |
           echo "================================================"
-          echo "STEP 3: Triggering Full Main Workflow on Runner"
+          echo "STEP 4: Triggering Full Main Workflow on Runner"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
           echo "================================================"
@@ -264,6 +283,43 @@ jobs:
             }"
           
           echo "✅ Main workflow triggered successfully with action: $ACTION"
+
+
+      # - name: Step 3 - Full Infrastructure Run (Final)
+      #   # cannot run a full PLAN, an apply on step 1+2 is a must
+      #   #if: github.event.inputs.action != 'plan'
+      #   env:
+      #     AWS_REGION: ${{ env.AWS_REGION }}
+      #     TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+      #   run: |
+      #     echo "================================================"
+      #     echo "STEP 3: Full Infrastructure Run (Final)"
+      #     echo "Environment: ${{ github.event.inputs.env }}"
+      #     echo "Plan Full Runs: ${{ github.event.inputs.plan_full_runs }}"
+      #     echo "================================================"
+        
+      #     cd terraform-runner-infra/main/
+        
+      #     COMMON_VARS=(
+      #       -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
+      #       -var="aws_region=$AWS_REGION"
+      #       -var="github_token=$TOKEN_GITHUB"
+      #     )
+        
+      #     case "${{ github.event.inputs.plan_full_runs }}" in
+      #       true)
+      #         echo "Planning full infrastructure..."
+      #         terraform plan "${COMMON_VARS[@]}"
+      #         ;;
+      #       false)
+      #         echo "Applying full infrastructure..."
+      #         terraform apply -auto-approve "${COMMON_VARS[@]}"
+      #         ;;
+      #       *)
+      #         echo "Invalid plan_full_runs value: ${{ github.event.inputs.plan_full_runs }}"
+      #         exit 1
+      #         ;;
+      #     esac
 
       - name: Summary
         if: always()
