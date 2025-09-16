@@ -62,10 +62,10 @@ variable "instance_type" {
   type        = string
 }
 
-variable "ami_id" {
-  description = "AMI ID for GitHub runner (Ubuntu 22.04 recommended)"
-  type        = string
-}
+# variable "ami_id" {
+#   description = "AMI ID for GitHub runner (Ubuntu 22.04 recommended)"
+#   type        = string
+# }
 
 variable "key_pair_name" {
   description = "EC2 Key Pair name for SSH access"
