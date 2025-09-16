@@ -45,7 +45,7 @@ locals {
     runner_labels      = join(",", var.runner_labels)
     aws_region         = var.aws_region
     #cluster_name       = var.cluster_name
-    cluster_name       = terraform_remote_state.main.outputs.eks_cluster_info.cluster_name
+    cluster_name       = data.terraform_remote_state.main.outputs.eks_cluster_info.cluster_name
     #cluster_name       = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.eks_cluster_info.cluster_name : ""
     runners_per_instance = var.runners_per_instance
   }))
