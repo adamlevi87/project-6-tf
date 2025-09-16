@@ -183,7 +183,7 @@ jobs:
 
       - name: Step 3 - Full Infrastructure Run (Final)
         # cannot run a full PLAN, an apply on step 1+2 is a must
-        if: github.event.inputs.action != 'plan'
+        #if: github.event.inputs.action != 'plan'
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
@@ -219,7 +219,7 @@ jobs:
 
       - name: Step 4 - Trigger Full Main Workflow on Runner
         # cannot run a full PLAN, an apply on step 1+2 is a must
-        if: github.event.inputs.action != 'plan'
+        #if: github.event.inputs.action != 'plan'
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         run: |
