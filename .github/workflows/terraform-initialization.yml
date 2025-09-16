@@ -128,9 +128,11 @@ jobs:
           echo "STEP 2: Targeted Main Infrastructure"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "================================================"
-          
+
           cd terraform-main/main/
           
+          terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
+
           COMMON_VARS=(
             -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
             -var="github_token=$TOKEN_GITHUB"
@@ -182,8 +184,6 @@ jobs:
           echo "================================================"
           
           cd terraform-runner-infra/main/
-          
-          terraform init -backend-config=../environments/${{ github.event.inputs.env }}/backend.config
           
           COMMON_VARS=(
             -var-file="../environments/${{ github.event.inputs.env }}/terraform.tfvars"
