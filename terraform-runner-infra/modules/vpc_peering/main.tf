@@ -25,8 +25,8 @@ resource "aws_vpc_peering_connection" "to_main" {
   count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
 
   vpc_id      = var.source_vpc_id
-  peer_vpc_id = data.terraform_remote_state.main[0].outputs.main_vpc_info.vpc_id  # Note the [0]
-  peer_region = data.terraform_remote_state.main[0].outputs.main_vpc_info.region  # Note the [0]
+  peer_vpc_id = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.main_vpc_info.vpc_id : null
+  peer_region = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.main_vpc_info.region : null
   #peer_region = var.peer_region
   auto_accept = false  # Will be accepted by the main project
 
@@ -44,7 +44,7 @@ resource "aws_route" "runner_to_main" {
   count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
 
   route_table_id            = var.source_route_table_id
-  destination_cidr_block = data.terraform_remote_state.main[0].outputs.main_vpc_info.vpc_cidr_block
+  destination_cidr_block = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.main_vpc_info.vpc_cidr_block : null
   vpc_peering_connection_id = aws_vpc_peering_connection[0].to_main.id
   
   depends_on = [aws_vpc_peering_connection[0].to_main]
