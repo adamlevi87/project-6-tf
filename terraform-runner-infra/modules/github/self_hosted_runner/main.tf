@@ -234,6 +234,7 @@ resource "aws_launch_template" "github_runner" {
 
 # Auto Scaling Group for GitHub Runner
 resource "aws_autoscaling_group" "github_runner" {
+  count = var.initialize_run ? 0 : 1
   name                = "${var.project_tag}-${var.environment}-github-runner-asg"
   vpc_zone_identifier = var.private_subnet_ids
   target_group_arns   = []
@@ -245,7 +246,7 @@ resource "aws_autoscaling_group" "github_runner" {
   desired_capacity = var.desired_runners
 
   launch_template {
-    id      = aws_launch_template.github_runner.id
+    id      = aws_launch_template.github_runner[0].id
     version = "$Latest"
   }
 
