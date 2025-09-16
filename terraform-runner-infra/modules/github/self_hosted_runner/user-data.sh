@@ -98,8 +98,21 @@ mkdir -p "$RUNNER_DIR"
 chown github-runner:github-runner $RUNNER_DIR
 
 # Switch to github-runner user for runner setup
-sudo -u github-runner bash << EOF
+sudo -u github-runner bash << 'EOF'
 set -e
+
+
+
+echo "🚀 Starting GitHub Runner setup..."
+echo "Runner: $RUNNER_NAME"
+echo "Labels: $RUNNER_LABELS"
+echo "Region: $AWS_REGION"
+#### debug echo
+echo "GITHUB_ORG = $GITHUB_ORG"
+echo "GITHUB_REPO = $GITHUB_REPO"
+echo "RUNNER_NAME = $RUNNER_NAME"
+echo "RUNNER_LABELS = $RUNNER_LABELS"
+echo "GITHUB_TOKEN = $GITHUB_TOKEN"
 
 RUNNER_DIR="/opt/actions-runner"
 cd "$RUNNER_DIR"
@@ -137,7 +150,7 @@ cd $RUNNER_DIR
 ./svc.sh start github-runner
 
 # Configure automatic runner cleanup on shutdown
-cat > /etc/systemd/system/github-runner-cleanup.service << EOF
+cat > /etc/systemd/system/github-runner-cleanup.service << 'EOF'
 [Unit]
 Description=GitHub Runner Cleanup
 DefaultDependencies=false
@@ -159,7 +172,7 @@ cat > /opt/actions-runner/cleanup.sh << EOF
 #!/bin/bash
 set -e
 
-RUNNER_DIR="/opt/actions-runner"
+#RUNNER_DIR="/opt/actions-runner"
 cd $RUNNER_DIR
 
 # Get removal token
