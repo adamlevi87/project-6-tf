@@ -27,7 +27,8 @@ module "vpc_peering_acceptance" {
 
   project_tag = var.project_tag
   environment = var.environment
-
+  aws_region = var.aws_region
+  
   # Main VPC information
   vpc_id = module.vpc.vpc_id
   
