@@ -81,11 +81,11 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 # Configure AWS CLI and kubectl for the main project cluster
 echo "🔧 Configuring AWS CLI and kubectl..."
 # AWS CLI will use IAM role from instance profile
-aws configure set region $AWS_REGION
+aws configure set region ${aws_region}
 
 # Configure kubectl for main project EKS cluster (this will be set from remote state)
-if [ ! -z "$CLUSTER_NAME" ]; then
-  aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
+if [ ! -z "${cluster_name}" ]; then
+  aws eks update-kubeconfig --region ${aws_region} --name ${cluster_name}
 fi
 
 # Create GitHub runner user
@@ -115,11 +115,14 @@ echo "RUNNER_LABELS = $RUNNER_LABELS"
 echo "GITHUB_TOKEN = $GITHUB_TOKEN"
 
 RUNNER_DIR="/opt/actions-runner"
+echo "RUNNER_DIR = $RUNNER_DIR"
 cd "$RUNNER_DIR"
 
 # Download GitHub Actions runner
 echo "📥 Downloading GitHub Actions runner..."
 RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | jq -r '.tag_name' | sed 's/v//')
+echo "RUNNER_VERSION = $RUNNER_VERSION"
+
 curl -o actions-runner-linux-x64-$RUNNER_VERSION.tar.gz -L https://github.com/actions/runner/releases/download/v$RUNNER_VERSION/actions-runner-linux-x64-$RUNNER_VERSION.tar.gz
 
 # Extract runner
@@ -128,17 +131,17 @@ rm actions-runner-linux-x64-$RUNNER_VERSION.tar.gz
 
 # Get registration token
 echo "🔑 Getting registration token..."
-REG_TOKEN=$(curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
+REG_TOKEN=$(curl -X POST -H "Authorization: token ${github_token}" \
     -H "Accept: application/vnd.github.v3+json" \
-    "https://api.github.com/repos/$GITHUB_ORG/$GITHUB_REPO/actions/runners/registration-token" | jq -r .token)
+    "https://api.github.com/repos/${github_org}/${github_repo}/actions/runners/registration-token" | jq -r .token)
 
 # Configure runner (single runner per instance)
 echo "⚙️ Configuring runner..."
 ./config.sh \
-    --url "https://github.com/$GITHUB_ORG/$GITHUB_REPO" \
+    --url "https://github.com/${github_org}/${github_repo}" \
     --token "$REG_TOKEN" \
-    --name "$RUNNER_NAME" \
-    --labels "$RUNNER_LABELS" \
+    --name "${runner_name}" \
+    --labels "${runner_labels}" \
     --unattended \
     --replace
 
@@ -176,9 +179,9 @@ set -e
 cd $RUNNER_DIR
 
 # Get removal token
-REMOVE_TOKEN=$(curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
+REMOVE_TOKEN=$(curl -X POST -H "Authorization: token ${github_token}" \
     -H "Accept: application/vnd.github.v3+json" \
-    "https://api.github.com/repos/$GITHUB_ORG/$GITHUB_REPO/actions/runners/remove-token" | jq -r .token)
+    "https://api.github.com/repos/${github_org}/${github_repo}/actions/runners/remove-token" | jq -r .token)
 
 # Remove runner
 sudo -u github-runner ./config.sh remove --token "$REMOVE_TOKEN"
@@ -192,7 +195,7 @@ systemctl enable github-runner-cleanup.service
 systemctl start github-runner-cleanup.service
 
 echo "✅ GitHub Runner setup complete!"
-RUNNER_LIST="$RUNNER_NAME"
+RUNNER_LIST="${runner_name}"
 echo "Runners '$RUNNER_LIST' are now registered and running"
 
 # Test basic connectivity (kubectl will be configured later when main project is deployed)
