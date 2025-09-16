@@ -117,6 +117,8 @@ REG_TOKEN=$(curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
 echo "⚙️ Configuring runners..."
 for i in $(seq 1 ${runners_per_instance}); do
   ./config.sh \
+      --url "https://github.com/$GITHUB_ORG/$GITHUB_REPO" \
+      --token "$REG_TOKEN" \
       --name "$RUNNER_NAME-$i" \
       --labels "$RUNNER_LABELS" \
       --work "_work$i" \
