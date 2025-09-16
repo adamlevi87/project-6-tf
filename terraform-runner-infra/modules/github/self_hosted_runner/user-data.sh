@@ -98,7 +98,7 @@ mkdir -p "$RUNNER_DIR"
 chown github-runner:github-runner $RUNNER_DIR
 
 # Switch to github-runner user for runner setup
-sudo -u github-runner bash << 'EOF'
+sudo -u github-runner bash << EOF
 set -e
 
 RUNNER_DIR="/opt/actions-runner"
@@ -137,7 +137,7 @@ cd $RUNNER_DIR
 ./svc.sh start github-runner
 
 # Configure automatic runner cleanup on shutdown
-cat > /etc/systemd/system/github-runner-cleanup.service << 'EOF'
+cat > /etc/systemd/system/github-runner-cleanup.service << EOF
 [Unit]
 Description=GitHub Runner Cleanup
 DefaultDependencies=false
@@ -155,7 +155,7 @@ WantedBy=multi-user.target
 EOF
 
 # Create cleanup script
-cat > /opt/actions-runner/cleanup.sh << 'EOF'
+cat > /opt/actions-runner/cleanup.sh << EOF
 #!/bin/bash
 set -e
 
