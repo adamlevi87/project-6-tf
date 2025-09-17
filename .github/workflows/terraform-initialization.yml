@@ -181,7 +181,7 @@ jobs:
               echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
               ;;
           esac
-
+    
       - name: Step 3 - Targeted Main Infrastructure - accept peering
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
@@ -222,6 +222,7 @@ jobs:
               terraform plan "${COMMON_VARS[@]}"
               ;;
             apply)
+              echo "step -3 - applying!""
               terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
             plan-and-apply)
