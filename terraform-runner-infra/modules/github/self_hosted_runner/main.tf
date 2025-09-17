@@ -40,7 +40,7 @@ resource "null_resource" "validate_outputs_or_fail" {
   provisioner "local-exec" {
     command = <<-EOF
       # Check all required outputs for VPC peering
-      CLUSTER_NAME="${try(data.terraform_remote_state.main[0].outputs.eks_cluster_info.cluster_name, "")}"
+      CLUSTER_NAME="${try(data.terraform_remote_state.main.outputs.eks_cluster_info.cluster_name, "")}"
 
       if [ -z "$CLUSTER_NAME" ] ; then
         echo "ERROR: Required EKS outputs missing from main terraform state:"
@@ -67,7 +67,7 @@ locals {
     aws_region         = var.aws_region
     #cluster_name       = var.cluster_name
     #cluster_name       = data.terraform_remote_state.main.outputs.eks_cluster_info.cluster_name
-    cluster_name        = try(data.terraform_remote_state.main[0].outputs.eks_cluster_info.cluster_name, "cluster-not-configured") #cluster-not-configured will not be set, local exec should protect this
+    cluster_name        = try(data.terraform_remote_state.main.outputs.eks_cluster_info.cluster_name, "cluster-not-configured") #cluster-not-configured will not be set, local exec should protect this
     runners_per_instance = var.runners_per_instance
   }))
 }
