@@ -134,6 +134,7 @@ module "eks" {
   # Cluster configuration
   cluster_name        = "${var.project_tag}-${var.environment}-cluster"
   kubernetes_version  = var.eks_kubernetes_version
+  endpoint_public_access = var.endpoint_public_access
   
   # Networking (from VPC module)
   private_subnet_ids   = module.vpc.private_subnet_ids

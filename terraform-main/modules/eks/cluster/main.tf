@@ -63,7 +63,7 @@ resource "aws_eks_cluster" "main" {
     subnet_ids              = var.private_subnet_ids
     endpoint_private_access = true
     # These might be temporary until Github runners is moved into the VPC
-    endpoint_public_access  = true
+    endpoint_public_access  = var.endpoint_public_access
     public_access_cidrs     = var.eks_api_allowed_cidr_blocks
   }
 

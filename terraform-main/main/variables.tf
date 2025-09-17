@@ -163,6 +163,11 @@ variable "eks_kubernetes_version" {
   type        = string
 }
 
+variable "endpoint_public_access" {
+  description = "Enable eks public access endpoint"
+  type        = bool
+}
+
 variable "eks_api_allowed_cidr_blocks" {
   description = "CIDR blocks allowed to access the cluster endpoint"
   type        = list(string)
