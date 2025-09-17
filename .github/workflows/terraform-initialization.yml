@@ -213,7 +213,7 @@ jobs:
             -var="auto_merge_pr=false"
             -target=module.vpc_peering_acceptance
             -target=module.security_groups
-            -target=module.aws_auth_config
+            #-target=module.aws_auth_config
             -var="initialize_run=false"
           )
           
@@ -222,7 +222,7 @@ jobs:
               terraform plan "${COMMON_VARS[@]}"
               ;;
             apply)
-              echo "step -3 - applying!""
+              echo "step -3 - applying!"
               terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
             plan-and-apply)
@@ -239,15 +239,15 @@ jobs:
               echo "Invalid action: ${{ github.event.inputs.action }}"; exit 1
               ;;
           esac
-      
-      - name: Step 3extra - Targeted Main Infrastructure - accept peering
+
+      - name: Step 3e - Targeted Main Infrastructure - extras
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           PROVIDER_GITHUB_ARN: ${{ secrets.PROVIDER_GITHUB_ARN }}
           AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         run: |
           echo "================================================"
-          echo "STEP 3: Targeted Main Infrastructure accept peering"
+          echo "STEP 3: Targeted Main Infrastructure extras"
           echo "Environment: ${{ github.event.inputs.env }}"
           echo "================================================"
 
@@ -269,7 +269,9 @@ jobs:
             -var="bootstrap_mode=false"
             -var="update_apps=false"
             -var="auto_merge_pr=false"
-            -target=module.aws_auth_config
+            -target=module.vpc_peering_acceptance
+            -target=module.security_groups
+            #-target=module.aws_auth_config
             -var="initialize_run=false"
           )
           
@@ -278,7 +280,7 @@ jobs:
               terraform plan "${COMMON_VARS[@]}"
               ;;
             apply)
-              echo "step -4 - applying!""
+              echo "step -3extras - applying!"
               terraform apply -auto-approve "${COMMON_VARS[@]}"
               ;;
             plan-and-apply)
