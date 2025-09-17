@@ -26,7 +26,7 @@ output "vpc_peering_connection_id" {
 
 output "runner_instance_role_arn" {
   description = "IAM role ARN for GitHub runner instances"
-  value       = var.initialize_run ? null : module.github_runner[0].runner_instance_role_arn
+  value       = var.initialize_run ? null : module.github_runner.runner_instance_role_arn
 }
 
 
