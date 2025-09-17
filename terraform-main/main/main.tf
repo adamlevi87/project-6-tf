@@ -227,7 +227,10 @@ module "aws_auth_config" {
   eks_user_access_map = local.map_users
 
   depends_on = [
-    module.eks#,
+    module.eks,
+    module.module.vpc_peering_acceptance,
+    module.module.security_groups
+    #,
     #module.node_groups
   ]
 }
