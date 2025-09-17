@@ -43,8 +43,8 @@ module "vpc_peering_acceptance" {
   initialize_run = var.initialize_run
   
   # Route table IDs for creating routes 
-  peering_connection_id = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_peering_connection_id, "fake-placeholder")
-  runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_cidr_block, "10.255.255.0/24")
+  peering_connection_id = try(data.terraform_remote_state.runner_infra.outputs.vpc_peering_connection_id, "fake-placeholder")
+  runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
   
   # Route table IDs for creating routes
   private_route_table_ids = module.vpc.private_route_table_ids
@@ -160,7 +160,7 @@ module "security_groups" {
   cluster_security_group_id       = module.eks.cluster_security_group_id
 
   initialize_run    = var.initialize_run
-  runner_vpc_cidr   = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_cidr_block, "10.255.255.0/24")
+  runner_vpc_cidr   = try(data.terraform_remote_state.runner_infra.outputs.vpc_cidr_block, "10.255.255.0/24")
   
   # Node group configuration
   node_groups = var.eks_node_groups
