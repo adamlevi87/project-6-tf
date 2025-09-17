@@ -25,6 +25,11 @@ output "cluster_endpoint" {
   value       = aws_eks_cluster.main.endpoint
 }
 
+output "cluster_private_endpoint" {
+  description = "EKS cluster endpoint"
+  value       = aws_eks_cluster.main.endpoint
+}
+
 output "cluster_ca" {
   description = "EKS cluster certificate authority data"
   value       = aws_eks_cluster.main.certificate_authority[0].data

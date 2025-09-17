@@ -34,7 +34,7 @@ module "vpc" {
 }
 
 module "vpc_peering_acceptance" {
-  count  = var.initialize_run ? 0 : 1
+  #count  = var.initialize_run ? 0 : 1
 
   source = "../modules/vpc_peering_acceptance"
 
@@ -158,6 +158,8 @@ module "security_groups" {
   prometheus_allowed_cidr_blocks  = var.prometheus_allowed_cidr_blocks
   grafana_allowed_cidr_blocks     = var.grafana_allowed_cidr_blocks
   cluster_security_group_id       = module.eks.cluster_security_group_id
+
+  allowe_cidr_github_runner       =
   
   # Node group configuration
   node_groups = var.eks_node_groups

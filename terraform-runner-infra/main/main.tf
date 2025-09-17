@@ -14,7 +14,7 @@ module "vpc" {
 module "github_runner" {
   # False = normal run
   # True = minimal run- dont create
-  count = var.initialize_run ? 0 : 1
+  #count = var.initialize_run ? 0 : 1
 
   source = "../modules/github/self_hosted_runner"
 
@@ -58,7 +58,7 @@ module "github_runner" {
 module "vpc_peering" {
   # False = normal run
   # True = minimal run- dont create
-  count = var.initialize_run ? 0 : 1
+  #count = var.initialize_run ? 0 : 1
   
   source = "../modules/vpc_peering"
 

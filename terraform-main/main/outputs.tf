@@ -24,6 +24,7 @@ output "eks_cluster_info" {
   value = {
     cluster_name     = module.eks.cluster_name
     cluster_endpoint = module.eks.cluster_endpoint
+    cluster_private_endpoint = module.eks.cluster_endpoint
     cluster_ca       = module.eks.cluster_ca
     cluster_region   = var.aws_region
   }
