@@ -10,7 +10,7 @@ terraform {
 }
 
 resource "null_resource" "validate_peering_outputs" {
-  count = var.initialize_run ? 0 : 1
+  #count = var.initialize_run ? 0 : 1
   
   provisioner "local-exec" {
     command = <<-EOF
