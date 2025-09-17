@@ -228,8 +228,8 @@ module "aws_auth_config" {
 
   depends_on = [
     module.eks,
-    module.module.vpc_peering_acceptance,
-    module.module.security_groups
+    module.vpc_peering_acceptance,
+    module.security_groups
     #,
     #module.node_groups
   ]
