@@ -213,6 +213,7 @@ jobs:
             -var="auto_merge_pr=false"
             -target=module.vpc_peering_acceptance
             -target=module.security_groups
+            -target=module.aws_auth_config
             -var="initialize_run=false"
           )
           
