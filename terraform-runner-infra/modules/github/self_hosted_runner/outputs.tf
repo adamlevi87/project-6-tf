@@ -5,10 +5,10 @@
 #   value       = aws_security_group.github_runner.id
 # }
 
-# output "runner_instance_role_arn" {
-#   description = "IAM role ARN for GitHub runner instances"
-#   value       = aws_iam_role.github_runner_instance.arn
-# }
+output "runner_instance_role_arn" {
+  description = "IAM role ARN for GitHub runner instances"
+  value       = aws_iam_role.github_runner_instance.arn
+}
 
 # output "runner_launch_template_id" {
 #   description = "Launch template ID for GitHub runners"

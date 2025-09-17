@@ -24,6 +24,12 @@ output "vpc_peering_connection_id" {
   #value       = module.vpc_peering.vpc_peering_connection_id
 }
 
+output "runner_instance_role_arn" {
+  description = "IAM role ARN for GitHub runner instances"
+  value       = var.initialize_run ? null : module.github_runner[0].runner_instance_role_arn
+}
+
+
 # output "private_subnet_ids" {
 #   description = "List of private subnet IDs"
 #   value       = module.vpc.private_subnet_ids

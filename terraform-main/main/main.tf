@@ -1,7 +1,7 @@
 # terraform-main/main/main.tf
 
 data "terraform_remote_state" "runner_infra" {
-  count = var.initialize_run ? 0 : 1
+  #count = var.initialize_run ? 0 : 1
   
   backend = "s3"
   config = {
