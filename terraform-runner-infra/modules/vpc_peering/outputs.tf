@@ -4,7 +4,7 @@ output "vpc_peering_connection_id" {
   description = "ID of the VPC peering connection"
   #value       = aws_vpc_peering_connection.to_main.id
   #value       = length(aws_vpc_peering_connection.to_main) > 0 ? aws_vpc_peering_connection.to_main[0].id : null
-  value       = try(aws_vpc_peering_connection.to_main[0].id, null)
+  value       = try(aws_vpc_peering_connection.to_main.id, null)
 }
 
 # output "vpc_peering_connection_status" {

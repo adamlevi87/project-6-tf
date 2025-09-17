@@ -26,7 +26,7 @@ terraform {
 # }
 
 data "terraform_remote_state" "main" {
-  count = var.initialize_run ? 0 : 1
+  #count = var.initialize_run ? 0 : 1
   backend = "s3"
   config = {
     bucket = "${var.project_tag}-tf-state"
@@ -189,7 +189,7 @@ resource "aws_iam_instance_profile" "github_runner" {
 
 # Launch Template for GitHub Runner
 resource "aws_launch_template" "github_runner" {
-  count = var.initialize_run ? 0 : 1
+  #count = var.initialize_run ? 0 : 1
   name_prefix   = "${var.project_tag}-${var.environment}-github-runner-"
   image_id      = var.ami_id #!= null ? var.ami_id : data.aws_ami.ubuntu.id
   instance_type = var.instance_type
@@ -234,7 +234,7 @@ resource "aws_launch_template" "github_runner" {
 
 # Auto Scaling Group for GitHub Runner
 resource "aws_autoscaling_group" "github_runner" {
-  count = var.initialize_run ? 0 : 1
+  #count = var.initialize_run ? 0 : 1
   name                = "${var.project_tag}-${var.environment}-github-runner-asg"
   vpc_zone_identifier = var.private_subnet_ids
   target_group_arns   = []
@@ -246,7 +246,7 @@ resource "aws_autoscaling_group" "github_runner" {
   desired_capacity = var.desired_runners
 
   launch_template {
-    id      = aws_launch_template.github_runner[0].id
+    id      = aws_launch_template.github_runner.id
     version = "$Latest"
   }
 

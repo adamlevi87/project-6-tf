@@ -10,6 +10,16 @@ variable "environment" {
   type        = string
 }
 
+variable "initialize_run" {
+  description = "Whether this is an initialization run (true = deploy basics only, false = deploy everything)"
+  type        = bool
+}
+
+variable "runner_vpc_cidr" {
+  description = "CIDR block of the runner VPC (via remote state)"
+  type        = string
+}
+
 variable "vpc_id" {
   description = "VPC ID where RDS will be deployed"
   type        = string

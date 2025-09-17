@@ -69,7 +69,7 @@ locals {
 
 
 resource "aws_vpc_peering_connection_accepter" "main" {
-  count = var.initialize_run ? 0 : 1
+  #count = var.initialize_run ? 0 : 1
   
   vpc_peering_connection_id = var.peering_connection_id
   auto_accept               = true
@@ -103,7 +103,8 @@ resource "aws_vpc_peering_connection_accepter" "main" {
 # }
 
 resource "aws_route" "main_to_runner_private" {
-  count = var.initialize_run ? 0 : length(var.private_route_table_ids)
+  #count = var.initialize_run ? 0 : length(var.private_route_table_ids)
+  count = length(var.private_route_table_ids)
   
   route_table_id            = var.private_route_table_ids[count.index]
   destination_cidr_block    = var.runner_vpc_cidr  # No try needed!

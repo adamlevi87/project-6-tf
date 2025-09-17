@@ -9,6 +9,20 @@ terraform {
   }
 }
 
+resource "null_resource" "validate_peering_outputs" {
+  count = var.initialize_run ? 0 : 1
+  
+  provisioner "local-exec" {
+    command = <<-EOF
+      if [ "${var.runner_vpc_cidr}" = "fake-placeholder" ]; then
+        echo "ERROR: Required runner_vpc_cidr missing" 
+        exit 1
+      fi
+      echo "✅ All peering outputs validated"
+    EOF
+  }
+}
+
 locals {
   joined_security_group_ids = "${aws_security_group.alb_argocd.id},${aws_security_group.alb_frontend.id},${aws_security_group.alb_prometheus.id},${aws_security_group.alb_grafana.id}"
   
@@ -599,6 +613,26 @@ resource "aws_vpc_security_group_ingress_rule" "eks_api_from_cidrs" {
     Rule    = "api-from-cidr"
     Source  = each.value
   }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "eks_api_from_github_runner" {
+  
+  security_group_id = var.cluster_security_group_id
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+  cidr_ipv4         = var.runner_vpc_cidr
+  description       = "PEERING: Allow Peered network - github runner- access to the cluster API"
+  
+  tags = {
+    Project     = var.project_tag
+    Environment = var.environment
+    Purpose = "external-access"
+    Rule    = "api-from-cidr"
+    Source  = "Github-Runner-VPC-CIDR"
+  }
+
+  depends_on = [ null_resource.validate_peering_outputs ]
 }
 
 # ================================

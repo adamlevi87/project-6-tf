@@ -159,7 +159,8 @@ module "security_groups" {
   grafana_allowed_cidr_blocks     = var.grafana_allowed_cidr_blocks
   cluster_security_group_id       = module.eks.cluster_security_group_id
 
-  allowe_cidr_github_runner       =
+  initialize_run    = var.initialize_run
+  runner_vpc_cidr   = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_cidr_block, "fake-placeholder")
   
   # Node group configuration
   node_groups = var.eks_node_groups

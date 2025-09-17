@@ -73,7 +73,7 @@ resource "null_resource" "validate_outputs_or_fail" {
 
 # Create VPC Peering Connection Request
 resource "aws_vpc_peering_connection" "to_main" {
-  count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
+  #count = length(data.terraform_remote_state.main) > 0 ? 1 : 0
 
   vpc_id      = var.source_vpc_id
   #peer_vpc_id = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.vpc_id : null
@@ -108,7 +108,8 @@ resource "aws_route" "runner_to_main" {
 
   route_table_id            = var.source_route_table_id
   destination_cidr_block = try(data.terraform_remote_state.main[0].outputs.main_vpc_info.vpc_cidr_block, "10.255.255.0/24") # 10.255.255.0 - fake cidr will never be applied
-  vpc_peering_connection_id = try(aws_vpc_peering_connection.to_main[0].id, "pcx-fakeid12345") # pcx-fakeid12345 - fake id will never be applied
+  vpc_peering_connection_id = try(aws_vpc_peering_connection.to_main.id, "pcx-fakeid12345") # pcx-fakeid12345 - fake id will never be applied
+  #vpc_peering_connection_id = try(aws_vpc_peering_connection.to_main[0].id, "pcx-fakeid12345") # pcx-fakeid12345 - fake id will never be applied
 
   #destination_cidr_block = length(data.terraform_remote_state.main) > 0 ? data.terraform_remote_state.main[0].outputs.main_vpc_info.vpc_cidr_block : null
   #vpc_peering_connection_id = length(aws_vpc_peering_connection.to_main) > 0 ? aws_vpc_peering_connection.to_main[0].id : null
