@@ -214,6 +214,11 @@ module "aws_auth_config" {
       rolearn  = "${var.github_oidc_role_arn}"
       username = "github"
       groups   = ["system:masters"]
+    },
+    {
+      rolearn  = "arn:aws:iam::864546685796:role/project-6-dev-github-runner-instance-role"
+      username = "github-runner"
+      groups   = ["system:masters"]
     }
   ]
 
