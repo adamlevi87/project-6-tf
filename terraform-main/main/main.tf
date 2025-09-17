@@ -160,7 +160,7 @@ module "security_groups" {
   cluster_security_group_id       = module.eks.cluster_security_group_id
 
   initialize_run    = var.initialize_run
-  runner_vpc_cidr   = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_cidr_block, "fake-placeholder")
+  runner_vpc_cidr   = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_cidr_block, "10.255.255.0/24")
   
   # Node group configuration
   node_groups = var.eks_node_groups

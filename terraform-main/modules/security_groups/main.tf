@@ -14,7 +14,7 @@ resource "null_resource" "validate_peering_outputs" {
   
   provisioner "local-exec" {
     command = <<-EOF
-      if [ "${var.runner_vpc_cidr}" = "fake-placeholder" ]; then
+      if [ "${var.runner_vpc_cidr}" = "10.255.255.0/24" ]; then
         echo "ERROR: Required runner_vpc_cidr missing" 
         exit 1
       fi
