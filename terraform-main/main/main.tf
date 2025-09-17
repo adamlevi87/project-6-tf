@@ -44,7 +44,7 @@ module "vpc_peering_acceptance" {
   
   # Route table IDs for creating routes 
   peering_connection_id = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_peering_connection_id, "fake-placeholder")
-  runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_cidr_block, "fake-placeholder")
+  runner_vpc_cidr      = try(data.terraform_remote_state.runner_infra[0].outputs.vpc_cidr_block, "10.255.255.0/24")
   
   # Route table IDs for creating routes
   private_route_table_ids = module.vpc.private_route_table_ids
