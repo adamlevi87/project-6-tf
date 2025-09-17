@@ -35,7 +35,7 @@ data "terraform_remote_state" "main" {
   }
 }
 resource "null_resource" "validate_outputs_or_fail" {
-  count = var.initialize_run ? 0 : 1
+  #count = var.initialize_run ? 0 : 1
 
   provisioner "local-exec" {
     command = <<-EOF
