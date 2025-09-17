@@ -204,36 +204,76 @@ resource "aws_nat_gateway" "nat_additional" {
   }
 }
 
-# Private route tables with NAT routing
 resource "aws_route_table" "private" {
   # for all private subnets [unless the mode is endpoints]
   for_each = local.subnets_needing_nat
 
   vpc_id = aws_vpc.main.id
   
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = (
-      # SINGLE mode: all private subnets route to primary NAT
-      var.nat_mode == "single" ? aws_nat_gateway.nat_primary[0].id :
-      # REAL mode: route to corresponding NAT based on AZ
-      var.nat_mode == "real" ? (
-        # If this AZ has an additional NAT, use it; 
-        # otherwise use primary (should never happen)
-        # this might be triple checking and uneeded protection - to avoid terraform plan errors
-        contains(keys(aws_nat_gateway.nat_additional), each.key) ? 
-          aws_nat_gateway.nat_additional[each.key].id : 
-          aws_nat_gateway.nat_primary[0].id
-      ) :
-      null
-    )
-  }
+  # NO inline route blocks - routes managed separately below
+  
   tags = {
     Name        = "${var.project_tag}-private-rt-${each.key}"
     Project     = var.project_tag
     Environment = var.environment
   }
 }
+
+# VPC module manages its own default NAT routes as separate resources
+resource "aws_route" "private_nat_default" {
+  for_each = local.subnets_needing_nat
+
+  route_table_id         = aws_route_table.private[each.key].id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id = (
+    # SINGLE mode: all private subnets route to primary NAT
+    var.nat_mode == "single" ? aws_nat_gateway.nat_primary[0].id :
+    # REAL mode: route to corresponding NAT based on AZ
+    var.nat_mode == "real" ? (
+      # If this AZ has an additional NAT, use it; 
+      # otherwise use primary (should never happen)
+      # this might be triple checking and uneeded protection - to avoid terraform plan errors
+      contains(keys(aws_nat_gateway.nat_additional), each.key) ? 
+        aws_nat_gateway.nat_additional[each.key].id : 
+        aws_nat_gateway.nat_primary[0].id
+    ) :
+    null
+  )
+}
+
+
+
+
+# # Private route tables with NAT routing
+# resource "aws_route_table" "private" {
+#   # for all private subnets [unless the mode is endpoints]
+#   for_each = local.subnets_needing_nat
+
+#   vpc_id = aws_vpc.main.id
+  
+#   route {
+#     cidr_block     = "0.0.0.0/0"
+#     nat_gateway_id = (
+#       # SINGLE mode: all private subnets route to primary NAT
+#       var.nat_mode == "single" ? aws_nat_gateway.nat_primary[0].id :
+#       # REAL mode: route to corresponding NAT based on AZ
+#       var.nat_mode == "real" ? (
+#         # If this AZ has an additional NAT, use it; 
+#         # otherwise use primary (should never happen)
+#         # this might be triple checking and uneeded protection - to avoid terraform plan errors
+#         contains(keys(aws_nat_gateway.nat_additional), each.key) ? 
+#           aws_nat_gateway.nat_additional[each.key].id : 
+#           aws_nat_gateway.nat_primary[0].id
+#       ) :
+#       null
+#     )
+#   }
+#   tags = {
+#     Name        = "${var.project_tag}-private-rt-${each.key}"
+#     Project     = var.project_tag
+#     Environment = var.environment
+#   }
+# }
 
 # Associate all private subnets with their route tables
 resource "aws_route_table_association" "private_subnets" {
