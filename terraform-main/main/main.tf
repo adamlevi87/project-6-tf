@@ -216,8 +216,8 @@ module "aws_auth_config" {
       groups   = ["system:masters"]
     },
     {
-      rolearn  = "arn:aws:iam::864546685796:role/project-6-dev-github-runner-instance-role"
-      username = "github-runner"
+      rolearn  = try(data.terraform_remote_state.runner_infra.outputs.runner_instance_role_arn, "arn:aws:iam::123456789012:role/my-fake-role")
+      username = "github-runner" # do not change this username (its used for protecting the module [check inside the module itself])
       groups   = ["system:masters"]
     }
   ]
